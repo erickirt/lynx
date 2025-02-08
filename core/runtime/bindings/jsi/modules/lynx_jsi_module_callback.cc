@@ -7,13 +7,11 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
+#include "core/runtime/bindings/jsi/modules/module_interceptor.h"
 #include "core/runtime/piper/js/template_delegate.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 #if ENABLE_TESTBENCH_RECORDER
 #include "core/services/recorder/native_module_recorder.h"
-#endif
-#if (OS_ANDROID || OS_IOS) && (!defined(LYNX_UNIT_TEST) || !LYNX_UNIT_TEST)
-#include "core/runtime/bindings/jsi/interceptor/network_monitor.h"
 #endif
 
 namespace lynx {
@@ -92,9 +90,9 @@ void ModuleCallback::Invoke(Runtime* runtime,
   if (timing_collector_ != nullptr) {
     timing_collector_->EndCallbackInvoke(
         (convert_params_end - convert_params_start), invoke_js_callback_start);
-#if (OS_ANDROID || OS_IOS) && (!defined(LYNX_UNIT_TEST) || !LYNX_UNIT_TEST)
-    network::ReportRequestSuccessIfNecessary(timing_collector_, this);
-#endif
+    if (group_interceptor_) {
+      group_interceptor_->OnCallbackInvoked(timing_collector_, this);
+    }
   }
 }
 

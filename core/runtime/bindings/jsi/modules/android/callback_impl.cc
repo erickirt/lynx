@@ -14,7 +14,6 @@
 #include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/CallbackImpl_jni.h"
 #include "core/runtime/bindings/jsi/interceptor/android/request_interceptor_android.h"
-#include "core/runtime/bindings/jsi/interceptor/network_monitor.h"
 #include "core/runtime/bindings/jsi/modules/android/lynx_module_android.h"
 #include "core/runtime/bindings/jsi/modules/android/method_invoker.h"
 #include "core/services/recorder/recorder_controller.h"
@@ -178,7 +177,9 @@ void ModuleCallbackAndroid::Invoke(Runtime* runtime,
   if (timing_collector_ != nullptr) {
     timing_collector_->EndCallbackInvoke(
         (convert_params_end - convert_params_start), convert_params_end);
-    network::ReportRequestSuccessIfNecessary(timing_collector_, this);
+    if (group_interceptor_) {
+      group_interceptor_->OnCallbackInvoked(timing_collector_, this);
+    }
   }
 }
 

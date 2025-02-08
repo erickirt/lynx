@@ -13,7 +13,6 @@
 #include "core/base/lynx_trace_categories.h"
 #include "core/base/trace/trace_event_def.h"
 #include "core/renderer/utils/lynx_env.h"
-#include "core/runtime/bindings/jsi/interceptor/network_monitor.h"
 #include "core/runtime/bindings/jsi/modules/lynx_jsi_module_callback.h"
 #include "core/runtime/bindings/jsi/modules/module_interceptor.h"
 #include "core/runtime/jsi/jsi-inl.h"
@@ -172,6 +171,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
         callback->SetModuleName(name_);
         callback->SetMethodName(method.name);
         callback->timing_collector_ = timing_collector;
+        callback->SetModuleInterceptor(group_interceptor_);
         callback->SetCallbackFlowId(callback_flow_id);
         callback->SetFirstArg(first_arg_str);
 #if ENABLE_TESTBENCH_RECORDER
@@ -214,26 +214,29 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
   InvokeScope invoke_scope(invoke_scopes_, &invoke_info);
 #if (OS_IOS || OS_TVOS || OS_OSX || OS_ANDROID) && \
     (!defined(LYNX_UNIT_TEST) || !LYNX_UNIT_TEST)
-  //  We need these information to monitor network request information,
-  //  the rate of success and the proportion of requests accomplished by
-  //  Lynx. After fully switch to Lynx Network, we can remove these logics.
-  network::SetNetworkCallbackInfo(method.name, args_array, count,
-                                  timing_collector);
   // TODO(liyanbo.monster): after remove native promise, delete this.
   native_module_->EnterInvokeScope(rt, delegate_);
 #endif
+  if (group_interceptor_) {
+    group_interceptor_->BeforeInvokeMethod(method, args_array,
+                                           timing_collector);
+  }
+
   // call method by native module
   auto ret = native_module_->InvokeMethod(method.name, std::move(args_array),
                                           count, callback_map);
+
   // TODO(liyanbo.monster): after remove native promise, delete this.
   std::optional<piper::Value> promise_res;
-#if OS_IOS || OS_TVOS || OS_OSX || OS_ANDROID
+#if (OS_IOS || OS_TVOS || OS_OSX || OS_ANDROID) && \
+    (!defined(LYNX_UNIT_TEST) || !LYNX_UNIT_TEST)
   native_module_->ExitInvokeScope();
   // hack here, this will be deleted later.
   if (!ret.has_value() && ret.error() == "__IS_NATIVE_PROMISE__") {
     promise_res = native_module_->TryGetPromiseRet();
   }
 #endif
+
   base::expected<piper::Value, piper::JSINativeException> response;
   if (promise_res) {
     response = std::move(*promise_res);

@@ -38,6 +38,12 @@ class ModuleInterceptor {
       const LynxModule::MethodMetadata& method, Runtime* rt,
       const std::shared_ptr<piper::ModuleDelegate>& delegate,
       const piper::Value* args, size_t count) const = 0;
+  virtual void BeforeInvokeMethod(
+      const LynxModule::MethodMetadata& method,
+      const std::unique_ptr<pub::Value>& args,
+      const NativeModuleInfoCollectorPtr& timing_collector) {}
+  virtual void OnCallbackInvoked(const NativeModuleInfoCollectorPtr& timing,
+                                 ModuleCallback* callback) {}
   virtual ~ModuleInterceptor() = default;
   virtual void SetTemplateUrl(const std::string& url) = 0;
 };
@@ -49,9 +55,15 @@ class GroupInterceptor : public ModuleInterceptor {
       const LynxModule::MethodMetadata& method, Runtime* rt,
       const std::shared_ptr<piper::ModuleDelegate>& delegate,
       const piper::Value* args, size_t count) const override;
+  void BeforeInvokeMethod(
+      const LynxModule::MethodMetadata& method,
+      const std::unique_ptr<pub::Value>& args,
+      const NativeModuleInfoCollectorPtr& timing_collector) override;
+  void OnCallbackInvoked(const NativeModuleInfoCollectorPtr& timing,
+                         ModuleCallback* callback) override;
+  void SetTemplateUrl(const std::string& url) override;
 
   void AddInterceptor(std::unique_ptr<ModuleInterceptor> interceptor);
-  void SetTemplateUrl(const std::string& url) override;
 
  private:
   base::InlineVector<std::shared_ptr<ModuleInterceptor>, 4> interceptors_;

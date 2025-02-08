@@ -6,11 +6,7 @@ interceptor_shared_sources = [
   "//lynx/core/runtime/bindings/jsi/interceptor/interceptor_factory.cc",
   "//lynx/core/runtime/bindings/jsi/interceptor/interceptor_factory.h",
 ]
-
-network_interceptor_shared_sources = [
-  "//lynx/core/runtime/bindings/jsi/interceptor/network_monitor.cc",
-  "//lynx/core/runtime/bindings/jsi/interceptor/network_monitor.h",
-]
+network_interceptor_shared_sources = []
 if (is_android) {
   network_interceptor_shared_sources += [
     "//lynx/core/runtime/bindings/jsi/interceptor/android/request_interceptor_android.cc",

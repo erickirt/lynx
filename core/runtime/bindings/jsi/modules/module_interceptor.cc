@@ -23,6 +23,22 @@ ModuleInterceptorResult GroupInterceptor::InterceptModuleMethod(
   return {false, Value::null()};
 }
 
+void GroupInterceptor::BeforeInvokeMethod(
+    const LynxModule::MethodMetadata& method,
+    const std::unique_ptr<pub::Value>& args,
+    const NativeModuleInfoCollectorPtr& timing_collector) {
+  for (auto& i : interceptors_) {
+    i->BeforeInvokeMethod(method, args, timing_collector);
+  }
+}
+
+void GroupInterceptor::OnCallbackInvoked(
+    const NativeModuleInfoCollectorPtr& timing, ModuleCallback* callback) {
+  for (auto& i : interceptors_) {
+    i->OnCallbackInvoked(timing, callback);
+  }
+}
+
 void GroupInterceptor::AddInterceptor(
     std::unique_ptr<ModuleInterceptor> interceptor) {
   interceptors_.push_back(std::move(interceptor));

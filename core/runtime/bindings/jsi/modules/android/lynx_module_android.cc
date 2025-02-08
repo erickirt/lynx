@@ -14,7 +14,6 @@
 #include "core/base/android/java_only_array.h"
 #include "core/build/gen/LynxModuleWrapper_jni.h"
 #include "core/renderer/utils/lynx_env.h"
-#include "core/runtime/bindings/jsi/interceptor/network_monitor.h"
 #include "core/runtime/bindings/jsi/modules/android/java_method_descriptor.h"
 #include "core/runtime/common/utils.h"
 #include "core/runtime/jsi/jsi.h"

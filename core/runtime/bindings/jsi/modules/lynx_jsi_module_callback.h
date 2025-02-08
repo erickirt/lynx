@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/include/debug/lynx_error.h"
@@ -22,6 +23,7 @@ class TemplateDelegate;
 
 namespace lynx {
 namespace piper {
+class GroupInterceptor;
 
 class ModuleCallbackFunctionHolder {
  public:
@@ -66,6 +68,10 @@ class ModuleCallback : public LynxModuleCallback {
 
   void SetArgs(std::unique_ptr<pub::Value> args) override;
 
+  void SetModuleInterceptor(std::shared_ptr<GroupInterceptor> interceptor) {
+    group_interceptor_ = std::move(interceptor);
+  }
+
 #if ENABLE_TESTBENCH_RECORDER
   void SetRecordID(int64_t record_id);
 #endif
@@ -73,6 +79,7 @@ class ModuleCallback : public LynxModuleCallback {
 
  protected:
   std::vector<base::LynxError> errors_;
+  std::shared_ptr<GroupInterceptor> group_interceptor_;
 
  private:
   std::unique_ptr<pub::Value> args_ = nullptr;
