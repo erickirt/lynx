@@ -445,6 +445,12 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
     }
   }
 
+  public void onGestureRecognized(int sign) {
+    if (mTouchEventDispatcher != null) {
+      mTouchEventDispatcher.onGestureRecognized(sign);
+    }
+  }
+
   public void onGestureRecognized(LynxBaseUI ui) {
     if (mTouchEventDispatcher != null) {
       mTouchEventDispatcher.onGestureRecognized(ui);

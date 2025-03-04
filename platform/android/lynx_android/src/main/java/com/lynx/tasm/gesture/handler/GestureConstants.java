@@ -29,6 +29,7 @@ public class GestureConstants {
   public static final String MAX_DURATION = "maxDuration";
   public static final String MIN_DISTANCE = "minDistance";
   public static final String MAX_DISTANCE = "maxDistance";
+  public static final String TAP_SLOP = "tapSlop";
 
   // Gesture Status
   public static final int LYNX_STATE_INIT = 0;

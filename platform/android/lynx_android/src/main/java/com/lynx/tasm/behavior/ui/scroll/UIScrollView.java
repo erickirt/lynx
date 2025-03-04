@@ -1212,10 +1212,6 @@ public class UIScrollView extends AbsLynxUIScroll<AndroidScrollView>
       } else {
         mView.scrollBy(0, (int) y);
       }
-      // when scroll, not trigger basic events
-      if (Math.abs(x) > Float.MIN_VALUE || Math.abs(y) > Float.MIN_VALUE) {
-        recognizeGesturere();
-      }
     });
   }
 

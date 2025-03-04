@@ -1127,10 +1127,6 @@ public class UIListContainer extends UISimpleView<ListContainerView>
       } else {
         mView.scrollBy((int) x, 0);
       }
-      // when scroll, not trigger basic events
-      if (Math.abs(x) > Float.MIN_VALUE || Math.abs(y) > Float.MIN_VALUE) {
-        recognizeGesturere();
-      }
     });
   }
 

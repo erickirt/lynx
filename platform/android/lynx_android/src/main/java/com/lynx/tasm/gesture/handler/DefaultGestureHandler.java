@@ -32,6 +32,8 @@ public class DefaultGestureHandler extends BaseGestureHandler {
   private boolean mIsInvokedStart = false;
   // is onEnd invoked or not
   private boolean mIsInvokedEnd = false;
+  // default tap slop
+  private int mTapSlop = 3;
 
   // record last lynx touch event
   private LynxTouchEvent mLastTouchEvent;
@@ -56,6 +58,7 @@ public class DefaultGestureHandler extends BaseGestureHandler {
     if (config == null) {
       return;
     }
+    mTapSlop = config.getInt(GestureConstants.TAP_SLOP, 3);
   }
 
   @Override
@@ -204,6 +207,11 @@ public class DefaultGestureHandler extends BaseGestureHandler {
     if (mGestureArenaMember != null) {
       mGestureArenaMember.onGestureScrollBy(deltaX, deltaY);
     }
+
+    if (Math.abs((int) deltaX) > mTapSlop || Math.abs((int) deltaY) > mTapSlop) {
+      mLynxContext.onGestureRecognized(mSign);
+    }
+
     if (!isOnUpdateEnable()) {
       return;
     }

@@ -188,6 +188,12 @@ public class TouchEventDispatcher {
     }
   }
 
+  public void onGestureRecognized(int sign) {
+    if (mGestureRecognizedUISet != null) {
+      mGestureRecognizedUISet.add(sign);
+    }
+  }
+
   public void onPropsChanged(LynxBaseUI ui) {
     if (mPropsChangedUISet != null) {
       mPropsChangedUISet.add(ui.getSign());

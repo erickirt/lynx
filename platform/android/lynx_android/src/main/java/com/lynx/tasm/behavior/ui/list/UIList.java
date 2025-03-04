@@ -195,10 +195,6 @@ public class UIList extends AbsLynxList<RecyclerView> implements GestureArenaMem
         return;
       }
       mView.scrollBy((int) x, (int) y);
-      // when scroll, not trigger basic events
-      if (Math.abs(x) > Float.MIN_VALUE || Math.abs(y) > Float.MIN_VALUE) {
-        recognizeGesturere();
-      }
     });
   }
 
