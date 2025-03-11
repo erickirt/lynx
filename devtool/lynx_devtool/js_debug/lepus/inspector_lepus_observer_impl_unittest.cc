@@ -63,7 +63,7 @@ TEST_F(InspectorLepusObserverImplTest, OnContextDestroyed) {
   observer_->OnContextDestroyed("test");
 }
 
-TEST_F(InspectorLepusObserverImplTest, OnConsoleMessage) {
+TEST_F(InspectorLepusObserverImplTest, OnConsoleEvent) {
   std::string alog_mes = "alog message";
   std::string debug_mes = "debug message";
   std::string error_mes = "error message";
@@ -74,38 +74,38 @@ TEST_F(InspectorLepusObserverImplTest, OnConsoleMessage) {
 
   observer_->SetConsolePostNeeded(false);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleAlog, alog_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleAlog, alog_mes);
   EXPECT_EQ(mediator_->message_.text_, "");
   EXPECT_EQ(mediator_->message_.level_, -2);
   EXPECT_EQ(mediator_->message_.timestamp_, -1);
 
   observer_->SetConsolePostNeeded(true);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleAlog, alog_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleAlog, alog_mes);
   EXPECT_EQ(mediator_->message_.text_, alog_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_ALOG);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleDebug, debug_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleDebug, debug_mes);
   EXPECT_EQ(mediator_->message_.text_, debug_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_INFO);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleError, error_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleError, error_mes);
   EXPECT_EQ(mediator_->message_.text_, error_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_ERROR);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleInfo, info_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleInfo, info_mes);
   EXPECT_EQ(mediator_->message_.text_, info_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_INFO);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleLog, log_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleLog, log_mes);
   EXPECT_EQ(mediator_->message_.text_, log_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_LOG);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleReport, report_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleReport, report_mes);
   EXPECT_EQ(mediator_->message_.text_, report_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_REPORT);
 
-  observer_->OnConsoleMessage(piper::LepusConsoleWarn, warn_mes);
+  observer_->OnConsoleEvent(piper::LepusConsoleWarn, warn_mes);
   EXPECT_EQ(mediator_->message_.text_, warn_mes);
   EXPECT_EQ(mediator_->message_.level_, piper::CONSOLE_LOG_WARNING);
 }
