@@ -214,25 +214,37 @@ public class LynxView extends UIBodyView {
   public HashMap<String, Object> getAllTimingInfo() {
     return mLynxTemplateRender.getAllTimingInfo();
   }
+
+  /**
+   * Please use {@link com.lynx.tasm.LynxView#setExtraTiming(TimingHandler.ExtraTimingInfo)} first!
+   *
+   * This interface is used to supplement key performance data before loading the Lynx page.
+   *
+   * <p> Unfortunately, due to version compatibility considerations, the dictionary keys in this
+   * method are all hardcoded. Please do not modify any strings in this method!!!
+   *
+   * @return void
+   */
+  @Deprecated
   public void setExtraTiming(Map<String, Long> extraTiming) {
     if (extraTiming == null) {
       return;
     }
     TimingHandler.ExtraTimingInfo info = new TimingHandler.ExtraTimingInfo();
-    if (extraTiming.containsKey(TimingHandler.OPEN_TIME)) {
-      info.mOpenTime = extraTiming.get(TimingHandler.OPEN_TIME);
+    if (extraTiming.containsKey("open_time")) {
+      info.mOpenTime = extraTiming.get("open_time");
     }
-    if (extraTiming.containsKey(TimingHandler.CONTAINER_INIT_START)) {
-      info.mContainerInitStart = extraTiming.get(TimingHandler.CONTAINER_INIT_START);
+    if (extraTiming.containsKey("container_init_start")) {
+      info.mContainerInitStart = extraTiming.get("container_init_start");
     }
-    if (extraTiming.containsKey(TimingHandler.CONTAINER_INIT_END)) {
-      info.mContainerInitEnd = extraTiming.get(TimingHandler.CONTAINER_INIT_END);
+    if (extraTiming.containsKey("container_init_end")) {
+      info.mContainerInitEnd = extraTiming.get("container_init_end");
     }
-    if (extraTiming.containsKey(TimingHandler.PREPARE_TEMPLATE_START)) {
-      info.mPrepareTemplateStart = extraTiming.get(TimingHandler.PREPARE_TEMPLATE_START);
+    if (extraTiming.containsKey("prepare_template_start")) {
+      info.mPrepareTemplateStart = extraTiming.get("prepare_template_start");
     }
-    if (extraTiming.containsKey(TimingHandler.PREPARE_TEMPLATE_END)) {
-      info.mPrepareTemplateEnd = extraTiming.get(TimingHandler.PREPARE_TEMPLATE_END);
+    if (extraTiming.containsKey("prepare_template_end")) {
+      info.mPrepareTemplateEnd = extraTiming.get("prepare_template_end");
     }
     mLynxTemplateRender.setExtraTiming(info);
   }

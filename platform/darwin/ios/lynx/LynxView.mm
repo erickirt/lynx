@@ -820,6 +820,16 @@
   return [_templateRender getAllTimingInfo];
 }
 
+/**
+ * Deprecated method.
+ *
+ * Please use the method `setExtraTiming:` with `LynxExtraTiming` parameter type first.
+ * This refers to:
+ *  - (void)setExtraTiming:(LynxExtraTiming *)timing;
+ *
+ * Unfortunately, due to version compatibility considerations, the dictionary keys in this method
+ * are all hardcoded. Please do not modify any strings in this method.
+ */
 - (void)setExtraTimingWithDictionary:(NSDictionary*)timing {
   LynxExtraTiming* timingInfo = [[LynxExtraTiming alloc] init];
   timingInfo.openTime = [[timing objectForKey:@"open_time"] unsignedLongLongValue];
