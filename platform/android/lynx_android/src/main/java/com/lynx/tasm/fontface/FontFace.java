@@ -25,7 +25,7 @@ public class FontFace {
     return mStyledTypeface;
   }
 
-  List<Pair<TYPE, String>> getSrc() {
+  public List<Pair<TYPE, String>> getSrc() {
     return src;
   }
 

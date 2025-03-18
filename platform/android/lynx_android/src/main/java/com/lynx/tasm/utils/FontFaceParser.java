@@ -53,7 +53,7 @@ public class FontFaceParser {
     }
     FontFace fontFace = new FontFace();
     fontFace.setFontFamily(fontFamily);
-    String resolvedSrc = "";
+    boolean containWoffFile = false;
     for (Object value : map.values()) {
       if (!(value instanceof String)) {
         reportSrcFormatError(context, "Src is not string", value.toString());
@@ -102,8 +102,11 @@ public class FontFaceParser {
                 isLegal = false;
                 break;
               }
+              if (checkIsWoffFormat(url)) {
+                containWoffFile = true;
+                continue;
+              }
               fontFace.addUrl(url);
-              resolvedSrc = url;
             } else {
               // illegal
               isLegal = false;
@@ -120,8 +123,11 @@ public class FontFaceParser {
                 isLegal = false;
                 break;
               }
+              if (checkIsWoffFormat(local)) {
+                containWoffFile = true;
+                continue;
+              }
               fontFace.addLocal(local);
-              resolvedSrc = local;
             } else {
               // illegal
               isLegal = false;
@@ -140,8 +146,11 @@ public class FontFaceParser {
               isLegal = false;
               break;
             }
+            if (checkIsWoffFormat(url)) {
+              containWoffFile = true;
+              continue;
+            }
             fontFace.addUrl(url);
-            resolvedSrc = url;
           } else {
             // illegal
             isLegal = false;
@@ -159,8 +168,11 @@ public class FontFaceParser {
               isLegal = false;
               break;
             }
+            if (checkIsWoffFormat(local)) {
+              containWoffFile = true;
+              continue;
+            }
             fontFace.addLocal(local);
-            resolvedSrc = local;
           } else {
             // illegal
             isLegal = false;
@@ -171,11 +183,15 @@ public class FontFaceParser {
       if (!isLegal) {
         reportSrcFormatError(context, SRC_FORMAT_ERROR, src);
       }
-      if (resolvedSrc.endsWith(".woff") || resolvedSrc.endsWith(".woff2")) {
+      if (containWoffFile && fontFace.getSrc().isEmpty()) {
         reportFontFileFormatError(context, "The woff file format is not supported on Android", src);
       }
     }
     return fontFace;
+  }
+
+  private static boolean checkIsWoffFormat(String url) {
+    return url.endsWith(".woff") || url.endsWith(".woff2");
   }
 
   /**

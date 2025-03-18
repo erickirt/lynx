@@ -423,7 +423,7 @@ public class FontFaceManager {
               latch.countDown();
             };
           });
-    };
+    }
 
     try {
       boolean awaitSuccess = latch.await(30, TimeUnit.SECONDS);
