@@ -5,9 +5,19 @@
 #import <Lynx/LynxCSSType.h>
 #import <Lynx/LynxCustomMeasureDelegate.h>
 
+@protocol LayoutThreadMonitor <NSObject>
+
+- (void)reportThreadErrorWithSign:(NSInteger)sign methodName:(NSString *)name;
+
+- (void)reportBehaviorMightChangedWithSing:(NSInteger)sign methodName:(NSString *)name;
+@end
+
 @interface LynxLayoutNodeManager : NSObject
 
-- (instancetype)initWithNativePtr:(void *)nativePtr;
+- (instancetype)initWithNativePtr:(void *)nativePtr
+        layoutThreadErrorCallback:(id<LayoutThreadMonitor>)callback;
+- (void)initLayoutRunLoop;
+- (void)detachNativePtr;
 
 - (LynxFlexDirection)getFlexDirection:(NSInteger)sign;
 

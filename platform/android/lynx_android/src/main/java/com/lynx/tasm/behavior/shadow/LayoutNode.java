@@ -3,6 +3,8 @@
 // LICENSE file in the root directory of this source tree.
 package com.lynx.tasm.behavior.shadow;
 
+import android.os.Handler;
+import android.os.Looper;
 import com.lynx.tasm.base.CalledByNative;
 import com.lynx.tasm.base.LLog;
 import com.lynx.tasm.behavior.LayoutNodeManager;
@@ -20,6 +22,9 @@ public class LayoutNode {
   private Style mStyle;
 
   public long mBaseline = 0;
+
+  private Looper mLayoutLooper;
+  private Handler mLayoutHandler;
 
   public LayoutNode() {}
 
