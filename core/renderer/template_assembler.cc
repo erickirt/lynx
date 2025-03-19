@@ -54,6 +54,7 @@
 #include "core/runtime/vm/lepus/tasks/lepus_raf_manager.h"
 #include "core/runtime/vm/lepus/vm_context.h"
 #include "core/services/event_report/event_tracker.h"
+#include "core/services/feature_count/global_feature_counter.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "core/services/ssr/client/ssr_client_utils.h"
 #include "core/services/ssr/client/ssr_data_update_manager.h"
@@ -598,6 +599,20 @@ void TemplateAssembler::RenderTemplate(
     update_page_option.update_first_time = true;
     page_proxy_.UpdateInLoadTemplate(data.GetValue(), update_page_option,
                                      pipeline_options);
+  }
+
+  bool enable_parallel_element =
+      page_proxy()->element_manager()->GetEnableParallelElement();
+  bool enable_radon_fiber_arch =
+      page_proxy()->element_manager()->GetEnableFiberElementForRadonDiff();
+  if (EnableFiberArch() && !enable_parallel_element) {
+    report::GlobalFeatureCounter::Count(
+        report::LynxFeature::CPP_DISABLE_PARALLEL_FLUSH_FIBER_ARCH,
+        page_proxy()->element_manager()->GetInstanceId());
+  } else if (enable_radon_fiber_arch && !enable_parallel_element) {
+    report::GlobalFeatureCounter::Count(
+        report::LynxFeature::CPP_DISABLE_PARALLEL_FLUSH_FIBER_RADON_ARCH,
+        page_proxy()->element_manager()->GetInstanceId());
   }
 }
 

@@ -30,6 +30,8 @@ cpp:
   - enable_pseudo_child_css
   - enable_external_class_css
   - list_node
+  - disable_parallel_flush_fiber_arch
+  - disable_parallel_flush_fiber_radon_arch
 typescript:
   - bundle_support_load_script
 objc:
