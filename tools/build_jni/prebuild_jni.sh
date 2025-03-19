@@ -1,7 +1,7 @@
 # Copyright 2024 The Lynx Authors. All rights reserved.
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
-CURRENT_PATH=$(cd `dirname $0`; pwd)
+CURRENT_PATH="$(dirname "$(realpath "$0")")"
 ANDROID_NAME=("lynx_android/src/main/" "lynx_devtool/src/main/" "../../devtool/base_devtool/android/base_devtool/src/main/")
 LIBRARY_NAME=("core" "devtool/lynx_devtool" "devtool/base_devtool")
 ANDROID_NAME_LENGTH=${#LIBRARY_NAME[@]}

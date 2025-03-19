@@ -2,7 +2,7 @@
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
 
-CURRENT_PATH=$(cd `dirname $0`; pwd)
+CURRENT_PATH="$(dirname "$(realpath "$0")")"
 ANDROID_NAME=("lynx_android/src/main/")
 LIBRARY_NAME=("core")
 ANDROID_NAME_LENGTH=${#LIBRARY_NAME[@]}
