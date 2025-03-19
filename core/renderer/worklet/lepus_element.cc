@@ -164,11 +164,11 @@ tasm::EventResult LepusElement::FireElementWorklet(
 
 #ifdef USE_PRIMJS_NAPI
   Napi::Env env(reinterpret_cast<napi_env_primjs>(
-      static_cast<lepus::QuickContext*>(tasm->context(entry_name))
+      static_cast<lepus::QuickContext*>(tasm->GetLepusContext(entry_name).get())
           ->napi_env()));
 #else
   Napi::Env env(reinterpret_cast<napi_env>(
-      static_cast<lepus::QuickContext*>(tasm->context(entry_name))
+      static_cast<lepus::QuickContext*>(tasm->GetLepusContext(entry_name).get())
           ->napi_env()));
 #endif  // USE_PRIMJS_NAPI
 
@@ -286,11 +286,11 @@ std::optional<lepus::Value> LepusElement::TriggerWorkletFunction(
 
 #ifdef USE_PRIMJS_NAPI
   Napi::Env env(reinterpret_cast<napi_env_primjs>(
-      static_cast<lepus::QuickContext*>(tasm->context(entry_name))
+      static_cast<lepus::QuickContext*>(tasm->GetLepusContext(entry_name).get())
           ->napi_env()));
 #else
   Napi::Env env(reinterpret_cast<napi_env>(
-      static_cast<lepus::QuickContext*>(tasm->context(entry_name))
+      static_cast<lepus::QuickContext*>(tasm->GetLepusContext(entry_name).get())
           ->napi_env()));
 #endif  // USE_PRIMJS_NAPI
 

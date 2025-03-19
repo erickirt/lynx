@@ -324,7 +324,6 @@ std::unique_ptr<lynx::shell::LynxEngine> LynxShellBuilder::CreateLynxEngine(
   auto tasm = std::make_shared<lynx::tasm::TemplateAssembler>(
       *tasm_mediator, std::move(element_manager), instance_id);
   tasm->SetEnableLayoutOnly(this->enable_layout_only_);
-  tasm->Init(runners.GetTASMTaskRunner());
   if (this->loader_ != nullptr) {
     tasm->SetLazyBundleLoader(this->loader_);
   }

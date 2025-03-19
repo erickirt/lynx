@@ -226,11 +226,6 @@ TemplateAssembler::~TemplateAssembler() {
   LOGI("TemplateAssembler::Release url:" << url_ << " this:" << this);
 };
 
-void TemplateAssembler::Init(fml::RefPtr<fml::TaskRunner> tasm_runner) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TemplateAssembler::Init");
-  std::weak_ptr<TemplateAssembler> wp(shared_from_this());
-}
-
 void TemplateAssembler::UpdateGlobalProps(const lepus::Value& data,
                                           bool need_render,
                                           PipelineOptions& pipeline_options) {
@@ -3024,11 +3019,6 @@ void TemplateAssembler::RenderPageWithSSRData(
 
 Themed& TemplateAssembler::Themed() { return page_proxy_.themed(); }
 
-void TemplateAssembler::SetThemed(
-    const Themed::PageTransMaps& page_trans_maps) {
-  Themed().ResetWithPageTransMaps(page_trans_maps);
-}
-
 // For fiber
 void TemplateAssembler::CallLepusMethod(const std::string& method_name,
                                         lepus::Value args,
@@ -3048,7 +3038,7 @@ void TemplateAssembler::CallLepusMethod(const std::string& method_name,
        << this << " url:" << url_ << " method name: " << method_name);
 
   const auto ret_value =
-      context(tasm::DEFAULT_ENTRY_NAME)->Call(method_name, args);
+      GetLepusContext(tasm::DEFAULT_ENTRY_NAME)->Call(method_name, args);
   if (callback.IsValid()) {
     delegate_.CallJSApiCallbackWithValue(callback, ret_value);
   }

@@ -242,8 +242,6 @@ class TemplateAssembler final
                     int32_t instance_id);
   ~TemplateAssembler() override;
 
-  void Init(fml::RefPtr<fml::TaskRunner> tasm_runner);
-
   void LoadTemplate(const std::string& url, std::vector<uint8_t> source,
                     const std::shared_ptr<TemplateData>& template_data,
                     PipelineOptions& pipeline_options,
@@ -289,7 +287,6 @@ class TemplateAssembler final
       LazyBundleLoader::CallBackInfo callback_info,
       PipelineOptions& pipeline_options);
 
-  void ReportRuntimeReady();
   void ReportError(int32_t error_code, const std::string& msg,
                    base::LynxErrorLevel level = base::LynxErrorLevel::Error);
   void ReportError(base::LynxError error) override;
@@ -297,8 +294,6 @@ class TemplateAssembler final
   void ReportGCTimingEvent(const char* start, const char* end) override;
 
   fml::RefPtr<fml::TaskRunner> GetLepusTimedTaskRunner() override;
-
-  void ExecuteDataProcessor(TemplateData& data);
 
   void UpdateGlobalProps(const lepus::Value& data, bool need_render,
                          PipelineOptions& pipeline_options);
@@ -354,8 +349,6 @@ class TemplateAssembler final
   int64_t GetRecordID() const;
 #endif
 
-  TemplateData GenerateTemplateDataPostedToJs(const TemplateData& value);
-
   void UpdateMetaData(const std::shared_ptr<TemplateData>& template_data,
                       const lepus::Value& global_props,
                       UpdatePageOption& update_page_option,
@@ -375,11 +368,8 @@ class TemplateAssembler final
   }
 
   PageProxy* page_proxy() { return &page_proxy_; }
-  lepus::Context* context(const std::string entry_name) {
-    return FindEntry(entry_name)->GetVm().get();
-  }
 
-  const std::shared_ptr<lepus::Context>& getLepusContext(
+  const std::shared_ptr<lepus::Context>& GetLepusContext(
       const std::string& entry_name) {
     const auto& entry = FindEntry(entry_name);
     return entry->GetVm();
@@ -397,11 +387,6 @@ class TemplateAssembler final
   std::unordered_map<int, std::shared_ptr<DynamicComponentMould>>&
   lazy_bundle_moulds(const std::string& entry_name) {
     return FindEntry(entry_name)->lazy_bundle_moulds();
-  }
-
-  const std::unordered_map<std::string, int>& component_name_to_id(
-      const std::string& entry_name) {
-    return FindEntry(entry_name)->component_name_to_id();
   }
 
   std::shared_ptr<CSSStyleSheetManager> style_sheet_manager(
@@ -478,8 +463,6 @@ class TemplateAssembler final
 
   SignalContext* GetSignalContext() { return &signal_context_; }
 
-  // TODO: make this protected
- public:
   void SetPageConfig(const std::shared_ptr<PageConfig>& config) override;
 
   void SetEnableLayoutOnly(bool enable_layout_only) {
@@ -670,8 +653,6 @@ class TemplateAssembler final
 
   struct Themed& Themed() override;
 
-  void SetThemed(const Themed::PageTransMaps& page_trans_maps);
-
   // For fiber
   void CallLepusMethod(const std::string& method_name, lepus::Value args,
                        const piper::ApiCallBack& callback,
@@ -720,6 +701,8 @@ class TemplateAssembler final
   friend class TemplateBinaryReaderSSR;
   friend class TemplateEntry;
 
+  void ExecuteDataProcessor(TemplateData& data);
+
   bool EnableDataProcessorOnJs() {
     // TODO(songshourui.null): Currently, JS DataProcessor is only supported in
     // fiber mode. Support for JS DataProcessor in all scenarios will be added
@@ -730,6 +713,8 @@ class TemplateAssembler final
 
   void DidComponentLoaded(
       const std::shared_ptr<TemplateEntry>& component_entry);
+
+  TemplateData GenerateTemplateDataPostedToJs(const TemplateData& value);
 
   // Build TemplateEntry for lazy bundle
   bool BuildComponentEntryInternal(

@@ -217,7 +217,7 @@ bool TemplateEntry::InitLepusContext(
 
   if (EnableReuseContext()) {
     // reuse lepus context
-    const auto& page_context = tasm->getLepusContext(DEFAULT_ENTRY_NAME);
+    const auto& page_context = tasm->GetLepusContext(DEFAULT_ENTRY_NAME);
     if (!(template_bundle_.is_lepusng_binary_ &&
           page_context->IsLepusNGContext())) {
       // only supported in lepusNG

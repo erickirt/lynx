@@ -1898,8 +1898,11 @@ RENDERER_FUNCTION_CC(CreateComponentByName) {
   int component_instance_id = static_cast<int>(arg2->Number());
   lepus::Context* context = LEPUS_CONTEXT();
   auto* self = GET_TASM_POINTER();
-  auto iter = self->component_name_to_id(context->name()).find(component_name);
-  DCHECK(iter != self->component_name_to_id(context->name()).end());
+  auto iter = self->FindEntry(context->name())
+                  ->component_name_to_id()
+                  .find(component_name);
+  DCHECK(iter !=
+         self->FindEntry(context->name())->component_name_to_id().end());
   int tid = iter->second;
 
   auto cm_pair = self->FindComponentMould(context->name(), component_name, tid);
@@ -2077,7 +2080,7 @@ RENDERER_FUNCTION_CC(RenderDynamicComponent) {
 
   lepus::Context* context = LEPUS_CONTEXT();
   std::string url = self->GetTargetUrl(context->name(), entry_name);
-  lepus::Context* target_context = self->context(url);
+  lepus::Context* target_context = self->GetLepusContext(url).get();
   BASE_STATIC_STRING_DECL(kRenderEntranceDynamicComponent,
                           "$renderEntranceDynamicComponent");
   target_context->Call(kRenderEntranceDynamicComponent, *arg2, *arg3, *arg4,
@@ -5444,7 +5447,7 @@ RENDERER_FUNCTION_CC(AirCreatePage) {
   auto& manager = self->page_proxy()->element_manager();
   auto page = manager->CreateAirPage(arg1->Int32());
   const auto& entry = self->FindEntry(tasm::DEFAULT_ENTRY_NAME);
-  page->SetContext(self->context(tasm::DEFAULT_ENTRY_NAME));
+  page->SetContext(self->GetLepusContext(tasm::DEFAULT_ENTRY_NAME).get());
   page->SetRadon(entry->compile_options().radon_mode_ ==
                  CompileOptionRadonMode::RADON_MODE_RADON);
   page->SetParsedStyles(entry->GetComponentParsedStyles(kCard));

@@ -158,7 +158,7 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
   }
 
   lepus::Value value =
-      tasm_->context(tasm::DEFAULT_ENTRY_NAME)
+      tasm_->GetLepusContext(DEFAULT_ENTRY_NAME)
           ->CallClosure(component_at_index_,
                         lepus::Value(fml::RefPtr<ListElement>(this)),
                         lepus::Value(impl_id()), lepus::Value(index),
@@ -188,7 +188,7 @@ void ListElement::ComponentAtIndexes(
   }
   bool async_resolve = NeedAsyncResolveListItem();
 
-  tasm_->context(tasm::DEFAULT_ENTRY_NAME)
+  tasm_->GetLepusContext(tasm::DEFAULT_ENTRY_NAME)
       ->CallClosure(
           component_at_indexes_, lepus::Value(fml::RefPtr<ListElement>(this)),
           lepus::Value(impl_id()), lepus::Value(std::move(index_array)),
@@ -205,7 +205,7 @@ void ListElement::EnqueueComponent(int32_t sign) {
     return;
   }
 
-  tasm_->context(tasm::DEFAULT_ENTRY_NAME)
+  tasm_->GetLepusContext(tasm::DEFAULT_ENTRY_NAME)
       ->CallClosure(enqueue_component_,
                     lepus::Value(fml::RefPtr<ListElement>(this)),
                     lepus::Value(impl_id()), lepus::Value(sign));
