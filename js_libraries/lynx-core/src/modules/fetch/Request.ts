@@ -54,6 +54,7 @@ export function createRequestClass(Promise: PromiseConstructor): any {
         }
         this._method = input.method;
         this._signal = (input.signal as any) as AbortSignal;
+        this.setBody(input._arrayBuffer);
       } else {
         this._url = String(input);
       }

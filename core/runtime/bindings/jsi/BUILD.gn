@@ -40,7 +40,6 @@ lynx_core_source_set("jsi") {
   public_deps = [
     "//lynx/core/runtime/bindings/common/event:runtime_common",
     "//lynx/core/runtime/bindings/jsi/event:js_runtime",
-    "//lynx/core/runtime/bindings/jsi/fetch:fetch",
     "//lynx/core/services/feature_count:feature_count",
     "//lynx/core/services/fluency:fluency",
   ]

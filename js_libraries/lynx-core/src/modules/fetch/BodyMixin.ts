@@ -2,14 +2,68 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-// host object
-export interface BodyNative {
-  BodyNative(bodyInit?: BodyInit): BodyNative;
-  readonly arrayBuffer: ArrayBuffer;
-  readonly text: string;
-  readonly json: any;
-  readonly bodyUsed: boolean;
-  readonly clone: BodyNative;
+export class BodyMixin {
+  _arrayBuffer: ArrayBuffer;
+  _bodyUsed: boolean;
+
+  constructor() {
+    this._arrayBuffer = new ArrayBuffer(0);
+    this._bodyUsed = false;
+  }
+
+  private safeUseBody<T>(use: (body: ArrayBuffer) => T): T {
+    if (this._bodyUsed) {
+      // TODO(huzhanbo.luc): throw a error if the break change is ok.
+      return undefined;
+    }
+
+    const ret = use(this._arrayBuffer);
+    this._bodyUsed = true;
+    this._arrayBuffer = null;
+    return ret;
+  }
+
+  private cloneArrayBuffer(src: ArrayBuffer) {
+    return src.slice(0);
+  }
+
+  protected setBody(body?: BodyInit | BodyMixin) {
+    if (body instanceof BodyMixin) {
+      if (body._bodyUsed) {
+        // TODO(huzhanbo.luc): throw a error if the break change is ok.
+        return;
+      }
+      this._arrayBuffer = this.cloneArrayBuffer(body._arrayBuffer);
+    } else {
+      if (body instanceof ArrayBuffer) {
+        this._arrayBuffer = this.cloneArrayBuffer(body);
+      } else if (body instanceof DataView) {
+        this._arrayBuffer = this.cloneArrayBuffer(
+          body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)
+        );
+      } else if (ArrayBuffer.isView(body)) {
+        this._arrayBuffer = this.cloneArrayBuffer(body.buffer);
+      } else if (body) {
+        this._arrayBuffer = new TextEncoder().encode(body.toString()).buffer;
+      }
+    }
+  }
+
+  public arrayBuffer(): Promise<ArrayBuffer> {
+    return Promise.resolve(this.safeUseBody((body) => body));
+  }
+
+  public text(): Promise<string> {
+    return Promise.resolve(
+      this.safeUseBody((body) => new TextDecoder().decode(body))
+    );
+  }
+
+  public json(): Promise<any> {
+    return Promise.resolve(
+      this.safeUseBody((body) => JSON.parse(new TextDecoder().decode(body)))
+    );
+  }
 
   // TODO(huzhanbo.luc): these APIs rely on foundamental types
   // which require extra works to support, we will support these
@@ -18,60 +72,8 @@ export interface BodyNative {
   // blob(): Blob;
   // formData(): FormData;
   // cloneStream(): ReadableStream;
-}
 
-// TODO(huzhanbo.luc): switch to TextEncoder/TextDecoder, in relase/3.2 later
-type CreateBodyNative = (body?: any) => BodyNative;
-
-export class BodyMixin {
-  _bodyData: BodyNative = null;
-
-  constructor() {}
-
-  protected setBody(body?: BodyInit | BodyMixin) {
-    if (body instanceof BodyMixin) {
-      this._bodyData = body._bodyData.clone;
-    } else {
-      let bodyInitNative = {
-        bodyData: body,
-        isArrayBuffer: false,
-      };
-
-      if (body instanceof ArrayBuffer) {
-        bodyInitNative.isArrayBuffer = true;
-      } else if (body instanceof DataView) {
-        bodyInitNative.isArrayBuffer = true;
-        bodyInitNative.bodyData = body.buffer.slice(
-          body.byteOffset,
-          body.byteOffset + body.byteLength
-        );
-      } else if (ArrayBuffer.isView(body)) {
-        bodyInitNative.isArrayBuffer = true;
-        bodyInitNative.bodyData = body.buffer;
-      } else if (
-        globalThis.URLSearchParams &&
-        body instanceof URLSearchParams
-      ) {
-        bodyInitNative.bodyData = body.toString();
-      }
-
-      this._bodyData = globalThis.CreateBodyNative(bodyInitNative);
-    }
-  }
-
-  public arrayBuffer(): Promise<ArrayBuffer> {
-    return Promise.resolve(this._bodyData.arrayBuffer);
-  }
-
-  public text(): Promise<string> {
-    return Promise.resolve(this._bodyData.text);
-  }
-
-  public json(): Promise<any> {
-    return Promise.resolve(this._bodyData.json);
-  }
-
-  get bodyUsed() {
-    return this._bodyData.bodyUsed;
+  public get bodyUsed() {
+    return this._bodyUsed;
   }
 }

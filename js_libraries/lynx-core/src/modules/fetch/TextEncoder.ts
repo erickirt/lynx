@@ -1,7 +1,7 @@
 export class TextEncoder {
   constructor() {}
 
-  encode(str: string): ArrayBuffer {
+  encode(str: string): Uint8Array {
     return new Uint8Array(globalThis.TextCodecHelper.encode(str));
   }
 

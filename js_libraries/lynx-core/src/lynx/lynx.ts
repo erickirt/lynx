@@ -397,7 +397,7 @@ export class Lynx {
         url: request.url,
         origin: this.getNativeApp().__pageUrl,
         headers: Object.fromEntries(request.headers.entries()),
-        body: request._bodyData.arrayBuffer,
+        body: request._arrayBuffer,
         lynx: request.lynxExtension,
       };
       this.getApp().NativeModules.LynxFetchModule.fetch(

@@ -65,7 +65,6 @@ group("lynx_android_lib") {
     "//lynx/core/runtime",
     "//lynx/core/runtime/bindings/common/event:runtime_common",
     "//lynx/core/runtime/bindings/jsi/event:js_runtime",
-    "//lynx/core/runtime/bindings/jsi/fetch:fetch",
     "//lynx/core/runtime/bindings/jsi/interceptor:network_interceptor",
     "//lynx/core/runtime/bindings/lepus",
     "//lynx/core/runtime/bindings/lepus/event:lepus_runtime",
