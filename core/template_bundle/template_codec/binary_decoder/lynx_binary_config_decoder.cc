@@ -14,10 +14,275 @@
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/runtime/vm/lepus/json_parser.h"
 #include "core/services/event_report/event_tracker.h"
-#include "core/template_bundle/template_codec/binary_decoder/page_config_constants.h"
 
 namespace lynx {
 namespace tasm {
+static constexpr const char* const kVersion = "version";
+static constexpr const char* const kFlatten = "flatten";
+static constexpr const char* const kImplicit = "implicit";
+static constexpr const char* const kLepusCheck = "lepusStrict";
+static constexpr const char* const kLepusQuickjsStackSize =
+    "lepusQuickjsStacksize";
+static constexpr const char* const kNullPropAsUndef = "lepusNullPropAsUndef";
+static constexpr const char* const kDataStrictMode = "dataStrictMode";
+static constexpr const char* const kAbsoluteInContentBound =
+    "absoluteInContentBound";
+static constexpr const char* const kQuirksMode = "quirksMode";
+static constexpr const char* const kEnableAsyncDisplay = "enableAsyncDisplay";
+static constexpr const char* const kEnableImageDownsampling =
+    "enableImageDownsampling";
+static constexpr const char* const kEnableFixedNew = "enableFixedNew";
+static constexpr const char* const kEnableNewImage = "enableNewImage";
+static constexpr const char* const kLogBoxImageSizeWarningThreshold =
+    "redBoxImageSizeWarningThreshold";
+static constexpr const char* const kEnableTextNonContiguousLayout =
+    "enableTextNonContiguousLayout";
+static constexpr const char* const kEnableViewReceiveTouch =
+    "enableViewReceiveTouch";
+static constexpr const char* const kEnableEventThrough = "enableEventThrough";
+static constexpr const char* const kRemoveComponentElement =
+    "removeComponentElement";
+static constexpr const char* const kStrictPropType = "strictPropType";
+static constexpr const char* const kEnableCSSInheritance =
+    "enableCSSInheritance";
+static constexpr const char* const kCustomCSSInheritanceList =
+    "customCSSInheritanceList";
+static constexpr const char* const kCSSAlignWithLegacyW3C =
+    "cssAlignWithLegacyW3C";
+static constexpr const char* const kUseNewImage = "useNewImage";
+static constexpr const char* const kSyncImageAttach = "syncImageAttach";
+static constexpr const char* const kUseImagePostProcessor =
+    "useImagePostProcessor";
+static constexpr const char* const kUseNewSwiper = "useNewSwiper";
+static constexpr const char* const kEnableAsyncInitVideoEngine =
+    "enableAsyncInitVideoEngine";
+static constexpr const char* const kCliVersion = "cli";
+static constexpr const char* const kReactVersion = "reactVersion";
+static constexpr const char* const kCustomData = "customData";
+static constexpr const char* const kEnableComponentLifecycleAlignWebview =
+    "enableComponentLifecycleAlignWebview";
+static constexpr const char* const kEnableListNewArchitecture =
+    "enableListNewArchitecture";
+static constexpr const char* const kEnableListNewContainer =
+    "enableNewListContainer";
+static constexpr const char* const kEnableListPlug = "enableListPlug";
+static constexpr const char* const kEnableListMoveOperation =
+    "enableListMoveOperation";
+static constexpr const char* const kEnableCSSStrictMode = "enableCSSStrictMode";
+static constexpr const char* const kTapSlop = "tapSlop";
+static constexpr const char* const kDefaultTapSlop = "50px";
+static constexpr const char* const kEnableCreateViewAsync =
+    "enableCreateViewAsync";
+static constexpr const char* const kEnableVsyncAlignedFlush =
+    "enableVsyncAlignedFlush";
+static constexpr const char* const kEnableAccessibilityElement =
+    "enableAccessibilityElement";
+static constexpr const char* const kEnableOverlapForAccessibilityElement =
+    "enableOverlapForAccessibilityElement";
+static constexpr const char* const kEnableNewAccessibility =
+    "enableNewAccessibility";
+static constexpr const char* const kEnableNewLayoutOnly = "enableNewLayoutOnly";
+static constexpr const char* const kEnableReactOnlyPropsId =
+    "enableReactOnlyPropsId";
+static constexpr const char* const kEnableGlobalComponentMap =
+    "enableGlobalComponentMap";
+static constexpr const char* const kEnableTextRefactor = "enableTextRefactor";
+static constexpr const char* const kEnableTextOverflow = "enableTextOverflow";
+static constexpr const char* const kEnableTextBoringLayout =
+    "enableTextBoringLayout";
+static constexpr const char* const kEnableNewClipMode = "enableNewClipMode";
+static constexpr const char* const kAutoResumeAnimation = "AutoResumeAnimation";
+static constexpr const char* const kEnableNewTransformOrigin =
+    "enableNewTransformOrigin";
+static constexpr const char* const kEnableCircularDataCheck =
+    "enableCircularDataCheck";
+static constexpr const char* const kEnableTextLayerRender =
+    "enableTextLayerRender";
+static constexpr const char* const kEnableReduceInitDataCopy =
+    "enableReduceInitDataCopy";
+static constexpr const char* const kUnifyVWVHBehavior = "unifyVWVHBehavior";
+static constexpr const char* const kFontScaleEffectiveOnlyOnSp =
+    "fontScaleEffectiveOnlyOnSp";
+static constexpr const char* const kEnableSimultaneousTap =
+    "enableSimultaneousTap";
+static constexpr const char* const kEnableComponentLayoutOnly =
+    "enableComponentLayoutOnly";
+static constexpr const char* const kExtendedLayoutOnlyOpt =
+    "extendedLayoutOnlyOpt";
+static constexpr const char* const kEnableTouchRefactor = "enableTouchRefactor";
+static constexpr const char* const kEnableEndGestureAtLastFingerUp =
+    "enableEndGestureAtLastFingerUp";
+static constexpr const char* const kDisableLongpressAfterScroll =
+    "disableLongpressAfterScroll";
+static constexpr const char* const kKeyboardCallbackPassRelativeHeight =
+    "keyboardCallbackPassRelativeHeight";
+static constexpr const char* const kEnableNewIntersectionObserver =
+    "enableNewIntersectionObserver";
+static constexpr const char* const kObserverFrameRate = "observerFrameRate";
+static constexpr const char* const kEnableCheckDataWhenUpdatePage =
+    "enableCheckDataWhenUpdatePage";
+static constexpr const char* const kForceCalcNewStyleKey = "forceCalcNewStyle";
+static constexpr const char* const kIncludeFontPadding = "includeFontPadding";
+static constexpr const char* const kEnableBackgroundShapeLayer =
+    "enableBackgroundShapeLayer";
+static constexpr const char* const kCompileRender = "compileRender";
+static constexpr const char* const kEnableLynxResourceServiceProvider =
+    "enableLynxResourceServiceProvider";
+static constexpr const char* const kEnableTextLanguageAlignment =
+    "enableTextLanguageAlignment";
+static constexpr const char* const kEnableXTextLayoutReused =
+    "enableXTextLayoutReused";
+static constexpr const char* const kEnableRemoveComponentExtraData =
+    "enableRemoveComponentExtraData";
+static constexpr const char* const kEnableExposureUIMargin =
+    "enableExposureUIMargin";
+static constexpr const char* const kEnableNewGesture = "enableNewGesture";
+static constexpr const char* const kLongPressDuration = "longPressDuration";
+static constexpr const char* const kMapContainerType = "mapContainerType";
+static constexpr const char* const kEnableCheckLocalImage =
+    "enableCheckLocalImage";
+static constexpr const char* const kEnableAsyncRequestImage =
+    "enableAsyncRequestImage";
+static constexpr const char* kUserDefinedExtraInfo = "extraInfo";
+static constexpr const char* kLepusGCThreshold = "lepusGCThreshold";
+static constexpr const char* kEnableComponentNullProp =
+    "enableComponentNullProp";
+static constexpr const char* kEnableCascadePseudo = "enableCascadePseudo";
+static constexpr const char* kRemoveDescendantSelectorScope =
+    "removeDescendantSelectorScope";
+static constexpr const char* kAutoExpose = TEMPLATE_AUTO_EXPOSE;
+static constexpr const char* kEnableUseContextPool = "enableUseContextPool";
+static constexpr const char* kEnableUseMapBuffer = "enableUseMapBuffer";
+static constexpr const char* kEnableFiberElementForRadonDiff =
+    "enableFiberElementForRadonDiff";
+static constexpr const char* kEnableLynxScrollFluency =
+    "enableLynxScrollFluency";
+static constexpr const char* kPreferredFps = "preferredFps";
+static constexpr const char* kEnableCSSLazyImport = "enableCSSLazyImport";
+static constexpr const char* kEnableNewAnimator = "enableNewAnimator";
+static constexpr const char* kDisableQuickTracingGC = "disableQuickTracingGC";
+
+static constexpr const char* kFixCSSImportRuleOrder = "fixCSSImportRuleOrder";
+
+/// Upload global feature switches in PageConfig with common data about lynx
+/// view. If you add a new  global feature switch, you should add it to report
+/// event.
+static constexpr const char* kLynxSDKGlobalFeatureSwitchEvent =
+    "lynxsdk_global_feature_switch_statistic";
+
+static constexpr const char* kEnableReloadLifecycle = "enableReloadLifecycle";
+
+// @name: enableA11y
+// @description: Enable Android A11y
+// @platform: Android
+// @supportVersion: 2.10
+// TODO(dingwang): Default value should be set to true in the future.
+static constexpr const char* const kEnableA11y = "enableA11y";
+
+/**
+ * @name: enableA11yIDMutationObserver
+ * @description: Enable MutationObserver for accessibility
+ * @platform: Both
+ * @supportVersion: 2.8
+ **/
+static constexpr const char* const kEnableA11yIDMutationObserver =
+    "enableA11yIDMutationObserver";
+
+/**
+ * @name: enableCheckExposureOptimize
+ * @description: Enable exposure detection optimization
+ * @platform: Both
+ * @supportVersion: 2.10
+ **/
+static constexpr const char* const kEnableCheckExposureOptimize =
+    "enableCheckExposureOptimize";
+
+/**
+ * @name: enableDisexposureWhenLynxHidden
+ * @description: Enable send disexposure events when lynxview is hidden
+ * @platform: Android
+ * @supportVersion: 2.10
+ **/
+static constexpr const char* const kEnableDisexposureWhenLynxHidden =
+    "enableDisexposureWhenLynxHidden";
+
+/**
+ * @name: enableExposureWhenLayout
+ * @description: Enable exposure check when LynxView is layoutRequest
+ * @platform: Android
+ * @supportVersion: 2.11
+ **/
+static constexpr const char* const kEnableExposureWhenLayout =
+    "enableExposureWhenLayout";
+
+/**
+ * @name: enableAirDetectRemovedKeysWhenUpdateData
+ * @description: enable Air Mode detect removed keys when updating data from
+ *native
+ * @platform: Both
+ * @supportVersion: 2.11
+ **/
+static constexpr const char* const kEnableAirDetectRemovedKeysWhenUpdateData =
+    "enableAirDetectRemovedKeysWhenUpdateData";
+
+/**
+ * @name: enableJSDataProcessor
+ * @description: Enable data processor on JS thread
+ * @platform: Both
+ * @supportVersion: 2.12
+ **/
+static constexpr const char* const kEnableJSDataProcessor =
+    "enableJSDataProcessor";
+
+/**
+ * @name: enableMultiTouch
+ * @description: Enable support multi-finger events
+ * @platform: Both
+ * @supportVersion: 2.12
+ **/
+static constexpr const char* const kEnableMultiTouch = "enableMultiTouch";
+
+/**
+ * @name: enableComponentAsyncDecode
+ * @description: Enable dynamic components to be decoded in child threads before
+ *they are delivered into tasm in async-loading.
+ * @platform: Both
+ * @supportVersion: 2.13
+ **/
+static constexpr const char kEnableComponentAsyncDecode[] =
+    "enableComponentAsyncDecode";
+
+/**
+ * @name: enableJsBindingApiThrowException
+ * @description: Enable js binding api throw exception
+ * @platform: Both
+ * @supportVersion: 2.14
+ **/
+static constexpr const char* const kEnableJsBindingApiThrowException =
+    "enableJsBindingApiThrowException";
+/**
+ * @name: enableICU
+ * @description: Enable Bind PRIMJS-ICU
+ * @platform: Both
+ * @supportVersion: 2.17
+ **/
+static constexpr const char* const kEnableBindICU = "enableICU";
+
+/**
+ * @name: enableQueryComponentSync
+ * @description: Enable query component sync in background runtime
+ * @platform: Both
+ * @supportVersion: 3.0
+ **/
+static constexpr const char* const kEnableQueryComponentSync =
+    "enableQueryComponentSync";
+
+/**
+ * @name: enableNativeList
+ * @description: Indicates whether use c++ list.
+ * @supportVersion: 3.2
+ */
+static constexpr const char* const kEnableNativeList = "enableNativeList";
 
 bool LynxBinaryConfigDecoder::DecodePageConfig(
     const std::string& config_str, std::shared_ptr<PageConfig>& page_config) {
@@ -45,27 +310,26 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
         PackageInstanceBundleModuleMode::EVAL_REQUIRE_MODE);
   }
 
-  if (doc.HasMember(config::kVersion) && doc[config::kVersion].IsString()) {
-    page_config->SetVersion(doc[config::kVersion].GetString());
+  if (doc.HasMember(kVersion) && doc[kVersion].IsString()) {
+    page_config->SetVersion(doc[kVersion].GetString());
   }
-  if (doc.HasMember(config::kFlatten) && doc[config::kFlatten].IsBool()) {
-    page_config->SetGlobalFlattern(doc[config::kFlatten].GetBool());
+  if (doc.HasMember(kFlatten) && doc[kFlatten].IsBool()) {
+    page_config->SetGlobalFlattern(doc[kFlatten].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableA11yIDMutationObserver) &&
-      doc[config::kEnableA11yIDMutationObserver].IsBool()) {
+  if (doc.HasMember(kEnableA11yIDMutationObserver) &&
+      doc[kEnableA11yIDMutationObserver].IsBool()) {
     page_config->SetEnableA11yIDMutationObserver(
-        doc[config::kEnableA11yIDMutationObserver].GetBool());
+        doc[kEnableA11yIDMutationObserver].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableA11y) && doc[config::kEnableA11y].IsBool()) {
-    page_config->SetEnableA11y(doc[config::kEnableA11y].GetBool());
+  if (doc.HasMember(kEnableA11y) && doc[kEnableA11y].IsBool()) {
+    page_config->SetEnableA11y(doc[kEnableA11y].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableCascadePseudo) &&
-      doc[config::kEnableCascadePseudo].IsBool()) {
-    page_config->SetEnableCascadePseudo(
-        doc[config::kEnableCascadePseudo].GetBool());
+  if (doc.HasMember(kEnableCascadePseudo) &&
+      doc[kEnableCascadePseudo].IsBool()) {
+    page_config->SetEnableCascadePseudo(doc[kEnableCascadePseudo].GetBool());
   }
 
   if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
@@ -73,24 +337,22 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
     page_config->SetGlobalImplicit(false);
   }
 
-  if (doc.HasMember(config::kImplicit) && doc[config::kImplicit].IsBool()) {
-    page_config->SetGlobalImplicit(doc[config::kImplicit].GetBool());
+  if (doc.HasMember(kImplicit) && doc[kImplicit].IsBool()) {
+    page_config->SetGlobalImplicit(doc[kImplicit].GetBool());
   }
 
-  if (doc.HasMember(config::kLepusCheck) && doc[config::kLepusCheck].IsBool()) {
-    page_config->SetEnableLepusStrictCheck(doc[config::kLepusCheck].GetBool());
+  if (doc.HasMember(kLepusCheck) && doc[kLepusCheck].IsBool()) {
+    page_config->SetEnableLepusStrictCheck(doc[kLepusCheck].GetBool());
   }
 
-  if (doc.HasMember(config::kLepusQuickjsStackSize) &&
-      doc[config::kLepusQuickjsStackSize].IsUint()) {
+  if (doc.HasMember(kLepusQuickjsStackSize) &&
+      doc[kLepusQuickjsStackSize].IsUint()) {
     page_config->SetLepusQuickjsStackSize(
-        doc[config::kLepusQuickjsStackSize].GetUint());
+        doc[kLepusQuickjsStackSize].GetUint());
   }
 
-  if (doc.HasMember(config::kNullPropAsUndef) &&
-      doc[config::kNullPropAsUndef].IsBool()) {
-    page_config->SetEnableLepusNullPropAsUndef(
-        doc[config::kNullPropAsUndef].GetBool());
+  if (doc.HasMember(kNullPropAsUndef) && doc[kNullPropAsUndef].IsBool()) {
+    page_config->SetEnableLepusNullPropAsUndef(doc[kNullPropAsUndef].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_1_6)) {
     page_config->SetEnableLepusNullPropAsUndef(true);
@@ -102,119 +364,107 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
         static_cast<PackageInstanceDSL>(doc[TEMPLATE_BUNDLE_APP_DSL].GetInt()));
   }
 
-  if (doc.HasMember(config::kAutoExpose) && doc[config::kAutoExpose].IsBool()) {
-    page_config.get()->SetAutoExpose(doc[config::kAutoExpose].GetBool());
+  if (doc.HasMember(kAutoExpose) && doc[kAutoExpose].IsBool()) {
+    page_config.get()->SetAutoExpose(doc[kAutoExpose].GetBool());
   }
 
-  if (doc.HasMember(config::kDataStrictMode) &&
-      doc[config::kDataStrictMode].IsBool()) {
-    page_config.get()->SetDataStrictMode(
-        doc[config::kDataStrictMode].GetBool());
+  if (doc.HasMember(kDataStrictMode) && doc[kDataStrictMode].IsBool()) {
+    page_config.get()->SetDataStrictMode(doc[kDataStrictMode].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableFixedNew) &&
-      doc[config::kEnableFixedNew].IsBool()) {
-    page_config.get()->SetEnableFixedNew(
-        doc[config::kEnableFixedNew].GetBool());
+  if (doc.HasMember(kEnableFixedNew) && doc[kEnableFixedNew].IsBool()) {
+    page_config.get()->SetEnableFixedNew(doc[kEnableFixedNew].GetBool());
   } else {
     page_config.get()->SetEnableFixedNew(
         LynxEnv::GetInstance().EnableFixedNew());
   }
 
-  if (doc.HasMember(config::kAbsoluteInContentBound) &&
-      doc[config::kAbsoluteInContentBound].IsBool()) {
+  if (doc.HasMember(kAbsoluteInContentBound) &&
+      doc[kAbsoluteInContentBound].IsBool()) {
     page_config.get()->SetAbsoluteInContentBound(
-        doc[config::kAbsoluteInContentBound].GetBool());
+        doc[kAbsoluteInContentBound].GetBool());
   }
 
-  if (doc.HasMember(config::kQuirksMode) && doc[config::kQuirksMode].IsBool()) {
-    if (!doc[config::kQuirksMode].GetBool()) {
+  if (doc.HasMember(kQuirksMode) && doc[kQuirksMode].IsBool()) {
+    if (!doc[kQuirksMode].GetBool()) {
       page_config.get()->SetQuirksModeByVersion(kQuirksModeDisableVersion);
     }
-  } else if (doc.HasMember(config::kQuirksMode) &&
-             doc[config::kQuirksMode].IsString()) {
+  } else if (doc.HasMember(kQuirksMode) && doc[kQuirksMode].IsString()) {
     page_config.get()->SetQuirksModeByVersion(
-        base::Version(doc[config::kQuirksMode].GetString()));
+        base::Version(doc[kQuirksMode].GetString()));
   } else if ((lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                   kQuirksModeDisableVersion))) {
     page_config.get()->SetQuirksModeByVersion(
         base::Version(target_sdk_version_));
   }
 
-  if (doc.HasMember(config::kEnableAsyncDisplay) &&
-      doc[config::kEnableAsyncDisplay].IsBool()) {
+  if (doc.HasMember(kEnableAsyncDisplay) && doc[kEnableAsyncDisplay].IsBool()) {
     page_config.get()->SetEnableAsyncDisplay(
-        doc[config::kEnableAsyncDisplay].GetBool());
+        doc[kEnableAsyncDisplay].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableImageDownsampling) &&
-      doc[config::kEnableImageDownsampling].IsBool()) {
+  if (doc.HasMember(kEnableImageDownsampling) &&
+      doc[kEnableImageDownsampling].IsBool()) {
     page_config.get()->SetEnableImageDownsampling(
-        doc[config::kEnableImageDownsampling].GetBool());
+        doc[kEnableImageDownsampling].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableNewImage) &&
-      doc[config::kEnableNewImage].IsBool()) {
-    page_config.get()->SetEnableNewImage(
-        doc[config::kEnableNewImage].GetBool());
+  if (doc.HasMember(kEnableNewImage) && doc[kEnableNewImage].IsBool()) {
+    page_config.get()->SetEnableNewImage(doc[kEnableNewImage].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableTextLanguageAlignment) &&
-      doc[config::kEnableTextLanguageAlignment].IsBool()) {
+  if (doc.HasMember(kEnableTextLanguageAlignment) &&
+      doc[kEnableTextLanguageAlignment].IsBool()) {
     page_config.get()->SetEnableTextLanguageAlignment(
-        doc[config::kEnableTextLanguageAlignment].GetBool());
+        doc[kEnableTextLanguageAlignment].GetBool());
   }
-  if (doc.HasMember(config::kEnableXTextLayoutReused) &&
-      doc[config::kEnableXTextLayoutReused].IsBool()) {
+  if (doc.HasMember(kEnableXTextLayoutReused) &&
+      doc[kEnableXTextLayoutReused].IsBool()) {
     page_config.get()->SetEnableXTextLayoutReused(
-        doc[config::kEnableXTextLayoutReused].GetBool());
+        doc[kEnableXTextLayoutReused].GetBool());
   }
 
-  if (doc.HasMember(config::kLogBoxImageSizeWarningThreshold) &&
-      doc[config::kLogBoxImageSizeWarningThreshold].IsInt()) {
+  if (doc.HasMember(kLogBoxImageSizeWarningThreshold) &&
+      doc[kLogBoxImageSizeWarningThreshold].IsInt()) {
     page_config.get()->SetLogBoxImageSizeWarningThreshold(
-        doc[config::kLogBoxImageSizeWarningThreshold].GetInt());
+        doc[kLogBoxImageSizeWarningThreshold].GetInt());
   }
 
-  if (doc.HasMember(config::kEnableTextNonContiguousLayout) &&
-      doc[config::kEnableTextNonContiguousLayout].IsBool()) {
+  if (doc.HasMember(kEnableTextNonContiguousLayout) &&
+      doc[kEnableTextNonContiguousLayout].IsBool()) {
     page_config->SetEnableTextNonContiguousLayout(
-        doc[config::kEnableTextNonContiguousLayout].GetBool());
+        doc[kEnableTextNonContiguousLayout].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableViewReceiveTouch) &&
-      doc[config::kEnableViewReceiveTouch].IsBool()) {
+  if (doc.HasMember(kEnableViewReceiveTouch) &&
+      doc[kEnableViewReceiveTouch].IsBool()) {
     page_config.get()->SetEnableViewReceiveTouch(
-        doc[config::kEnableViewReceiveTouch].GetBool());
+        doc[kEnableViewReceiveTouch].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableEventThrough) &&
-      doc[config::kEnableEventThrough].IsBool()) {
-    page_config->SetEnableEventThrough(
-        doc[config::kEnableEventThrough].GetBool());
+  if (doc.HasMember(kEnableEventThrough) && doc[kEnableEventThrough].IsBool()) {
+    page_config->SetEnableEventThrough(doc[kEnableEventThrough].GetBool());
   }
 
-  if (doc.HasMember(config::kRemoveComponentElement) &&
-      doc[config::kRemoveComponentElement].IsBool()) {
+  if (doc.HasMember(kRemoveComponentElement) &&
+      doc[kRemoveComponentElement].IsBool()) {
     page_config->SetRemoveComponentElement(
-        doc[config::kRemoveComponentElement].GetBool());
+        doc[kRemoveComponentElement].GetBool());
   }
 
-  if (doc.HasMember(config::kStrictPropType) &&
-      doc[config::kStrictPropType].IsBool()) {
-    page_config->SetStrictPropType(doc[config::kStrictPropType].GetBool());
+  if (doc.HasMember(kStrictPropType) && doc[kStrictPropType].IsBool()) {
+    page_config->SetStrictPropType(doc[kStrictPropType].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableCSSInheritance) &&
-      doc[config::kEnableCSSInheritance].IsBool()) {
-    page_config->SetEnableCSSInheritance(
-        doc[config::kEnableCSSInheritance].GetBool());
+  if (doc.HasMember(kEnableCSSInheritance) &&
+      doc[kEnableCSSInheritance].IsBool()) {
+    page_config->SetEnableCSSInheritance(doc[kEnableCSSInheritance].GetBool());
   }
 
-  if (doc.HasMember(config::kCustomCSSInheritanceList) &&
-      doc[config::kCustomCSSInheritanceList].IsArray()) {
+  if (doc.HasMember(kCustomCSSInheritanceList) &&
+      doc[kCustomCSSInheritanceList].IsArray()) {
     std::unordered_set<CSSPropertyID> inherit_list;
-    const auto& names_array = doc[config::kCustomCSSInheritanceList].GetArray();
+    const auto& names_array = doc[kCustomCSSInheritanceList].GetArray();
     inherit_list.reserve(names_array.Size());
     for (const auto& entry : names_array) {
       if (entry.IsString()) {
@@ -225,277 +475,257 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
     page_config->SetCustomCSSInheritList(std::move(inherit_list));
   }
 
-  if (doc.HasMember(config::kCSSAlignWithLegacyW3C) &&
-      doc[config::kCSSAlignWithLegacyW3C].IsBool()) {
+  if (doc.HasMember(kCSSAlignWithLegacyW3C) &&
+      doc[kCSSAlignWithLegacyW3C].IsBool()) {
     page_config->SetCSSAlignWithLegacyW3C(
-        doc[config::kCSSAlignWithLegacyW3C].GetBool());
+        doc[kCSSAlignWithLegacyW3C].GetBool());
   }
 
-  if (doc.HasMember(config::kUseNewImage) &&
-      doc[config::kUseNewImage].IsBool()) {
-    page_config->SetUseNewImage(doc[config::kUseNewImage].GetBool()
+  if (doc.HasMember(kUseNewImage) && doc[kUseNewImage].IsBool()) {
+    page_config->SetUseNewImage(doc[kUseNewImage].GetBool()
                                     ? TernaryBool::TRUE_VALUE
                                     : TernaryBool::FALSE_VALUE);
   }
 
-  if (doc.HasMember(config::kSyncImageAttach) &&
-      doc[config::kSyncImageAttach].IsBool()) {
-    page_config->SetSyncImageAttach(doc[config::kSyncImageAttach].GetBool());
+  if (doc.HasMember(kSyncImageAttach) && doc[kSyncImageAttach].IsBool()) {
+    page_config->SetSyncImageAttach(doc[kSyncImageAttach].GetBool());
   }
 
-  if (doc.HasMember(config::kUseImagePostProcessor) &&
-      doc[config::kUseImagePostProcessor].IsBool()) {
+  if (doc.HasMember(kUseImagePostProcessor) &&
+      doc[kUseImagePostProcessor].IsBool()) {
     page_config->SetUseImagePostProcessor(
-        doc[config::kUseImagePostProcessor].GetBool());
+        doc[kUseImagePostProcessor].GetBool());
   }
 
-  if (doc.HasMember(config::kUseNewSwiper) &&
-      doc[config::kUseNewSwiper].IsBool()) {
-    page_config->SetUseNewSwiper(doc[config::kUseNewSwiper].GetBool());
+  if (doc.HasMember(kUseNewSwiper) && doc[kUseNewSwiper].IsBool()) {
+    page_config->SetUseNewSwiper(doc[kUseNewSwiper].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableAsyncInitVideoEngine) &&
-      doc[config::kEnableAsyncInitVideoEngine].IsBool()) {
+  if (doc.HasMember(kEnableAsyncInitVideoEngine) &&
+      doc[kEnableAsyncInitVideoEngine].IsBool()) {
     page_config->SetEnableAsyncInitTTVideoEngine(
-        doc[config::kEnableAsyncInitVideoEngine].GetBool());
+        doc[kEnableAsyncInitVideoEngine].GetBool());
   }
 
-  if (doc.HasMember(config::kCliVersion) &&
-      doc[config::kCliVersion].IsString()) {
-    page_config->SetCliVersion(doc[config::kCliVersion].GetString());
+  if (doc.HasMember(kCliVersion) && doc[kCliVersion].IsString()) {
+    page_config->SetCliVersion(doc[kCliVersion].GetString());
   }
 
-  if (doc.HasMember(config::kReactVersion) &&
-      doc[config::kReactVersion].IsString()) {
-    page_config->SetReactVersion(doc[config::kReactVersion].GetString());
+  if (doc.HasMember(kReactVersion) && doc[kReactVersion].IsString()) {
+    page_config->SetReactVersion(doc[kReactVersion].GetString());
   }
 
-  if (doc.HasMember(config::kCustomData) &&
-      doc[config::kCustomData].IsString()) {
-    page_config->SetCustomData(doc[config::kCustomData].GetString());
+  if (doc.HasMember(kCustomData) && doc[kCustomData].IsString()) {
+    page_config->SetCustomData(doc[kCustomData].GetString());
   }
 
-  if (doc.HasMember(config::kEnableComponentLifecycleAlignWebview) &&
-      doc[config::kEnableComponentLifecycleAlignWebview].IsBool()) {
+  if (doc.HasMember(kEnableComponentLifecycleAlignWebview) &&
+      doc[kEnableComponentLifecycleAlignWebview].IsBool()) {
     page_config->SetEnableComponentLifecycleAlignWebview(
-        doc[config::kEnableComponentLifecycleAlignWebview].GetBool());
+        doc[kEnableComponentLifecycleAlignWebview].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableListNewArchitecture) &&
-      doc[config::kEnableListNewArchitecture].IsBool()) {
+  if (doc.HasMember(kEnableListNewArchitecture) &&
+      doc[kEnableListNewArchitecture].IsBool()) {
     page_config->SetListNewArchitecture(
-        doc[config::kEnableListNewArchitecture].GetBool());
+        doc[kEnableListNewArchitecture].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableListNewContainer) &&
-      doc[config::kEnableListNewContainer].IsBool()) {
+  if (doc.HasMember(kEnableListNewContainer) &&
+      doc[kEnableListNewContainer].IsBool()) {
     page_config->SetEnableNewListContainer(
-        doc[config::kEnableListNewContainer].GetBool());
+        doc[kEnableListNewContainer].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableListPlug) &&
-      doc[config::kEnableListPlug].IsBool()) {
-    page_config->SetEnableListPlug(doc[config::kEnableListPlug].GetBool());
+  if (doc.HasMember(kEnableListPlug) && doc[kEnableListPlug].IsBool()) {
+    page_config->SetEnableListPlug(doc[kEnableListPlug].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableListMoveOperation) &&
-      doc[config::kEnableListMoveOperation].IsBool()) {
+  if (doc.HasMember(kEnableListMoveOperation) &&
+      doc[kEnableListMoveOperation].IsBool()) {
     page_config->SetEnableListMoveOperation(
-        doc[config::kEnableListMoveOperation].GetBool());
+        doc[kEnableListMoveOperation].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableCSSStrictMode) &&
-      doc[config::kEnableCSSStrictMode].IsBool()) {
-    page_config->SetEnableCSSStrictMode(
-        doc[config::kEnableCSSStrictMode].GetBool());
+  if (doc.HasMember(kEnableCSSStrictMode) &&
+      doc[kEnableCSSStrictMode].IsBool()) {
+    page_config->SetEnableCSSStrictMode(doc[kEnableCSSStrictMode].GetBool());
   }
 
-  if (doc.HasMember(config::kTapSlop) && doc[config::kTapSlop].IsString()) {
-    page_config->SetTapSlop(doc[config::kTapSlop].GetString());
+  if (doc.HasMember(kTapSlop) && doc[kTapSlop].IsString()) {
+    page_config->SetTapSlop(doc[kTapSlop].GetString());
   } else {
-    page_config->SetTapSlop(config::kDefaultTapSlop);
+    page_config->SetTapSlop(kDefaultTapSlop);
   }
 
-  if (doc.HasMember(config::kEnableCreateViewAsync) &&
-      doc[config::kEnableCreateViewAsync].IsBool()) {
+  if (doc.HasMember(kEnableCreateViewAsync) &&
+      doc[kEnableCreateViewAsync].IsBool()) {
     page_config->SetEnableCreateViewAsync(
-        doc[config::kEnableCreateViewAsync].GetBool());
+        doc[kEnableCreateViewAsync].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableVsyncAlignedFlush) &&
-      doc[config::kEnableVsyncAlignedFlush].IsBool()) {
+  if (doc.HasMember(kEnableVsyncAlignedFlush) &&
+      doc[kEnableVsyncAlignedFlush].IsBool()) {
     page_config->SetEnableVsyncAlignedFlush(
-        doc[config::kEnableVsyncAlignedFlush].GetBool());
+        doc[kEnableVsyncAlignedFlush].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableAccessibilityElement) &&
-      doc[config::kEnableAccessibilityElement].IsBool()) {
+  if (doc.HasMember(kEnableAccessibilityElement) &&
+      doc[kEnableAccessibilityElement].IsBool()) {
     page_config->SetEnableAccessibilityElement(
-        doc[config::kEnableAccessibilityElement].GetBool());
+        doc[kEnableAccessibilityElement].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableOverlapForAccessibilityElement) &&
-      doc[config::kEnableOverlapForAccessibilityElement].IsBool()) {
+  if (doc.HasMember(kEnableOverlapForAccessibilityElement) &&
+      doc[kEnableOverlapForAccessibilityElement].IsBool()) {
     page_config->SetEnableOverlapForAccessibilityElement(
-        doc[config::kEnableOverlapForAccessibilityElement].GetBool());
+        doc[kEnableOverlapForAccessibilityElement].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableNewAccessibility) &&
-      doc[config::kEnableNewAccessibility].IsBool()) {
+  if (doc.HasMember(kEnableNewAccessibility) &&
+      doc[kEnableNewAccessibility].IsBool()) {
     page_config->SetEnableNewAccessibility(
-        doc[config::kEnableNewAccessibility].GetBool());
+        doc[kEnableNewAccessibility].GetBool());
   }
-  if (doc.HasMember(config::kEnableNewLayoutOnly) &&
-      doc[config::kEnableNewLayoutOnly].IsBool()) {
-    page_config->SetEnableNewLayoutOnly(
-        doc[config::kEnableNewLayoutOnly].GetBool());
+  if (doc.HasMember(kEnableNewLayoutOnly) &&
+      doc[kEnableNewLayoutOnly].IsBool()) {
+    page_config->SetEnableNewLayoutOnly(doc[kEnableNewLayoutOnly].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableReactOnlyPropsId) &&
-      doc[config::kEnableReactOnlyPropsId].IsBool()) {
+  if (doc.HasMember(kEnableReactOnlyPropsId) &&
+      doc[kEnableReactOnlyPropsId].IsBool()) {
     page_config->SetEnableReactOnlyPropsId(
-        doc[config::kEnableReactOnlyPropsId].GetBool());
+        doc[kEnableReactOnlyPropsId].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableGlobalComponentMap) &&
-      doc[config::kEnableGlobalComponentMap].IsBool()) {
+  if (doc.HasMember(kEnableGlobalComponentMap) &&
+      doc[kEnableGlobalComponentMap].IsBool()) {
     page_config->SetEnableGlobalComponentMap(
-        doc[config::kEnableGlobalComponentMap].GetBool());
+        doc[kEnableGlobalComponentMap].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableRemoveComponentExtraData) &&
-      doc[config::kEnableRemoveComponentExtraData].IsBool()) {
+  if (doc.HasMember(kEnableRemoveComponentExtraData) &&
+      doc[kEnableRemoveComponentExtraData].IsBool()) {
     page_config->SetEnableRemoveComponentExtraData(
-        doc[config::kEnableRemoveComponentExtraData].GetBool());
+        doc[kEnableRemoveComponentExtraData].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableTextRefactor) &&
-      doc[config::kEnableTextRefactor].IsBool()) {
-    page_config->SetEnableTextRefactor(
-        doc[config::kEnableTextRefactor].GetBool());
+  if (doc.HasMember(kEnableTextRefactor) && doc[kEnableTextRefactor].IsBool()) {
+    page_config->SetEnableTextRefactor(doc[kEnableTextRefactor].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_2)) {
     page_config->SetEnableTextRefactor(true);
   }
 
-  if (doc.HasMember(config::kEnableTextOverflow) &&
-      doc[config::kEnableTextOverflow].IsBool()) {
-    page_config->SetEnableTextOverflow(
-        doc[config::kEnableTextOverflow].GetBool());
+  if (doc.HasMember(kEnableTextOverflow) && doc[kEnableTextOverflow].IsBool()) {
+    page_config->SetEnableTextOverflow(doc[kEnableTextOverflow].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_8)) {
     page_config->SetEnableTextOverflow(true);
   }
 
-  if (doc.HasMember(config::kEnableTextBoringLayout) &&
-      doc[config::kEnableTextBoringLayout].IsBool()) {
+  if (doc.HasMember(kEnableTextBoringLayout) &&
+      doc[kEnableTextBoringLayout].IsBool()) {
     page_config->SetEnableTextBoringLayout(
-        doc[config::kEnableTextBoringLayout].GetBool()
-            ? TernaryBool::TRUE_VALUE
-            : TernaryBool::FALSE_VALUE);
+        doc[kEnableTextBoringLayout].GetBool() ? TernaryBool::TRUE_VALUE
+                                               : TernaryBool::FALSE_VALUE);
   }
 
-  if (doc.HasMember(config::kEnableNewClipMode) &&
-      doc[config::kEnableNewClipMode].IsBool()) {
-    page_config->SetEnableNewClipMode(
-        doc[config::kEnableNewClipMode].GetBool());
+  if (doc.HasMember(kEnableNewClipMode) && doc[kEnableNewClipMode].IsBool()) {
+    page_config->SetEnableNewClipMode(doc[kEnableNewClipMode].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_10)) {
     page_config->SetEnableNewClipMode(true);
   }
 
-  if (doc.HasMember(config::kAutoResumeAnimation) &&
-      doc[config::kAutoResumeAnimation].IsBool()) {
+  if (doc.HasMember(kAutoResumeAnimation) &&
+      doc[kAutoResumeAnimation].IsBool()) {
     page_config->SetGlobalAutoResumeAnimation(
-        doc[config::kAutoResumeAnimation].GetBool());
+        doc[kAutoResumeAnimation].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_3)) {
     page_config->SetGlobalAutoResumeAnimation(true);
   }
 
-  if (doc.HasMember(config::kEnableNewTransformOrigin) &&
-      doc[config::kEnableNewTransformOrigin].IsBool()) {
+  if (doc.HasMember(kEnableNewTransformOrigin) &&
+      doc[kEnableNewTransformOrigin].IsBool()) {
     page_config->SetGlobalEnableNewTransformOrigin(
-        doc[config::kEnableNewTransformOrigin].GetBool());
+        doc[kEnableNewTransformOrigin].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_6)) {
     page_config->SetGlobalEnableNewTransformOrigin(true);
   }
 
-  if (doc.HasMember(config::kEnableCircularDataCheck) &&
-      doc[config::kEnableCircularDataCheck].IsBool()) {
+  if (doc.HasMember(kEnableCircularDataCheck) &&
+      doc[kEnableCircularDataCheck].IsBool()) {
     page_config->SetGlobalCircularDataCheck(
-        doc[config::kEnableCircularDataCheck].GetBool());
+        doc[kEnableCircularDataCheck].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableTextLayerRender) &&
-      doc[config::kEnableTextLayerRender].IsBool()) {
-    page_config->SetEnableTextLayerRender(
-        doc[config::kEnableTextLayerRender].GetBool()
-            ? TernaryBool::TRUE_VALUE
-            : TernaryBool::FALSE_VALUE);
+  if (doc.HasMember(kEnableTextLayerRender) &&
+      doc[kEnableTextLayerRender].IsBool()) {
+    page_config->SetEnableTextLayerRender(doc[kEnableTextLayerRender].GetBool()
+                                              ? TernaryBool::TRUE_VALUE
+                                              : TernaryBool::FALSE_VALUE);
   }
 
-  if (doc.HasMember(config::kEnableReduceInitDataCopy) &&
-      doc[config::kEnableReduceInitDataCopy].IsBool()) {
+  if (doc.HasMember(kEnableReduceInitDataCopy) &&
+      doc[kEnableReduceInitDataCopy].IsBool()) {
     page_config->SetEnableReduceInitDataCopy(
-        doc[config::kEnableReduceInitDataCopy].GetBool());
+        doc[kEnableReduceInitDataCopy].GetBool());
   }
 
-  if (doc.HasMember(config::kUnifyVWVHBehavior) &&
-      doc[config::kUnifyVWVHBehavior].IsBool()) {
-    page_config->SetUnifyVWVH(doc[config::kUnifyVWVHBehavior].GetBool());
+  if (doc.HasMember(kUnifyVWVHBehavior) && doc[kUnifyVWVHBehavior].IsBool()) {
+    page_config->SetUnifyVWVH(doc[kUnifyVWVHBehavior].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_3)) {
     page_config->SetUnifyVWVH(true);
   }
 
-  if (doc.HasMember(config::kFontScaleEffectiveOnlyOnSp) &&
-      doc[config::kFontScaleEffectiveOnlyOnSp].IsBool()) {
-    page_config->SetFontScaleSpOnly(
-        doc[config::kFontScaleEffectiveOnlyOnSp].GetBool());
+  if (doc.HasMember(kFontScaleEffectiveOnlyOnSp) &&
+      doc[kFontScaleEffectiveOnlyOnSp].IsBool()) {
+    page_config->SetFontScaleSpOnly(doc[kFontScaleEffectiveOnlyOnSp].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableSimultaneousTap) &&
-      doc[config::kEnableSimultaneousTap].IsBool()) {
+  if (doc.HasMember(kEnableSimultaneousTap) &&
+      doc[kEnableSimultaneousTap].IsBool()) {
     page_config->SetEnableSimultaneousTap(
-        doc[config::kEnableSimultaneousTap].GetBool());
+        doc[kEnableSimultaneousTap].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableComponentLayoutOnly) &&
-      doc[config::kEnableComponentLayoutOnly].IsBool()) {
+  if (doc.HasMember(kEnableComponentLayoutOnly) &&
+      doc[kEnableComponentLayoutOnly].IsBool()) {
     page_config->SetEnableComponentLayoutOnly(
-        doc[config::kEnableComponentLayoutOnly].GetBool());
+        doc[kEnableComponentLayoutOnly].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_6)) {
     page_config->SetEnableComponentLayoutOnly(true);
   }
 
-  if (doc.HasMember(config::kExtendedLayoutOnlyOpt) &&
-      doc[config::kExtendedLayoutOnlyOpt].IsBool()) {
+  if (doc.HasMember(kExtendedLayoutOnlyOpt) &&
+      doc[kExtendedLayoutOnlyOpt].IsBool()) {
     page_config->SetEnableExtendedLayoutOpt(
-        doc[config::kExtendedLayoutOnlyOpt].GetBool());
+        doc[kExtendedLayoutOnlyOpt].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_13)) {
     page_config->SetEnableExtendedLayoutOpt(true);
   }
 
-  if (doc.HasMember(config::kEnableTouchRefactor) &&
-      doc[config::kEnableTouchRefactor].IsBool()) {
-    page_config->SetEnableTouchRefactor(
-        doc[config::kEnableTouchRefactor].GetBool());
+  if (doc.HasMember(kEnableTouchRefactor) &&
+      doc[kEnableTouchRefactor].IsBool()) {
+    page_config->SetEnableTouchRefactor(doc[kEnableTouchRefactor].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableEndGestureAtLastFingerUp) &&
-      doc[config::kEnableEndGestureAtLastFingerUp].IsBool()) {
+  if (doc.HasMember(kEnableEndGestureAtLastFingerUp) &&
+      doc[kEnableEndGestureAtLastFingerUp].IsBool()) {
     page_config->SetEnableEndGestureAtLastFingerUp(
-        doc[config::kEnableEndGestureAtLastFingerUp].GetBool());
+        doc[kEnableEndGestureAtLastFingerUp].GetBool());
   }
 
-  if (doc.HasMember(config::kDisableLongpressAfterScroll) &&
-      doc[config::kDisableLongpressAfterScroll].IsBool()) {
+  if (doc.HasMember(kDisableLongpressAfterScroll) &&
+      doc[kDisableLongpressAfterScroll].IsBool()) {
     page_config->SetDisableLongpressAfterScroll(
-        doc[config::kDisableLongpressAfterScroll].GetBool());
+        doc[kDisableLongpressAfterScroll].GetBool());
   }
 
   if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
@@ -515,109 +745,103 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
     page_config->SetEnableZIndex(true);
   }
 
-  if (doc.HasMember(config::kKeyboardCallbackPassRelativeHeight) &&
-      doc[config::kKeyboardCallbackPassRelativeHeight].IsBool()) {
+  if (doc.HasMember(kKeyboardCallbackPassRelativeHeight) &&
+      doc[kKeyboardCallbackPassRelativeHeight].IsBool()) {
     page_config->SetKeyboardCallbackUseRelativeHeight(
-        doc[config::kKeyboardCallbackPassRelativeHeight].GetBool());
+        doc[kKeyboardCallbackPassRelativeHeight].GetBool());
   } else if (lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                  LYNX_VERSION_2_2)) {
     page_config->SetKeyboardCallbackUseRelativeHeight(true);
   }
 
-  if (doc.HasMember(config::kEnableNewIntersectionObserver) &&
-      doc[config::kEnableNewIntersectionObserver].IsBool()) {
+  if (doc.HasMember(kEnableNewIntersectionObserver) &&
+      doc[kEnableNewIntersectionObserver].IsBool()) {
     page_config->SetEnableNewIntersectionObserver(
-        doc[config::kEnableNewIntersectionObserver].GetBool());
+        doc[kEnableNewIntersectionObserver].GetBool());
   } else {
     page_config->SetEnableNewIntersectionObserver(
         LynxEnv::GetInstance().EnableNewIntersectionObserver());
   }
 
-  if (doc.HasMember(config::kObserverFrameRate) &&
-      doc[config::kObserverFrameRate].IsInt()) {
-    page_config->SetObserverFrameRate(doc[config::kObserverFrameRate].GetInt());
+  if (doc.HasMember(kObserverFrameRate) && doc[kObserverFrameRate].IsInt()) {
+    page_config->SetObserverFrameRate(doc[kObserverFrameRate].GetInt());
   }
 
-  if (doc.HasMember(config::kEnableCheckExposureOptimize) &&
-      doc[config::kEnableCheckExposureOptimize].IsBool()) {
+  if (doc.HasMember(kEnableCheckExposureOptimize) &&
+      doc[kEnableCheckExposureOptimize].IsBool()) {
     page_config->SetEnableCheckExposureOptimize(
-        doc[config::kEnableCheckExposureOptimize].GetBool());
+        doc[kEnableCheckExposureOptimize].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableDisexposureWhenLynxHidden) &&
-      doc[config::kEnableDisexposureWhenLynxHidden].IsBool()) {
+  if (doc.HasMember(kEnableDisexposureWhenLynxHidden) &&
+      doc[kEnableDisexposureWhenLynxHidden].IsBool()) {
     page_config->SetEnableDisexposureWhenLynxHidden(
-        doc[config::kEnableDisexposureWhenLynxHidden].GetBool());
+        doc[kEnableDisexposureWhenLynxHidden].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableExposureWhenLayout) &&
-      doc[config::kEnableExposureWhenLayout].IsBool()) {
+  if (doc.HasMember(kEnableExposureWhenLayout) &&
+      doc[kEnableExposureWhenLayout].IsBool()) {
     page_config->SetEnableExposureWhenLayout(
-        doc[config::kEnableExposureWhenLayout].GetBool());
+        doc[kEnableExposureWhenLayout].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableAirDetectRemovedKeysWhenUpdateData) &&
-      doc[config::kEnableAirDetectRemovedKeysWhenUpdateData].IsBool()) {
+  if (doc.HasMember(kEnableAirDetectRemovedKeysWhenUpdateData) &&
+      doc[kEnableAirDetectRemovedKeysWhenUpdateData].IsBool()) {
     page_config->SetEnableAirDetectRemovedKeysWhenUpdateData(
-        doc[config::kEnableAirDetectRemovedKeysWhenUpdateData].GetBool());
+        doc[kEnableAirDetectRemovedKeysWhenUpdateData].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableExposureUIMargin) &&
-      doc[config::kEnableExposureUIMargin].IsBool()) {
+  if (doc.HasMember(kEnableExposureUIMargin) &&
+      doc[kEnableExposureUIMargin].IsBool()) {
     page_config->SetEnableExposureUIMargin(
-        doc[config::kEnableExposureUIMargin].GetBool());
+        doc[kEnableExposureUIMargin].GetBool());
   }
 
   // parse enable new gesture config
-  if (doc.HasMember(config::kEnableNewGesture) &&
-      doc[config::kEnableNewGesture].IsBool()) {
-    page_config->SetEnableNewGesture(doc[config::kEnableNewGesture].GetBool());
+  if (doc.HasMember(kEnableNewGesture) && doc[kEnableNewGesture].IsBool()) {
+    page_config->SetEnableNewGesture(doc[kEnableNewGesture].GetBool());
   }
 
-  if (doc.HasMember(config::kLongPressDuration) &&
-      doc[config::kLongPressDuration].IsInt()) {
-    page_config->SetLongPressDuration(doc[config::kLongPressDuration].GetInt());
+  if (doc.HasMember(kLongPressDuration) && doc[kLongPressDuration].IsInt()) {
+    page_config->SetLongPressDuration(doc[kLongPressDuration].GetInt());
   }
 
-  if (doc.HasMember(config::kMapContainerType) &&
-      doc[config::kMapContainerType].IsInt()) {
-    page_config->SetMapContainerType(doc[config::kMapContainerType].GetInt());
+  if (doc.HasMember(kMapContainerType) && doc[kMapContainerType].IsInt()) {
+    page_config->SetMapContainerType(doc[kMapContainerType].GetInt());
   }
 
-  if (doc.HasMember(config::kEnableCheckLocalImage) &&
-      doc[config::kEnableCheckLocalImage].IsBool()) {
+  if (doc.HasMember(kEnableCheckLocalImage) &&
+      doc[kEnableCheckLocalImage].IsBool()) {
     page_config->SetEnableCheckLocalImage(
-        doc[config::kEnableCheckLocalImage].GetBool());
+        doc[kEnableCheckLocalImage].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableAsyncRequestImage) &&
-      doc[config::kEnableAsyncRequestImage].IsBool()) {
+  if (doc.HasMember(kEnableAsyncRequestImage) &&
+      doc[kEnableAsyncRequestImage].IsBool()) {
     page_config->SetEnableAsyncRequestImage(
-        doc[config::kEnableAsyncRequestImage].GetBool());
+        doc[kEnableAsyncRequestImage].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableCheckDataWhenUpdatePage) &&
-      doc[config::kEnableCheckDataWhenUpdatePage].IsBool()) {
+  if (doc.HasMember(kEnableCheckDataWhenUpdatePage) &&
+      doc[kEnableCheckDataWhenUpdatePage].IsBool()) {
     page_config->SetEnableCheckDataWhenUpdatePage(
-        doc[config::kEnableCheckDataWhenUpdatePage].GetBool());
+        doc[kEnableCheckDataWhenUpdatePage].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableJSDataProcessor) &&
-      doc[config::kEnableJSDataProcessor].IsBool()) {
+  if (doc.HasMember(kEnableJSDataProcessor) &&
+      doc[kEnableJSDataProcessor].IsBool()) {
     page_config->SetEnableDataProcessorOnJs(
-        doc[config::kEnableJSDataProcessor].GetBool());
+        doc[kEnableJSDataProcessor].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableMultiTouch) &&
-      doc[config::kEnableMultiTouch].IsBool()) {
-    page_config->SetEnableMultiTouch(doc[config::kEnableMultiTouch].GetBool());
+  if (doc.HasMember(kEnableMultiTouch) && doc[kEnableMultiTouch].IsBool()) {
+    page_config->SetEnableMultiTouch(doc[kEnableMultiTouch].GetBool());
   } else {
     page_config->SetEnableMultiTouch(LynxEnv::GetInstance().EnableMultiTouch());
   }
 
-  if (doc.HasMember(config::kEnableNativeList) &&
-      doc[config::kEnableNativeList].IsBool()) {
-    page_config->SetEnableNativeList(doc[config::kEnableNativeList].GetBool());
+  if (doc.HasMember(kEnableNativeList) && doc[kEnableNativeList].IsBool()) {
+    page_config->SetEnableNativeList(doc[kEnableNativeList].GetBool());
   }
 
   page_config->SetTargetSDKVersion(target_sdk_version_);
@@ -651,30 +875,27 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
     page_config->SetForceCalcNewStyle(compile_options_.force_calc_new_style_ !=
                                       FE_OPTION_DISABLE);
   } else {
-    if (doc.HasMember(config::kForceCalcNewStyleKey) &&
-        doc[config::kForceCalcNewStyleKey].IsBool()) {
+    if (doc.HasMember(kForceCalcNewStyleKey) &&
+        doc[kForceCalcNewStyleKey].IsBool()) {
       page_config.get()->SetForceCalcNewStyle(
-          doc[config::kForceCalcNewStyleKey].GetBool());
+          doc[kForceCalcNewStyleKey].GetBool());
     }
   }
 
   // include font padding
-  if (doc.HasMember(config::kIncludeFontPadding) &&
-      doc[config::kIncludeFontPadding].IsBool()) {
-    page_config->SetIncludeFontPadding(
-        doc[config::kIncludeFontPadding].GetBool());
+  if (doc.HasMember(kIncludeFontPadding) && doc[kIncludeFontPadding].IsBool()) {
+    page_config->SetIncludeFontPadding(doc[kIncludeFontPadding].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableBackgroundShapeLayer) &&
-      doc[config::kEnableBackgroundShapeLayer].IsBool()) {
+  if (doc.HasMember(kEnableBackgroundShapeLayer) &&
+      doc[kEnableBackgroundShapeLayer].IsBool()) {
     page_config->SetEnableBackgroundShapeLayer(
-        doc[config::kEnableBackgroundShapeLayer].GetBool());
+        doc[kEnableBackgroundShapeLayer].GetBool());
   }
 
   // compile render
-  if (doc.HasMember(config::kCompileRender) &&
-      doc[config::kCompileRender].IsBool()) {
-    page_config.get()->SetCompileRender(doc[config::kCompileRender].GetBool());
+  if (doc.HasMember(kCompileRender) && doc[kCompileRender].IsBool()) {
+    page_config.get()->SetCompileRender(doc[kCompileRender].GetBool());
   }
 
   /**
@@ -684,10 +905,10 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
    * @platform: Both
    * @supportVersion: 2.8
    **/
-  if (doc.HasMember(config::kEnableLynxResourceServiceProvider) &&
-      doc[config::kEnableLynxResourceServiceProvider].IsBool()) {
+  if (doc.HasMember(kEnableLynxResourceServiceProvider) &&
+      doc[kEnableLynxResourceServiceProvider].IsBool()) {
     page_config->SetEnableLynxResourceServiceProvider(
-        doc[config::kEnableLynxResourceServiceProvider].GetBool());
+        doc[kEnableLynxResourceServiceProvider].GetBool());
   }
 
   /**
@@ -697,10 +918,10 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
    * @platform: Both
    * @supportVersion: 2.9
    **/
-  if (doc.HasMember(config::kUserDefinedExtraInfo) &&
-      doc[config::kUserDefinedExtraInfo].IsObject()) {
+  if (doc.HasMember(kUserDefinedExtraInfo) &&
+      doc[kUserDefinedExtraInfo].IsObject()) {
     page_config->SetExtraInfo(
-        lepus::jsonValueTolepusValue(doc[config::kUserDefinedExtraInfo]));
+        lepus::jsonValueTolepusValue(doc[kUserDefinedExtraInfo]));
   }
 
   /**
@@ -710,9 +931,8 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
    * @platform: Both
    * @supportVersion: 2.9
    **/
-  if (doc.HasMember(config::kLepusGCThreshold) &&
-      doc[config::kLepusGCThreshold].IsInt()) {
-    page_config->SetLepusGCThreshold(doc[config::kLepusGCThreshold].GetInt());
+  if (doc.HasMember(kLepusGCThreshold) && doc[kLepusGCThreshold].IsInt()) {
+    page_config->SetLepusGCThreshold(doc[kLepusGCThreshold].GetInt());
   }
 
   /**
@@ -722,16 +942,16 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
    * @platform: Both
    * @supportVersion: 2.9
    **/
-  if (doc.HasMember(config::kEnableComponentNullProp) &&
-      doc[config::kEnableComponentNullProp].IsBool()) {
+  if (doc.HasMember(kEnableComponentNullProp) &&
+      doc[kEnableComponentNullProp].IsBool()) {
     page_config->SetEnableComponentNullProp(
-        doc[config::kEnableComponentNullProp].GetBool());
+        doc[kEnableComponentNullProp].GetBool());
   }
 
-  if (doc.HasMember(config::kRemoveDescendantSelectorScope) &&
-      doc[config::kRemoveDescendantSelectorScope].IsBool()) {
+  if (doc.HasMember(kRemoveDescendantSelectorScope) &&
+      doc[kRemoveDescendantSelectorScope].IsBool()) {
     page_config->SetRemoveDescendantSelectorScope(
-        doc[config::kRemoveDescendantSelectorScope].GetBool());
+        doc[kRemoveDescendantSelectorScope].GetBool());
   } else if (compile_options_.enable_fiber_arch_) {
     // Fiber arch, descendant selector only works in component scope by default
     page_config->SetRemoveDescendantSelectorScope(false);
@@ -741,66 +961,62 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
       compile_options_.enable_css_selector_);
 
   // enableComponentAsyncDecode
-  if (doc.HasMember(config::kEnableComponentAsyncDecode) &&
-      doc[config::kEnableComponentAsyncDecode].IsBool()) {
+  if (doc.HasMember(kEnableComponentAsyncDecode) &&
+      doc[kEnableComponentAsyncDecode].IsBool()) {
     page_config->SetEnableComponentAsyncDecode(
-        doc[config::kEnableComponentAsyncDecode].GetBool());
+        doc[kEnableComponentAsyncDecode].GetBool());
   }
 
   // enableUseContextPool
-  if (doc.HasMember(config::kEnableUseContextPool) &&
-      doc[config::kEnableUseContextPool].IsBool()) {
-    page_config->SetEnableUseContextPool(
-        doc[config::kEnableUseContextPool].GetBool());
+  if (doc.HasMember(kEnableUseContextPool) &&
+      doc[kEnableUseContextPool].IsBool()) {
+    page_config->SetEnableUseContextPool(doc[kEnableUseContextPool].GetBool());
   }
 
-  if (doc.HasMember(config::kEnableUseMapBuffer) &&
-      doc[config::kEnableUseMapBuffer].IsBool()) {
-    page_config->SetEnableUseMapBuffer(
-        doc[config::kEnableUseMapBuffer].GetBool() ? TernaryBool::TRUE_VALUE
-                                                   : TernaryBool::FALSE_VALUE);
+  if (doc.HasMember(kEnableUseMapBuffer) && doc[kEnableUseMapBuffer].IsBool()) {
+    page_config->SetEnableUseMapBuffer(doc[kEnableUseMapBuffer].GetBool()
+                                           ? TernaryBool::TRUE_VALUE
+                                           : TernaryBool::FALSE_VALUE);
   }
 
-  if (doc.HasMember(config::kEnableFiberElementForRadonDiff) &&
-      doc[config::kEnableFiberElementForRadonDiff].IsBool()) {
+  if (doc.HasMember(kEnableFiberElementForRadonDiff) &&
+      doc[kEnableFiberElementForRadonDiff].IsBool()) {
     page_config->SetEnableFiberElementForRadonDiff(
-        doc[config::kEnableFiberElementForRadonDiff].GetBool()
+        doc[kEnableFiberElementForRadonDiff].GetBool()
             ? TernaryBool::TRUE_VALUE
             : TernaryBool::FALSE_VALUE);
   }
 
   // enableLynxScrollFluency
-  if (doc.HasMember(config::kEnableLynxScrollFluency)) {
-    if (doc[config::kEnableLynxScrollFluency].IsBool()) {
+  if (doc.HasMember(kEnableLynxScrollFluency)) {
+    if (doc[kEnableLynxScrollFluency].IsBool()) {
       page_config->SetEnableScrollFluencyMonitor(
-          doc[config::kEnableLynxScrollFluency].GetBool() ? 1 : 0);
-    } else if (doc[config::kEnableLynxScrollFluency].IsDouble()) {
+          doc[kEnableLynxScrollFluency].GetBool() ? 1 : 0);
+    } else if (doc[kEnableLynxScrollFluency].IsDouble()) {
       page_config->SetEnableScrollFluencyMonitor(
-          doc[config::kEnableLynxScrollFluency].GetDouble());
-    } else if (doc[config::kEnableLynxScrollFluency].IsInt()) {
+          doc[kEnableLynxScrollFluency].GetDouble());
+    } else if (doc[kEnableLynxScrollFluency].IsInt()) {
       page_config->SetEnableScrollFluencyMonitor(
-          doc[config::kEnableLynxScrollFluency].GetInt());
+          doc[kEnableLynxScrollFluency].GetInt());
     }
   }
 
   // preferred_fps
-  if (doc.HasMember(config::kPreferredFps) &&
-      doc[config::kPreferredFps].IsString()) {
-    page_config->SetPreferredFps(doc[config::kPreferredFps].GetString());
+  if (doc.HasMember(kPreferredFps) && doc[kPreferredFps].IsString()) {
+    page_config->SetPreferredFps(doc[kPreferredFps].GetString());
   }
 
   // enableCSSLazyImport
-  if (doc.HasMember(config::kEnableCSSLazyImport) &&
-      doc[config::kEnableCSSLazyImport].IsBool()) {
-    page_config->SetEnableCSSLazyImport(
-        doc[config::kEnableCSSLazyImport].GetBool() ? TernaryBool::TRUE_VALUE
-                                                    : TernaryBool::FALSE_VALUE);
+  if (doc.HasMember(kEnableCSSLazyImport) &&
+      doc[kEnableCSSLazyImport].IsBool()) {
+    page_config->SetEnableCSSLazyImport(doc[kEnableCSSLazyImport].GetBool()
+                                            ? TernaryBool::TRUE_VALUE
+                                            : TernaryBool::FALSE_VALUE);
   }
 
   // enableNewAnimator
-  if (doc.HasMember(config::kEnableNewAnimator) &&
-      doc[config::kEnableNewAnimator].IsBool()) {
-    page_config->SetEnableNewAnimator(doc[config::kEnableNewAnimator].GetBool()
+  if (doc.HasMember(kEnableNewAnimator) && doc[kEnableNewAnimator].IsBool()) {
+    page_config->SetEnableNewAnimator(doc[kEnableNewAnimator].GetBool()
                                           ? TernaryBool::TRUE_VALUE
                                           : TernaryBool::FALSE_VALUE);
   } else {
@@ -808,10 +1024,10 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
   }
 
   // TODO(nihao.royal): removed in later versions
-  if (doc.HasMember(config::kEnableReloadLifecycle) &&
-      doc[config::kEnableReloadLifecycle].IsBool()) {
+  if (doc.HasMember(kEnableReloadLifecycle) &&
+      doc[kEnableReloadLifecycle].IsBool()) {
     page_config->SetEnableReloadLifecycle(
-        doc[config::kEnableReloadLifecycle].GetBool());
+        doc[kEnableReloadLifecycle].GetBool());
   }
 
   // enableJsBindApiThrowException
@@ -819,9 +1035,9 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
   // set by target_sdk_version. Enable it if it is greater than version 2.14,
   // disable it if it is less than.
   page_config->SetEnableJsBindingApiThrowException(
-      (doc.HasMember(config::kEnableJsBindingApiThrowException) &&
-       doc[config::kEnableJsBindingApiThrowException].IsBool())
-          ? doc[config::kEnableJsBindingApiThrowException].GetBool()
+      (doc.HasMember(kEnableJsBindingApiThrowException) &&
+       doc[kEnableJsBindingApiThrowException].IsBool())
+          ? doc[kEnableJsBindingApiThrowException].GetBool()
           : lynx::tasm::Config::IsHigherOrEqual(target_sdk_version_,
                                                 LYNX_VERSION_2_14));
 
@@ -852,16 +1068,15 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
   UpdateCSSConfigs(page_config);
 
   // enableICU
-  if (doc.HasMember(config::kEnableBindICU) &&
-      doc[config::kEnableBindICU].IsBool()) {
-    page_config->SetEnableBindICU(doc[config::kEnableBindICU].GetBool());
+  if (doc.HasMember(kEnableBindICU) && doc[kEnableBindICU].IsBool()) {
+    page_config->SetEnableBindICU(doc[kEnableBindICU].GetBool());
   }
 
   // enableQueryComponentSync
-  if (doc.HasMember(config::kEnableQueryComponentSync) &&
-      doc[config::kEnableQueryComponentSync].IsBool()) {
+  if (doc.HasMember(kEnableQueryComponentSync) &&
+      doc[kEnableQueryComponentSync].IsBool()) {
     page_config->SetEnableQueryComponentSync(
-        doc[config::kEnableQueryComponentSync].GetBool());
+        doc[kEnableQueryComponentSync].GetBool());
   }
 
   // enableMicrotaskPromisePolyfill
@@ -872,17 +1087,17 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
   }
 
   // disableQuickTracingGC
-  if (doc.HasMember(config::kDisableQuickTracingGC) &&
-      doc[config::kDisableQuickTracingGC].IsBool()) {
+  if (doc.HasMember(kDisableQuickTracingGC) &&
+      doc[kDisableQuickTracingGC].IsBool()) {
     page_config->SetDisableQuickTracingGC(
-        doc[config::kDisableQuickTracingGC].GetBool());
+        doc[kDisableQuickTracingGC].GetBool());
   }
 
   // fix css import rule order issue
-  if (doc.HasMember(config::kFixCSSImportRuleOrder) &&
-      doc[config::kFixCSSImportRuleOrder].IsBool()) {
+  if (doc.HasMember(kFixCSSImportRuleOrder) &&
+      doc[kFixCSSImportRuleOrder].IsBool()) {
     page_config->SetFixCSSImportRuleOrder(
-        doc[config::kFixCSSImportRuleOrder].GetBool());
+        doc[kFixCSSImportRuleOrder].GetBool());
   }
 
   // enableSignalAPI
@@ -914,17 +1129,17 @@ bool LynxBinaryConfigDecoder::DecodeComponentConfig(
     return false;
   }
 
-  if (doc.HasMember(config::kEnableRemoveComponentExtraData) &&
-      doc[config::kEnableRemoveComponentExtraData].IsBool()) {
+  if (doc.HasMember(kEnableRemoveComponentExtraData) &&
+      doc[kEnableRemoveComponentExtraData].IsBool()) {
     // only set when has this member defaults to undefined
     component_config->SetEnableRemoveExtraData(
-        doc[config::kEnableRemoveComponentExtraData].GetBool());
+        doc[kEnableRemoveComponentExtraData].GetBool());
   }
 
-  if (doc.HasMember(config::kRemoveComponentElement) &&
-      doc[config::kRemoveComponentElement].IsBool()) {
+  if (doc.HasMember(kRemoveComponentElement) &&
+      doc[kRemoveComponentElement].IsBool()) {
     component_config->SetRemoveComponentElement(
-        doc[config::kRemoveComponentElement].GetBool());
+        doc[kRemoveComponentElement].GetBool());
   }
   return true;
 }
@@ -939,50 +1154,44 @@ void LynxBinaryConfigDecoder::ReportGlobalFeatureSwitch(
     return;
   }
   report::EventTracker::OnEvent([page_config](report::MoveOnlyEvent& event) {
-    event.SetName(config::kLynxSDKGlobalFeatureSwitchEvent);
-    event.SetProps(config::kImplicit, page_config->GetGlobalImplicit());
-    event.SetProps(config::kEnableAsyncDisplay,
-                   page_config->GetEnableAsyncDisplay());
-    event.SetProps(config::kEnableViewReceiveTouch,
+    event.SetName(kLynxSDKGlobalFeatureSwitchEvent);
+    event.SetProps(kImplicit, page_config->GetGlobalImplicit());
+    event.SetProps(kEnableAsyncDisplay, page_config->GetEnableAsyncDisplay());
+    event.SetProps(kEnableViewReceiveTouch,
                    page_config->GetEnableViewReceiveTouch());
-    event.SetProps(config::kEnableEventThrough,
-                   page_config->GetEnableEventThrough());
-    event.SetProps(config::kRemoveComponentElement,
+    event.SetProps(kEnableEventThrough, page_config->GetEnableEventThrough());
+    event.SetProps(kRemoveComponentElement,
                    page_config->GetRemoveComponentElement());
-    event.SetProps(config::kEnableCSSInheritance,
+    event.SetProps(kEnableCSSInheritance,
                    page_config->GetEnableCSSInheritance());
-    event.SetProps(config::kEnableListNewArchitecture,
+    event.SetProps(kEnableListNewArchitecture,
                    page_config->GetListNewArchitecture());
-    event.SetProps(config::kEnableCSSStrictMode,
-                   page_config->GetEnableCSSStrictMode());
-    event.SetProps(config::kEnableReactOnlyPropsId,
+    event.SetProps(kEnableCSSStrictMode, page_config->GetEnableCSSStrictMode());
+    event.SetProps(kEnableReactOnlyPropsId,
                    page_config->GetEnableReactOnlyPropsId());
-    event.SetProps(config::kEnableCircularDataCheck,
+    event.SetProps(kEnableCircularDataCheck,
                    page_config->GetGlobalCircularDataCheck());
-    event.SetProps(config::kEnableReduceInitDataCopy,
+    event.SetProps(kEnableReduceInitDataCopy,
                    page_config->GetEnableReduceInitDataCopy());
-    event.SetProps(config::kUnifyVWVHBehavior, page_config->GetUnifyVWVH());
-    event.SetProps(config::kEnableComponentLayoutOnly,
+    event.SetProps(kUnifyVWVHBehavior, page_config->GetUnifyVWVH());
+    event.SetProps(kEnableComponentLayoutOnly,
                    page_config->GetEnableComponentLayoutOnly());
-    event.SetProps(config::kAutoExpose, page_config->GetAutoExpose());
-    event.SetProps(config::kAbsoluteInContentBound,
+    event.SetProps(kAutoExpose, page_config->GetAutoExpose());
+    event.SetProps(kAbsoluteInContentBound,
                    page_config->GetAbsoluteInContentBound());
-    event.SetProps(config::kLongPressDuration,
-                   page_config->GetLongPressDuration());
-    event.SetProps(config::kObserverFrameRate,
-                   page_config->GetObserverFrameRate());
-    event.SetProps(config::kEnableExposureUIMargin,
+    event.SetProps(kLongPressDuration, page_config->GetLongPressDuration());
+    event.SetProps(kObserverFrameRate, page_config->GetObserverFrameRate());
+    event.SetProps(kEnableExposureUIMargin,
                    page_config->GetEnableExposureUIMargin());
-    event.SetProps(config::kFlatten, page_config->GetGlobalFlattern());
-    event.SetProps(config::kForceCalcNewStyleKey,
-                   page_config->GetForceCalcNewStyle());
-    event.SetProps(config::kEnableLynxResourceServiceProvider,
+    event.SetProps(kFlatten, page_config->GetGlobalFlattern());
+    event.SetProps(kForceCalcNewStyleKey, page_config->GetForceCalcNewStyle());
+    event.SetProps(kEnableLynxResourceServiceProvider,
                    page_config->GetEnableLynxResourceServiceProvider());
-    event.SetProps(config::kEnableComponentNullProp,
+    event.SetProps(kEnableComponentNullProp,
                    page_config->GetEnableComponentNullProp());
-    event.SetProps(config::kRemoveDescendantSelectorScope,
+    event.SetProps(kRemoveDescendantSelectorScope,
                    page_config->GetRemoveDescendantSelectorScope());
-    event.SetProps(config::kEnableComponentAsyncDecode,
+    event.SetProps(kEnableComponentAsyncDecode,
                    page_config->GetEnableComponentAsyncDecode());
   });
 }
