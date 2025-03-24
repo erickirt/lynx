@@ -1106,12 +1106,13 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI {
         perspective = (float) (mPerspective.getDouble(0) * scale * scale
             * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER);
       } else {
-        if (mPerspective.getInt(1) == PLATFORM_PERSPECTIVE_UNIT_VW) {
-          perspective =
-              (float) (mPerspective.getDouble(0) / 100.0f * mContext.getLynxView().getWidth());
-        } else if (mPerspective.getInt(1) == PLATFORM_PERSPECTIVE_UNIT_VH) {
-          perspective =
-              (float) (mPerspective.getDouble(0) / 100.0f * mContext.getLynxView().getHeight());
+        if ((mPerspective.getInt(1) == PLATFORM_PERSPECTIVE_UNIT_VW
+                || mPerspective.getInt(1) == PLATFORM_PERSPECTIVE_UNIT_VH)
+            && mContext.getUIBody() != null) {
+          perspective = mPerspective.getInt(1) == PLATFORM_PERSPECTIVE_UNIT_VW
+              ? (float) (mPerspective.getDouble(0) / 100.0f * mContext.getUIBody().getLatestWidth())
+              : (float) (mPerspective.getDouble(0) / 100.0f
+                  * mContext.getUIBody().getLatestHeight());
         } else {
           perspective = (float) mPerspective.getDouble(0);
         }
@@ -1126,7 +1127,11 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI {
       perspective =
           maxLength * scale * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER * DEFAULT_PERSPECTIVE_FACTOR;
     }
-    mView.setCameraDistance(perspective);
+
+    if (mPrePerspectiveValue != perspective) {
+      mPrePerspectiveValue = perspective;
+      mView.setCameraDistance(perspective);
+    }
   }
 
   @LynxProp(name = "clip-path")
