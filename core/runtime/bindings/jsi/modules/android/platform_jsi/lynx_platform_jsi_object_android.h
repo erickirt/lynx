@@ -114,7 +114,7 @@ class LynxPlatformJSIObjectAndroid : public HostObject {
                                                                 jobject obj);
 
   base::android::ScopedGlobalJavaRef<jobject> jsi_object_;
-  base::android::ScopedLocalJavaRef<jclass> jsi_object_class_;
+  base::android::ScopedGlobalJavaRef<jclass> jsi_object_class_;
   std::unique_ptr<LynxJSIObjectDescriptor> jsi_object_descriptor_ = nullptr;
 };
 

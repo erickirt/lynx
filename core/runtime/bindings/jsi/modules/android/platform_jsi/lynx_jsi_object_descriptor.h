@@ -5,9 +5,9 @@
 #ifndef CORE_RUNTIME_BINDINGS_JSI_MODULES_ANDROID_PLATFORM_JSI_LYNX_JSI_OBJECT_DESCRIPTOR_H_
 #define CORE_RUNTIME_BINDINGS_JSI_MODULES_ANDROID_PLATFORM_JSI_LYNX_JSI_OBJECT_DESCRIPTOR_H_
 
-#include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/include/platform/android/scoped_java_ref.h"
 
@@ -29,7 +29,7 @@ class LynxJSIObjectDescriptor {
   LynxJSIObjectDescriptor(const LynxJSIObjectDescriptor&) = delete;
   LynxJSIObjectDescriptor& operator=(const LynxJSIObjectDescriptor&) = delete;
 
-  std::optional<std::string> GetJSPropertyDescriptorInfo(
+  std::vector<std::string> GetJSPropertyDescriptorInfo(
       JNIEnv* env, const std::string& field_name);
 
  private:

@@ -30,5 +30,5 @@ public interface ILynxJSIObjectDescriptor {
    * get the descriptor info of JSProperty field, used to get property value in JS by reflection.
    * This method is concurrent.
    */
-  @CalledByNative String getLynxObjectDescriptorInfo(String fieldName);
+  @CalledByNative String[] getLynxObjectDescriptorInfo(String fieldName);
 }

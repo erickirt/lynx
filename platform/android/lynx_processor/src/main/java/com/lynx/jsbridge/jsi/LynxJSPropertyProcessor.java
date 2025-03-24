@@ -28,8 +28,11 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -230,9 +233,45 @@ public class LynxJSPropertyProcessor extends AbstractProcessor {
       String fieldName = enclosedElement.getSimpleName().toString();
       String jniFieldDescriptor =
           getJNIFieldDescriptor(enclosedElement.asType(), fieldName, descriptor.simpleClassName);
-      descriptor.mFields.put(fieldName, new JSPropertyDescriptor(fieldName, jniFieldDescriptor));
-      System.out.println(TAG + ", collect a field, name: " + fieldName);
+
+      String serializedName = getSerializedName(enclosedElement);
+      String fieldNameForScript = serializedName != null ? serializedName : fieldName;
+      descriptor.mFields.put(
+          fieldNameForScript, new JSPropertyDescriptor(fieldName, jniFieldDescriptor));
+      System.out.println(
+          TAG + ", collect a field, name: " + fieldName + ", serialized name: " + serializedName);
     }
+  }
+
+  private String getSerializedName(Element element) {
+    AnnotationMirror serializableAnno =
+        getAnnotationMirror(element, "com.google.gson.annotations.SerializedName");
+    if (serializableAnno != null) {
+      AnnotationValue value = getAnnotationValue(serializableAnno, "value");
+      if (value != null) {
+        return (String) value.getValue();
+      }
+    }
+    return null;
+  }
+
+  private AnnotationMirror getAnnotationMirror(Element element, String className) {
+    for (AnnotationMirror m : element.getAnnotationMirrors()) {
+      if (m.getAnnotationType().toString().equals(className)) {
+        return m;
+      }
+    }
+    return null;
+  }
+
+  private AnnotationValue getAnnotationValue(AnnotationMirror annotationMirror, String key) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        annotationMirror.getElementValues().entrySet()) {
+      if (entry.getKey().getSimpleName().toString().equals(key)) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   private String getJNIFieldDescriptor(TypeMirror type, String fieldName, String className) {
@@ -351,11 +390,12 @@ public class LynxJSPropertyProcessor extends AbstractProcessor {
             .addStatement("$T<String, $T> fieldInfos = new $T()", mapClass,
                 LYNX_JS_PROPERTY_DESCRIPTOR, mapClass);
 
-    for (JSPropertyDescriptor jsPropertyDescriptor : descriptor.mFields.values()) {
+    for (Map.Entry<String, JSPropertyDescriptor> entry : descriptor.mFields.entrySet()) {
+      JSPropertyDescriptor jsPropertyDescriptor = entry.getValue();
       String fieldName = jsPropertyDescriptor.fieldName;
       String fieldType = jsPropertyDescriptor.jniFieldDescriptor;
-      createFieldInfosMethodBuilder.addStatement("fieldInfos.put($S, new $T($S, $S))", fieldName,
-          LYNX_JS_PROPERTY_DESCRIPTOR, fieldName, fieldType);
+      createFieldInfosMethodBuilder.addStatement("fieldInfos.put($S, new $T($S, $S))",
+          entry.getKey(), LYNX_JS_PROPERTY_DESCRIPTOR, fieldName, fieldType);
       System.out.println(TAG + ", generate LynxJSPropertyDescriptor for field: " + fieldName);
     }
 

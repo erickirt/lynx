@@ -144,20 +144,26 @@ lynx::piper::Value LynxPlatformJSIObjectAndroid::get(
   // get j field info
   auto field_info =
       GetJSIObjectDescriptor(env)->GetJSPropertyDescriptorInfo(env, field_name);
-  if (!field_info) {
+  if (field_info.size() != 2) {
     LOGE(kTag << "fail to get JSPropertyDescriptor, fieldName: " << field_name);
     return Value::undefined();
   }
+
+  const std::string &j_field_name = field_info[0];
+  const std::string &j_field_type = field_info[1];
+  LOGI(kTag << "get jsi object field, field name: " << j_field_name
+            << ", field type: " << j_field_type);
 
   // get j field object
   if (jsi_object_class_.IsNull()) {
     jsi_object_class_ = {env, env->GetObjectClass(jsi_object_.Get())};
   }
+
   jfieldID j_js_property_field_id = env->GetFieldID(
-      jsi_object_class_.Get(), field_name.c_str(), field_info->c_str());
+      jsi_object_class_.Get(), j_field_name.c_str(), j_field_type.c_str());
 
   auto jsi_object_field = ConvertJSIObjectField(
-      env, jsi_object_.Get(), *field_info, j_js_property_field_id);
+      env, jsi_object_.Get(), j_field_type, j_js_property_field_id);
   return jsi_object_field ? *jsi_object_field->ConvertToValue(rt)
                           : piper::Value::null();
 }

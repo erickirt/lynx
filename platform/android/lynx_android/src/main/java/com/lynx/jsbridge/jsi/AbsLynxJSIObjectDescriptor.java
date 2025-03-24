@@ -50,10 +50,13 @@ public abstract class AbsLynxJSIObjectDescriptor implements ILynxJSIObjectDescri
    * get descriptor info from JSPropertyDescriptor map
    */
   @Override
-  public String getLynxObjectDescriptorInfo(String fieldName) {
+  public String[] getLynxObjectDescriptorInfo(String fieldName) {
     ensureFieldInfos();
     LynxJSPropertyDescriptor descriptor = mFieldInfos.get(fieldName);
-    return descriptor != null ? descriptor.fieldJNIDescriptor : null;
+    String[] descriptorInfo = descriptor != null
+        ? new String[] {descriptor.fieldName, descriptor.fieldJNIDescriptor}
+        : null;
+    return descriptorInfo;
   }
 
   /**

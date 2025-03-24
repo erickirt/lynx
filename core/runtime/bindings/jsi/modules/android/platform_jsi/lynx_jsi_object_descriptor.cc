@@ -14,17 +14,14 @@ bool LynxJSIObjectDescriptor::RegisterJNI(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-std::optional<std::string> LynxJSIObjectDescriptor::GetJSPropertyDescriptorInfo(
+std::vector<std::string> LynxJSIObjectDescriptor::GetJSPropertyDescriptorInfo(
     JNIEnv* env, const std::string& field_name) {
   auto j_field_name =
       base::android::JNIConvertHelper::ConvertToJNIStringUTF(env, field_name);
   auto j_field_info = Java_ILynxJSIObjectDescriptor_getLynxObjectDescriptorInfo(
       env, jsi_object_descriptor_.Get(), j_field_name.Get());
-  return j_field_info.IsNull()
-             ? std::nullopt
-             : std::optional<std::string>{
-                   base::android::JNIConvertHelper::ConvertToString(
-                       env, j_field_info.Get())};
+  return base::android::JNIConvertHelper::ConvertJavaStringArrayToStringVector(
+      env, j_field_info.Get());
 }
 
 }  // namespace piper
