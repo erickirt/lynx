@@ -4502,14 +4502,22 @@ RENDERER_FUNCTION_CC(FiberElementFromBinary) {
   // parameter size >= 2
   // [0] String -> template id
   // [1] Number -> component id
-  CHECK_ARGC_EQ(FiberElementFromBinary, 2);
+  CHECK_ARGC_GE(FiberElementFromBinary, 2);
   CONVERT_ARG_AND_CHECK_FOR_ELEMENT_API(arg0, 0, String,
                                         FiberElementFromBinary);
   CONVERT_ARG_AND_CHECK_FOR_ELEMENT_API(arg1, 1, Number,
                                         FiberElementFromBinary);
 
+  std::string entry_name = tasm::DEFAULT_ENTRY_NAME;
+  if (argc >= 3) {
+    CONVERT_ARG(arg2, 2);
+    if (arg2->IsString()) {
+      entry_name = arg2->StdString();
+    }
+  }
+
   const auto& self = GET_TASM_POINTER();
-  const auto& entry = self->FindEntry(tasm::DEFAULT_ENTRY_NAME);
+  const auto& entry = self->FindEntry(entry_name);
   auto node_ary =
       entry->ElementFromBinary(arg0->StdString(), arg1->Int64(),
                                self->page_proxy()->element_manager().get());
