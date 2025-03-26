@@ -68,6 +68,15 @@ struct LynxResourceResponse {
   bool Success() const { return err_code == 0; }
 };
 
+struct LynxPathResponse {
+  std::string path;
+  int32_t err_code = 0;
+  std::string err_msg;
+  ResourceLoadTiming timing;
+
+  bool Success() const { return err_code == 0; }
+};
+
 class LynxStreamDelegate {
  public:
   virtual ~LynxStreamDelegate() = default;
@@ -88,7 +97,7 @@ class LynxResourceLoader
 
   virtual void LoadResourcePath(
       const LynxResourceRequest& request,
-      base::MoveOnlyClosure<void, LynxResourceResponse&> callback){};
+      base::MoveOnlyClosure<void, LynxPathResponse&> path_callback){};
 
   virtual void LoadStream(
       const LynxResourceRequest& request,
