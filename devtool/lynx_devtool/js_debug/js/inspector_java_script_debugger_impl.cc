@@ -29,7 +29,6 @@ InspectorJavaScriptDebuggerImpl::InspectorJavaScriptDebuggerImpl(
 }
 
 InspectorJavaScriptDebuggerImpl::~InspectorJavaScriptDebuggerImpl() {
-  std::unique_lock<std::mutex> lock(mutex_);
   if (delegate_ != nullptr) {
     RunOnTargetThread([delegate = delegate_, view_id = view_id_]() {
       delegate->RemoveDebugger(view_id);

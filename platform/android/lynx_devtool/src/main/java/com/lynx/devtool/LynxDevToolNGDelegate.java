@@ -6,12 +6,15 @@ package com.lynx.devtool;
 import androidx.annotation.NonNull;
 import com.lynx.devtoolwrapper.CDPResultCallback;
 import com.lynx.devtoolwrapper.MessageHandler;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LynxDevToolNGDelegate {
   // native LynxDevToolNG
   private long mLynxDevToolNGPtr = 0;
 
   private int mSessionId = 0;
+  private final AtomicBoolean mHasDestroy = new AtomicBoolean(false);
+  private final Object mDevToolLock = new Object();
 
   public LynxDevToolNGDelegate() {
     mLynxDevToolNGPtr = nativeCreateLynxDevToolNG();
@@ -27,11 +30,15 @@ public class LynxDevToolNGDelegate {
 
   private native long nativeCreateLynxDevToolNG();
 
-  // TODO(zhoumingsong.smile) Apply thread synchronization to all methods accessing
-  // mLynxDevToolNGPtr
-  public synchronized void sendMessageToDebugPlatform(@NonNull String type, @NonNull String msg) {
-    if (mLynxDevToolNGPtr != 0) {
-      nativeSendMessageToDebugPlatform(mLynxDevToolNGPtr, type, msg);
+  public void sendMessageToDebugPlatform(@NonNull String type, @NonNull String msg) {
+    if (mHasDestroy.get()) {
+      return;
+    }
+
+    synchronized (mDevToolLock) {
+      if (mLynxDevToolNGPtr != 0) {
+        nativeSendMessageToDebugPlatform(mLynxDevToolNGPtr, type, msg);
+      }
     }
   }
 
@@ -54,10 +61,16 @@ public class LynxDevToolNGDelegate {
 
   private native void nativeOnTasmCreated(long nativePtr, long shellPtr);
 
-  public synchronized void destroy() {
-    if (mLynxDevToolNGPtr != 0) {
-      nativeDestroy(mLynxDevToolNGPtr);
-      mLynxDevToolNGPtr = 0;
+  public void destroy() {
+    if (!mHasDestroy.compareAndSet(false, true)) {
+      return;
+    }
+
+    synchronized (mDevToolLock) {
+      if (mLynxDevToolNGPtr != 0) {
+        nativeDestroy(mLynxDevToolNGPtr);
+        mLynxDevToolNGPtr = 0;
+      }
     }
   }
 

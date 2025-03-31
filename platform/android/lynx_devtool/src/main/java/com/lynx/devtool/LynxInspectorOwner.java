@@ -259,12 +259,12 @@ public class LynxInspectorOwner implements LynxBaseInspectorOwnerNG {
       stopCasting();
       if (mLynxDevToolNG != null) {
         mLynxDevToolNG.detachToDebug();
-      }
-      if (mLynxDevToolNG != null) {
         mLynxDevToolNG.destroy();
+        mLynxDevToolNG = null;
       }
       if (mPlatform != null) {
         mPlatform.destroy();
+        mPlatform = null;
       }
     } catch (Throwable e) {
       e.printStackTrace();
