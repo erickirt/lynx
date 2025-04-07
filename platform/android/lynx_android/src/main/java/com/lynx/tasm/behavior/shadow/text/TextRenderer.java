@@ -92,7 +92,7 @@ public class TextRenderer {
 
   int getLayoutWidth() {
     if (mKey.widthMode == MeasureMode.EXACTLY && getTextLayoutWidth() <= mKey.width) {
-      return (int) mKey.width;
+      return (int) Math.ceil(mKey.width);
     }
 
     return (int) Math.ceil(calculateMaxWidth());
