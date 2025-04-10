@@ -19,6 +19,7 @@
 #include "core/runtime/bindings/napi/worklet/napi_frame_callback.h"
 #include "core/runtime/bindings/napi/worklet/napi_func_callback.h"
 #include "core/runtime/bindings/napi/worklet/napi_lepus_element.h"
+#include "core/services/feature_count/feature_counter.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 
 namespace lynx {

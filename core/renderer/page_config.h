@@ -20,7 +20,6 @@
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 #include "core/runtime/vm/lepus/table.h"
-#include "core/services/feature_count/feature_counter.h"
 #include "core/template_bundle/template_codec/compile_options.h"
 #include "core/template_bundle/template_codec/ttml_constant.h"
 #include "core/template_bundle/template_codec/version.h"
@@ -355,13 +354,7 @@ class PageConfig final : public EntryConfig {
 
   bool GetEnableSimultaneousTap() { return enable_simultaneous_tap_; }
 
-  void SetEnableTouchRefactor(bool enable) {
-    enable_touch_refactor_ = enable;
-    if (enable == false) {
-      report::FeatureCounter::Instance()->Count(
-          report::LynxFeature::OBJC_DISABLE_TOUCH_REFACTOR);
-    }
-  }
+  void SetEnableTouchRefactor(bool enable) { enable_touch_refactor_ = enable; }
 
   bool GetEnableTouchRefactor() { return enable_touch_refactor_; }
 
@@ -669,10 +662,6 @@ class PageConfig final : public EntryConfig {
 
   inline void SetEnableEventRefactor(bool option) {
     enable_event_refactor_ = option;
-    if (option == false) {
-      report::FeatureCounter::Instance()->Count(
-          report::LynxFeature::CPP_DISABLE_EVENT_REFACTOR);
-    }
   }
 
   bool GetEnableEventRefactor() const { return enable_event_refactor_; }
@@ -928,13 +917,7 @@ class PageConfig final : public EntryConfig {
 
   bool GetEnableMultiTouch() const { return enable_multi_touch_; }
 
-  void SetEnableMultiTouch(bool enable) {
-    enable_multi_touch_ = enable;
-    if (enable == false) {
-      report::FeatureCounter::Instance()->Count(
-          report::LynxFeature::CPP_DISABLE_MULTI_TOUCH);
-    }
-  }
+  void SetEnableMultiTouch(bool enable) { enable_multi_touch_ = enable; }
 
   bool GetEnableComponentAsyncDecode() const {
     switch (enable_component_async_decode_) {

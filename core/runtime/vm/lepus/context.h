@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/include/debug/lynx_error.h"
+#include "base/include/fml/task_runner.h"
 #include "base/include/value/base_string.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/inspector/lepus_inspector_manager.h"

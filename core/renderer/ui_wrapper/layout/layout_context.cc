@@ -34,9 +34,11 @@
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/vm/lepus/json_parser.h"
 #include "core/runtime/vm/lepus/table.h"
+#include "core/services/feature_count/feature_counter.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "core/services/timing_handler/timing_constants.h"
+
 namespace lynx {
 namespace tasm {
 

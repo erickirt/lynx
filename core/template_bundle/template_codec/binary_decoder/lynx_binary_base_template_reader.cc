@@ -14,6 +14,7 @@
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/lynx_trace_categories.h"
+#include "core/services/feature_count/feature_counter.h"
 
 #if ENABLE_AIR
 #include "core/renderer/dom/air/lynx_air_parsed_style_store.h"

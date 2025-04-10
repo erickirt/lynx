@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "core/renderer/template_assembler.h"
+#include "core/services/feature_count/feature_counter.h"
 
 namespace lynx {
 namespace tasm {
