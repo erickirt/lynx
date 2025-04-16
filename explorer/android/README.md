@@ -135,7 +135,7 @@ tools/hab sync .
 Execute the following commands, which will install the Android components required by Lynx, including the Android SDK/NDK. During the execution process, your authorization might be required.
 
 ```
-source tools/android_tools/prepare_android_build.sh
+python3 tools/android_tools/prepare_android_build.py
 ```
 
 ## Compile and run
