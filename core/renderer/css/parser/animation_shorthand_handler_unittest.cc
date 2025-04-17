@@ -27,7 +27,7 @@ TEST(AnimationShorthandHandler, Animation) {
   EXPECT_EQ(output[kPropertyIDAnimationName].GetValue().StringView(), "rotate");
   EXPECT_EQ(output[kPropertyIDAnimationDuration].GetValue().Number(), 10000);
   auto timing_function =
-      output[kPropertyIDAnimationTimingFunction].GetValue().Array();
+      output[kPropertyIDAnimationTimingFunction].GetValue().Array().strongify();
   EXPECT_EQ(timing_function->get(0).Number(),
             static_cast<int>(starlight::TimingFunctionType::kEaseInEaseOut));
   EXPECT_EQ(output[kPropertyIDAnimationDelay].GetValue().Number(), 1000);

@@ -59,9 +59,9 @@ TEST(BackgroundSizeHandler, Handler) {
   EXPECT_EQ(output.size(), static_cast<size_t>(1));
   auto background_size = output[id];
   EXPECT_TRUE(background_size.IsArray());
-  auto size = background_size.GetValue().Array();
+  auto size = background_size.GetValue().Array().strongify();
   EXPECT_EQ(size->size(), static_cast<size_t>(1));
-  auto arr = size->get(0).Array();
+  auto arr = size->get(0).Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(4));
   EXPECT_EQ((CSSValuePattern)arr->get(0).Number(), CSSValuePattern::PX);
   EXPECT_EQ((float)arr->get(1).Number(), 50);

@@ -50,6 +50,10 @@ class LEPUSObject : public lepus::RefCounted {
   LEPUSObject() = default;
   LEPUSObject(std::shared_ptr<JSIObjectProxy> lepus_obj_proxy);
 
+  friend class Value;
+
+  void Reset() { jsi_object_proxy_ = nullptr; }
+
  private:
   std::shared_ptr<JSIObjectProxy> jsi_object_proxy_;
 };

@@ -368,7 +368,7 @@ void GetTransformParams(std::string &length, const lepus_value &value,
   return;
 }
 
-std::string GetTransformMatrixParams(fml::RefPtr<lepus::CArray> &arr,
+std::string GetTransformMatrixParams(const fml::RefPtr<lepus::CArray> &arr,
                                      int count) {
   std::ostringstream oss;
   for (int i = 1; i < count; ++i) {

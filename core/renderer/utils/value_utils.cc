@@ -160,14 +160,14 @@ lepus::Value ConvertJSValueToLepusValue(const lepus::Value& value) {
   } else if (value.IsJSNumber()) {
     result.SetNumber(value.Number());
   } else if (value.IsArray() || value.IsJSArray()) {
-    auto array = value.Array();
+    auto array = lepus::CArray::Create();
     tasm::ForEachLepusValue(
         value, [&array](const lepus::Value& key, const lepus::Value& val) {
           array->set(key.Number(), ConvertJSValueToLepusValue(val));
         });
     result.SetArray(std::move(array));
   } else if (value.IsTable() || value.IsJSTable()) {
-    auto dic = value.Table();
+    auto dic = lepus::Dictionary::Create();
     tasm::ForEachLepusValue(
         value, [&dic](const lepus::Value& key, const lepus::Value& val) {
           dic->SetValue(key.String(), ConvertJSValueToLepusValue(val));

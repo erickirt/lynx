@@ -560,7 +560,7 @@ TEST(BorderRadiusHandler, Longhand) {
   EXPECT_FALSE(output.find(id) == output.end());
   EXPECT_EQ(output.size(), static_cast<size_t>(1));
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(4));
   for (int i = 0; i < 4;) {
     EXPECT_EQ((int)arr->get(i).Number(), 50);

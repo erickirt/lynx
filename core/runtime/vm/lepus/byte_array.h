@@ -37,6 +37,13 @@ class ByteArray : public lepus::RefCounted {
   ByteArray() = default;
   ByteArray(std::unique_ptr<uint8_t[]> ptr, size_t length);
 
+  friend class Value;
+
+  void Reset() {
+    ptr_ = nullptr;
+    length_ = 0;
+  }
+
  private:
   std::unique_ptr<uint8_t[]> ptr_;
   size_t length_{0};

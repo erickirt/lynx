@@ -496,7 +496,7 @@ TEST_F(TransformOperationsTest,
     EXPECT_TRUE(result_value.IsArray());
     auto arr = result_value.GetValue().Array();
     EXPECT_EQ(arr->size(), static_cast<size_t>(3));
-    auto item = arr->get(0).Array();
+    auto item = arr->get(0).Array().strongify();
     EXPECT_EQ(item->size(), static_cast<size_t>(7));
     EXPECT_EQ(item->get(0).Number(),
               (int)starlight::TransformType::kTranslate3d);
@@ -534,7 +534,7 @@ TEST_F(TransformOperationsTest,
     EXPECT_TRUE(result_value.IsArray());
     auto arr = result_value.GetValue().Array();
     EXPECT_EQ(arr->size(), static_cast<size_t>(2));
-    auto item = arr->get(0).Array();
+    auto item = arr->get(0).Array().strongify();
     EXPECT_EQ(item->size(), static_cast<size_t>(3));
     EXPECT_EQ(item->get(0).Number(), (int)starlight::TransformType::kScale);
     EXPECT_FLOAT_EQ(item->get(1).Number(), 1);
@@ -567,7 +567,7 @@ TEST_F(TransformOperationsTest,
     EXPECT_TRUE(result_value.IsArray());
     auto arr = result_value.GetValue().Array();
     EXPECT_EQ(arr->size(), static_cast<size_t>(2));
-    auto item = arr->get(0).Array();
+    auto item = arr->get(0).Array().strongify();
     EXPECT_EQ(item->size(), static_cast<size_t>(2));
     EXPECT_EQ(item->get(0).Number(), (int)starlight::TransformType::kRotateY);
     EXPECT_FLOAT_EQ(item->get(1).Number(), 36);
@@ -619,7 +619,7 @@ TEST_F(TransformOperationsTest,
     auto arr = result_value.GetValue().Array();
     EXPECT_EQ(arr->size(), static_cast<size_t>(12));
 
-    auto item = arr->get(0).Array();
+    auto item = arr->get(0).Array().strongify();
     EXPECT_EQ(item->size(), static_cast<size_t>(7));
     EXPECT_EQ(item->get(0).Number(),
               (int)starlight::TransformType::kTranslate3d);

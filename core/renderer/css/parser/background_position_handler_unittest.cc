@@ -37,9 +37,9 @@ TEST(BackgroundPositionHandler, Handler) {
   EXPECT_EQ(output.size(), static_cast<size_t>(1));
   auto background_position = output[id];
   EXPECT_TRUE(background_position.IsArray());
-  auto pos = background_position.GetValue().Array();
+  auto pos = background_position.GetValue().Array().strongify();
   EXPECT_EQ(pos->size(), static_cast<size_t>(1));
-  auto arr = pos->get(0).Array();
+  auto arr = pos->get(0).Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(4));
   for (size_t i = 0; i < arr->size(); i += 2) {
     EXPECT_EQ(
@@ -230,9 +230,9 @@ TEST(BackgroundPositionHandler, Calc) {
   EXPECT_EQ(output.size(), static_cast<size_t>(1));
   auto background_position = output[id];
   EXPECT_TRUE(background_position.IsArray());
-  auto pos = background_position.GetValue().Array();
+  auto pos = background_position.GetValue().Array().strongify();
   EXPECT_EQ(pos->size(), static_cast<size_t>(1));
-  auto arr = pos->get(0).Array();
+  auto arr = pos->get(0).Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(4));
   EXPECT_EQ((CSSValuePattern)arr->get(0).Number(), CSSValuePattern::CALC);
   EXPECT_EQ(arr->get(1).StringView(), "calc(100% - 20px)");

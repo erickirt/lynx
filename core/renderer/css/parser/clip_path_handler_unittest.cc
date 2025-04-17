@@ -17,7 +17,7 @@ TEST(ClipPathHandler, HandleCircle) {
   lepus::Value input = lepus::Value(R"(circle(40px at 30px bottom))");
   EXPECT_TRUE(UnitHandler::Process(kPropertyIDClipPath, input, out, configs));
   CSSValue circle = out[kPropertyIDClipPath];
-  auto arr = circle.GetValue().Array();
+  auto arr = circle.GetValue().Array().strongify();
   EXPECT_EQ(arr->get(0).Number(),
             static_cast<uint32_t>(starlight::BasicShapeType::kCircle));
   EXPECT_EQ(arr->get(1).Number(), 40);
@@ -63,7 +63,7 @@ TEST(ClipPathHandler, Handle) {
   input = lepus::Value(R"(path("M 0 0 L 100 100 L 30 30 Z"))");
   EXPECT_TRUE(UnitHandler::Process(kPropertyIDClipPath, input, out, configs));
   CSSValue path = out[kPropertyIDClipPath];
-  auto arr = path.GetValue().Array();
+  auto arr = path.GetValue().Array().strongify();
   EXPECT_EQ(arr->get(0).Number(),
             static_cast<uint32_t>(starlight::BasicShapeType::kPath));
   EXPECT_TRUE(strcmp(arr->get(1).CString(), "M 0 0 L 100 100 L 30 30 Z") == 0);
@@ -140,7 +140,7 @@ TEST(ClipPathHandler, HandleSuperEllipse) {
       lepus::Value(R"(super-ellipse(40px 30px 2 2 at 30px bottom))");
   EXPECT_TRUE(UnitHandler::Process(kPropertyIDClipPath, input, out, configs));
   CSSValue super_ellipse = out[kPropertyIDClipPath];
-  auto arr = super_ellipse.GetValue().Array();
+  auto arr = super_ellipse.GetValue().Array().strongify();
   EXPECT_EQ(arr->get(0).Number(),
             static_cast<uint32_t>(starlight::BasicShapeType::kSuperEllipse));
 #define UNIT_PX static_cast<uint32_t>(lynx::tasm::CSSValuePattern::PX)

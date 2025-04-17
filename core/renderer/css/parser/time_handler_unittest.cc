@@ -44,7 +44,7 @@ TEST(TimeHandler, Handler) {
   EXPECT_FALSE(output.empty());
   EXPECT_TRUE(output.find(id) != output.end());
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(3));
   EXPECT_EQ(arr->get(0).Number(), 2000);
   EXPECT_EQ(arr->get(1).Number(), 1000);

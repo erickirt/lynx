@@ -192,6 +192,13 @@ class BASE_EXPORT_FOR_DEVTOOL CArray : public RefCountedBase {
  protected:
   CArray() = default;
 
+  friend class Value;
+
+  void Reset() {
+    vec_.clear();
+    __padding__ = 0;
+  }
+
  private:
   base::InlineVector<Value, 6> vec_;
 

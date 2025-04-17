@@ -119,8 +119,8 @@ class Function : public fml::RefCountedThreadSafeStorage {
 
   BASE_EXPORT_FOR_DEVTOOL int64_t GetFunctionId();
 
-  fml::RefPtr<Function> GetChildFunction(long index) {
-    return child_functions_[index];
+  fml::WeakRefPtr<Function> GetChildFunction(long index) {
+    return fml::WeakRefPtr<Function>(child_functions_[index].get());
   }
 
   const auto& GetChildFunction() { return child_functions_; }
@@ -281,7 +281,9 @@ class Closure : public fml::RefCountedThreadSafeStorage {
   }
   ~Closure() override = default;
 
-  fml::RefPtr<Function> function() { return function_; }
+  fml::WeakRefPtr<Function> function() {
+    return fml::WeakRefPtr<Function>(function_.get());
+  }
 
   void AddUpvalue(Value* value) { upvalues_.push_back(value); }
   Value* GetUpvalue(long index) { return upvalues_[index]; }
@@ -295,6 +297,14 @@ class Closure : public fml::RefCountedThreadSafeStorage {
  protected:
   Closure() = default;
   Closure(fml::RefPtr<Function> function) : function_(std::move(function)) {}
+
+  friend class Value;
+
+  void Reset() {
+    function_ = nullptr;
+    context_.SetNil();
+    upvalues_.clear();
+  }
 
  private:
   friend class ContextBinaryWriter;

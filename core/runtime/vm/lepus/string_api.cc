@@ -542,7 +542,7 @@ static Value Match(VMContext* context) {
     if (ret == 0 || ret == -1) {
       if (match_num == 0) {
         result = Value();
-        result_array = result.Array();
+        result_array.reset(result.Array().get());
       }
       break;
     }

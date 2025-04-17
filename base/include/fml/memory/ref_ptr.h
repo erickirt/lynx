@@ -280,6 +280,69 @@ bool operator==(std::nullptr_t null, const RefPtr<T>& rhs) {
   return !static_cast<bool>(rhs);
 }
 
+// WeakRefPtr does not strongly reference the internal RefCounted object. It is
+// mainly used in synchronous call scenarios to avoid modifying the reference
+// count and improve efficiency. It can be implicitly converted to the
+// corresponding RefPtr strong reference pointer. Because WeakRefPtr itself
+// cannot be copied, when it needs to be passed to a closure asynchronously,
+// please call strongify() to convert it to a RefPtr strong reference pointer.
+template <typename T>
+struct WeakRefPtr {
+ public:
+  BASE_DISALLOW_COPY_ASSIGN_AND_MOVE(WeakRefPtr);
+
+  WeakRefPtr(std::nullptr_t) : value_(nullptr) {}
+  explicit WeakRefPtr(T* value) : value_(value) {}
+
+  template <typename U, typename = typename std::enable_if<
+                            std::is_convertible<U*, T*>::value>::type>
+  WeakRefPtr(const WeakRefPtr<U>& r)  // NOLINT(google-explicit-constructor)
+      : value_(static_cast<T*>(r.value_)) {}
+
+  WeakRefPtr& operator=(std::nullptr_t) {
+    value_ = nullptr;
+    return *this;
+  }
+
+  T& operator*() const { return *value_; }
+
+  T* operator->() const { return value_; }
+
+  T* get() const { return value_; }
+
+  void reset(T* v) { value_ = v; }
+
+  RefPtr<T> strongify() const { return RefPtr<T>(value_); }
+
+  explicit operator bool() const { return !!value_; }
+
+  operator RefPtr<T>() const { return fml::RefPtr<T>(value_); }
+
+  template <typename U, typename = typename std::enable_if<
+                            std::is_convertible<T*, U*>::value>::type>
+  operator RefPtr<U>() const {
+    return fml::RefPtr<U>(static_cast<U*>(value_));
+  }
+
+  operator T&() const { return *value_; }
+
+  template <typename U>
+  bool operator==(const WeakRefPtr<U>& rhs) const {
+    return value_ == rhs.value_;
+  }
+
+  template <typename U>
+  bool operator!=(const WeakRefPtr<U>& rhs) const {
+    return value_ != rhs.value_;
+  }
+
+  bool operator==(std::nullptr_t) const { return value_ == nullptr; }
+  bool operator!=(std::nullptr_t) const { return value_ != nullptr; }
+
+ private:
+  T* value_;
+};
+
 }  // namespace fml
 }  // namespace lynx
 
@@ -301,6 +364,7 @@ using lynx::fml::AdoptRef;
 using lynx::fml::MakeRefCounted;
 using lynx::fml::Ref;
 using lynx::fml::RefPtr;
+using lynx::fml::WeakRefPtr;
 }  // namespace fml
 
 #endif  // BASE_INCLUDE_FML_MEMORY_REF_PTR_H_

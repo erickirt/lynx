@@ -31,13 +31,13 @@ TEST(ShadowHandler, Handler) {
   EXPECT_FALSE(output.empty());
   EXPECT_FALSE(output.find(id) == output.end());
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(1));
   EXPECT_TRUE(arr->get(0).IsTable());
-  auto table = arr->get(0).Table();
+  auto table = arr->get(0).Table().strongify();
   EXPECT_TRUE(table->GetValue("enable").Bool());
   EXPECT_EQ(table->GetValue("color").Number(), 4294901760);
-  auto item_arr = table->GetValue("h_offset").Array();
+  auto item_arr = table->GetValue("h_offset").Array().strongify();
   EXPECT_EQ(item_arr->get(0).Number(), 1);
   EXPECT_EQ((CSSValuePattern)item_arr->get(1).Number(), CSSValuePattern::PX);
   item_arr = table->GetValue("v_offset").Array();
@@ -141,7 +141,7 @@ TEST(ShadowHandler, None) {
   EXPECT_FALSE(output.empty());
   EXPECT_FALSE(output.find(id) == output.end());
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->size(), 0);
 
   impl = lepus::Value("NONE");
@@ -232,7 +232,7 @@ TEST(ShadowHandler, TextShadow) {
     auto table = arr->get(i).Table();
     EXPECT_TRUE(table->GetValue("enable").Bool());
     EXPECT_EQ(table->GetValue("color").Number(), 0xFFFF0000);
-    auto item_arr = table->GetValue("h_offset").Array();
+    auto item_arr = table->GetValue("h_offset").Array().strongify();
     EXPECT_EQ(item_arr->get(0).Number(), 1);
     EXPECT_EQ((CSSValuePattern)item_arr->get(1).Number(), CSSValuePattern::PX);
     item_arr = table->GetValue("v_offset").Array();

@@ -51,6 +51,13 @@ class RegExp : public fml::RefCountedThreadSafeStorage {
     flags_ = flags;
   }
 
+  friend class Value;
+
+  void Reset() {
+    pattern_ = base::String();
+    flags_ = base::String();
+  }
+
  private:
   base::String pattern_;
   base::String flags_;

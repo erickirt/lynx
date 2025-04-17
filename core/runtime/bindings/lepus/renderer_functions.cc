@@ -3852,8 +3852,8 @@ RENDERER_FUNCTION_CC(FiberSetEvents) {
   }
 
   ForEachLepusValue(
-      *callbacks, [element, LEPUS_CONTEXT()](const lepus::Value& index,
-                                             const lepus::Value& value) {
+      *callbacks, [&element, LEPUS_CONTEXT()](const lepus::Value& index,
+                                              const lepus::Value& value) {
         BASE_STATIC_STRING_DECL(kName, "name");
         BASE_STATIC_STRING_DECL(kType, "type");
         BASE_STATIC_STRING_DECL(kFunction, "function");
@@ -4635,40 +4635,39 @@ RENDERER_FUNCTION_CC(FiberUpdateComponentInfo) {
     RETURN_UNDEFINED();
   }
 
-  tasm::ForEachLepusValue(*arg1, [&component](const auto& key,
-                                              const auto& value) {
-    constexpr const static char* kComponentID = "componentID";
-    constexpr const static char* kComponentName = "name";
-    constexpr const static char* kComponentPath = "path";
-    constexpr const static char* kComponentEntry = "entry";
-    constexpr const static char* kComponentCSSID = "cssID";
+  tasm::ForEachLepusValue(
+      *arg1, [&component](const auto& key, const auto& value) {
+        constexpr const static char* kComponentID = "componentID";
+        constexpr const static char* kComponentName = "name";
+        constexpr const static char* kComponentPath = "path";
+        constexpr const static char* kComponentEntry = "entry";
+        constexpr const static char* kComponentCSSID = "cssID";
 
-    const auto& key_str = key.StdString();
+        const auto& key_str = key.StdString();
 
-    if (key_str == kComponentID) {
-      component->set_component_id(value.String());
-    } else if (key_str == kComponentName) {
-      component->set_component_name(value.String());
-    } else if (key_str == kComponentPath) {
-      component->set_component_path(value.String());
-    } else if (key_str == kComponentEntry) {
-      component->set_component_entry(value.String());
-    } else if (key_str == kComponentCSSID) {
-      // Currently, the `cssID` in `FiberUpdateComponentInfo` updates the
-      // `component_css_id_` of `ComponentElement` rather than `css_id_`. In the
-      // future, we will consider adding two new keys to update
-      // `component_css_id_` and `css_id_` separately. The behavior
-      // corresponding to `cssID` will not change to avoid causing a break.
-      fml::static_ref_ptr_cast<ComponentElement>(component)->SetComponentCSSID(
-          value.Number());
-    } else if (key_str == kElementConfig) {
-      if (value.GetProperty(BASE_STATIC_STRING(kRemoveComponentElement))
-              .IsTrue()) {
-        component->MarkAsWrapperComponent();
-      }
-      component->SetConfig(value.ToLepusValue());
-    }
-  });
+        if (key_str == kComponentID) {
+          component->set_component_id(value.String());
+        } else if (key_str == kComponentName) {
+          component->set_component_name(value.String());
+        } else if (key_str == kComponentPath) {
+          component->set_component_path(value.String());
+        } else if (key_str == kComponentEntry) {
+          component->set_component_entry(value.String());
+        } else if (key_str == kComponentCSSID) {
+          // Currently, the `cssID` in `FiberUpdateComponentInfo` updates the
+          // `component_css_id_` of `ComponentElement` rather than `css_id_`. In
+          // the future, we will consider adding two new keys to update
+          // `component_css_id_` and `css_id_` separately. The behavior
+          // corresponding to `cssID` will not change to avoid causing a break.
+          component->SetComponentCSSID(value.Number());
+        } else if (key_str == kElementConfig) {
+          if (value.GetProperty(BASE_STATIC_STRING(kRemoveComponentElement))
+                  .IsTrue()) {
+            component->MarkAsWrapperComponent();
+          }
+          component->SetConfig(value.ToLepusValue());
+        }
+      });
   RETURN_UNDEFINED();
 }
 

@@ -39,6 +39,15 @@ class RefCounted : public RefCountedBase {
 };
 
 }  // namespace lepus
+
+namespace fml {
+// Specialized for lepus::RefCounted to solve compiling issues.
+template <typename D>
+WeakRefPtr<D> static_ref_ptr_cast(const WeakRefPtr<lepus::RefCounted>& rhs) {
+  return WeakRefPtr<D>(static_cast<D*>(rhs.get()));
+}
+}  // namespace fml
+
 }  // namespace lynx
 
 #endif  // CORE_RUNTIME_VM_LEPUS_REF_COUNTED_CLASS_H_

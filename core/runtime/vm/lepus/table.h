@@ -105,12 +105,12 @@ class BASE_EXPORT_FOR_DEVTOOL Dictionary : public RefCountedBase {
     std::string_view StringView() const { return value_->StringView(); }
     const char* CString() const { return value_->CString(); }
     const std::string& StdString() const { return value_->StdString(); }
-    fml::RefPtr<lepus::CArray> Array() const { return value_->Array(); }
-    fml::RefPtr<lepus::Dictionary> Table() const { return value_->Table(); }
+    fml::WeakRefPtr<CArray> Array() const { return value_->Array(); }
+    fml::WeakRefPtr<Dictionary> Table() const { return value_->Table(); }
     CFunction Function() const { return value_->Function(); }
     void* CPoint() const { return value_->CPoint(); }
     void* LEPUSCPointer() const { return value_->LEPUSCPointer(); }
-    fml::RefPtr<lepus::RefCounted> RefCounted() const {
+    fml::WeakRefPtr<class RefCounted> RefCounted() const {
       return value_->RefCounted();
     }
     Value GetProperty(uint32_t idx) const { return value_->GetProperty(idx); }
@@ -258,6 +258,13 @@ class BASE_EXPORT_FOR_DEVTOOL Dictionary : public RefCountedBase {
  protected:
   Dictionary() = default;
   Dictionary(HashMap map);
+
+  friend class Value;
+
+  void Reset() {
+    hash_map_.clear();
+    __padding__ = 0;
+  }
 
  private:
   HashMap hash_map_;

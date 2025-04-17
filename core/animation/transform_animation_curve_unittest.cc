@@ -338,20 +338,32 @@ TEST_F(TransformAnimationCurveTest, GetValue) {
   fml::TimeDelta test_time1 = fml::TimeDelta::FromSecondsF(0.f);
   fml::TimeDelta test_time2 = fml::TimeDelta::FromSecondsF(0.5f);
   fml::TimeDelta test_time3 = fml::TimeDelta::FromSecondsF(1.f);
-  auto test_value1 =
-      curve->GetValue(test_time1).GetValue().Array()->get(0).Array();
+  auto test_value1 = curve->GetValue(test_time1)
+                         .GetValue()
+                         .Array()
+                         ->get(0)
+                         .Array()
+                         .strongify();
   EXPECT_EQ(test_value1->get(0).Number(),
             (int)starlight::TransformType::kScale);
   EXPECT_FLOAT_EQ(test_value1->get(1).Number(), 0.1);
 
-  auto test_value2 =
-      curve->GetValue(test_time2).GetValue().Array()->get(0).Array();
+  auto test_value2 = curve->GetValue(test_time2)
+                         .GetValue()
+                         .Array()
+                         ->get(0)
+                         .Array()
+                         .strongify();
   EXPECT_EQ(test_value2->get(0).Number(),
             (int)starlight::TransformType::kScale);
   EXPECT_FLOAT_EQ(test_value2->get(1).Number(), 0.6);
 
-  auto test_value3 =
-      curve->GetValue(test_time3).GetValue().Array()->get(0).Array();
+  auto test_value3 = curve->GetValue(test_time3)
+                         .GetValue()
+                         .Array()
+                         ->get(0)
+                         .Array()
+                         .strongify();
   EXPECT_EQ(test_value3->get(0).Number(),
             (int)starlight::TransformType::kScale);
   EXPECT_FLOAT_EQ(test_value3->get(1).Number(), 1.1);

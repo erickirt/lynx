@@ -96,7 +96,7 @@ struct LepusCheck<std::tuple<Args...>> {
     ASSERT_EQ(array->size(), std::tuple_size<tuple_type>::value);
 
     TupleForEach(
-        t, [array](size_t i, auto f) { LepusCheckFunc(array->get(i), f); },
+        t, [&array](size_t i, auto f) { LepusCheckFunc(array->get(i), f); },
         std::make_integer_sequence<size_t, sizeof...(Args)>());
   }
 };

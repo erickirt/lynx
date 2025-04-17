@@ -119,8 +119,10 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
 
   explicit Value(const fml::RefPtr<Dictionary>& data);
   explicit Value(fml::RefPtr<Dictionary>&& data);
+  explicit Value(const fml::WeakRefPtr<Dictionary>& data);
   explicit Value(const fml::RefPtr<CArray>& data);
   explicit Value(fml::RefPtr<CArray>&& data);
+  explicit Value(const fml::WeakRefPtr<CArray>& data);
   explicit Value(const fml::RefPtr<lepus::LEPUSObject>& data);
   explicit Value(fml::RefPtr<lepus::LEPUSObject>&& data);
   explicit Value(const fml::RefPtr<lepus::ByteArray>& data);
@@ -152,10 +154,6 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
     return value_.type == lynx_value_object &&
            value_.tag == static_cast<int32_t>(CustomRefCountedType::kRegExp);
   }
-
-  fml::RefPtr<lepus::Closure> GetClosure() const;
-  fml::RefPtr<lepus::CDate> Date() const;
-  fml::RefPtr<lepus::RegExp> RegExp() const;
 
   void SetClosure(const fml::RefPtr<lepus::Closure>&);
   void SetClosure(fml::RefPtr<lepus::Closure>&&);
@@ -372,15 +370,27 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   /// optimal but acceptable for safety reason.
   base::String String() &&;
 
-  fml::RefPtr<lepus::Dictionary> Table() const;
-  fml::RefPtr<lepus::CArray> Array() const;
-  fml::RefPtr<lepus::LEPUSObject> LEPUSObject() const;
-  fml::RefPtr<lepus::ByteArray> ByteArray() const;
+  fml::WeakRefPtr<Closure> GetClosure() const&;
+  fml::WeakRefPtr<CDate> Date() const&;
+  fml::WeakRefPtr<lepus::RegExp> RegExp() const&;
+  fml::WeakRefPtr<Dictionary> Table() const&;
+  fml::WeakRefPtr<CArray> Array() const&;
+  fml::WeakRefPtr<lepus::LEPUSObject> LEPUSObject() const&;
+  fml::WeakRefPtr<lepus::ByteArray> ByteArray() const&;
+  fml::WeakRefPtr<lepus::RefCounted> RefCounted() const&;
+
+  fml::RefPtr<Closure> GetClosure() &&;
+  fml::RefPtr<CDate> Date() &&;
+  fml::RefPtr<lepus::RegExp> RegExp() &&;
+  fml::RefPtr<Dictionary> Table() &&;
+  fml::RefPtr<CArray> Array() &&;
+  fml::RefPtr<lepus::LEPUSObject> LEPUSObject() &&;
+  fml::RefPtr<lepus::ByteArray> ByteArray() &&;
+  fml::RefPtr<lepus::RefCounted> RefCounted() &&;
 
   CFunction Function() const;
   BuiltinFunctionTable* FunctionTable() const;
   void* CPoint() const;
-  fml::RefPtr<lepus::RefCounted> RefCounted() const;
 
   void SetBool(bool);
 
@@ -670,6 +680,13 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   static bool IsLepusValueEqualToExtendedValue(lynx_api_env env,
                                                const lepus::Value& src,
                                                const lynx_value& dst);
+  static CArray* DummyArray();
+  static Dictionary* DummyTable();
+  static class RegExp* DummyRegExp();
+  static CDate* DummyDate();
+  static Closure* DummyClosure();
+  static class LEPUSObject* DummyLEPUSObject();
+  static class ByteArray* DummyByteArray();
 
   static void ForEachLepusValue(const Value& value, LepusValueIterator func);
 

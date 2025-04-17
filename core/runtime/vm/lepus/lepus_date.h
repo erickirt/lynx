@@ -118,6 +118,15 @@ class CDate : public fml::RefCountedThreadSafeStorage {
     initialize();
   }
 
+  friend class Value;
+
+  void Reset() {
+    date_ = tm_extend();
+    ms_ = 0;
+    language = global_language;
+    initialize();
+  }
+
  private:
   void initialize();
   tm_extend date_;  // year ... min seconds

@@ -36,9 +36,9 @@ TEST(TransformHandler, Handler) {
   EXPECT_FALSE(output.empty());
   EXPECT_FALSE(output.find(id) == output.end());
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->size(), static_cast<size_t>(3));
-  auto item = arr->get(0).Array();
+  auto item = arr->get(0).Array().strongify();
   EXPECT_EQ(item->size(), static_cast<size_t>(5));
   EXPECT_EQ(item->get(0).Number(), (int)starlight::TransformType::kTranslate);
   EXPECT_EQ(item->get(1).Number(), 1);

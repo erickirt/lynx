@@ -27,7 +27,7 @@ TEST(TransformOriginHandler, Handler) {
   ret = UnitHandler::Process(id, impl, output, configs);
   EXPECT_TRUE(ret);
   EXPECT_TRUE(output[id].IsArray());
-  auto arr = output[id].GetValue().Array();
+  auto arr = output[id].GetValue().Array().strongify();
   EXPECT_EQ(arr->get(0).Number(), 10);
   EXPECT_EQ(arr->get(1).Number(), (int)CSSValuePattern::PX);
   EXPECT_EQ(arr->get(2).Number(), 50);

@@ -773,7 +773,7 @@ bool CSSStyleUtils::ComputeFilter(const tasm::CSSValue& value, bool reset,
 
 namespace {
 void GetTransformMatrix(TransformType matrix_type,
-                        fml::RefPtr<lepus::CArray>& arr,
+                        const fml::RefPtr<lepus::CArray>& arr,
                         TransformRawData& transform_raw_data,
                         const tasm::CssMeasureContext& context,
                         const tasm::CSSParserConfigs& configs) {
