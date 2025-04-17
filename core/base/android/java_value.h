@@ -57,7 +57,9 @@ class JavaValue {
     Array,
     Map,
     // Only use for Java returnType:piperdata
-    Transfer
+    Transfer,
+    // Only use for Java returnType:LynxObject
+    LynxObject
   };
 
   JavaValue() : type_(JavaValueType::Null) {}
@@ -106,6 +108,7 @@ class JavaValue {
   bool IsArrayBuffer() const { return type_ == JavaValueType::ByteArray; }
   bool IsMap() const { return type_ == JavaValueType::Map; }
   bool IsTransfer() const { return type_ == JavaValueType::Transfer; }
+  bool IsLynxObject() const { return type_ == JavaValueType::LynxObject; }
 
   bool Bool() const;
   int32_t Int32() const;
@@ -134,6 +137,12 @@ class JavaValue {
   }
 
   jobject TransferData() const {
+    return std::get<base::android::ScopedGlobalJavaRef<jobject>>(
+               j_variant_value_)
+        .Get();
+  }
+
+  jobject LynxObject() const {
     return std::get<base::android::ScopedGlobalJavaRef<jobject>>(
                j_variant_value_)
         .Get();

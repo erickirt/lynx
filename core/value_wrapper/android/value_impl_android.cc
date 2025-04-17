@@ -9,6 +9,7 @@
 #include "core/base/android/java_value.h"
 #include "core/base/android/piper_data.h"
 #include "core/base/js_constants.h"
+#include "core/runtime/bindings/jsi/modules/android/platform_jsi/lynx_platform_jsi_object_android.h"
 #include "core/runtime/common/utils.h"
 #include "core/value_wrapper/value_impl_piper.h"
 
@@ -316,6 +317,23 @@ std::unique_ptr<Value> ValueImplAndroid::ParseTransferValue(
       return std::make_unique<ValueImplPiper>(*runtime,
                                               std::move(piper_value.value()));
     }
+  }
+  return nullptr;
+}
+
+std::unique_ptr<Value> ValueImplAndroid::ParseLynxObject(
+    std::shared_ptr<PubValueFactory> value_factory) const {
+  if (value_factory->GetFactoryType() == PubValueFactory::FactoryType::kPiper) {
+    piper::Runtime* rt =
+        reinterpret_cast<PiperValueFactory*>(value_factory.get())->GetRuntime();
+    piper::Scope scope(*rt);
+    JNIEnv* env = base::android::AttachCurrentThread();
+    // create a lynx object module
+    auto object_module = lynx::piper::LynxPlatformJSIObjectAndroid::Create(
+        env, backend_value_.LynxObject());
+    auto host_object =
+        piper::Object::createFromHostObject(*rt, std::move(object_module));
+    return std::make_unique<ValueImplPiper>(*rt, std::move(host_object));
   }
   return nullptr;
 }

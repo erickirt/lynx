@@ -126,6 +126,11 @@ class ValueImplAndroid : public pub::Value {
   std::unique_ptr<pub::Value> ParseTransferValue(
       std::shared_ptr<PubValueFactory> value_factory) const override;
 
+  bool IsLynxObject() const override { return backend_value_.IsLynxObject(); };
+
+  std::unique_ptr<pub::Value> ParseLynxObject(
+      std::shared_ptr<PubValueFactory> value_factory) const override;
+
  private:
   base::android::JavaValue backend_value_;
 };

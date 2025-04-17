@@ -17,6 +17,7 @@
 #include "core/runtime/bindings/jsi/modules/android/lynx_module_android.h"
 #include "core/runtime/bindings/jsi/modules/android/method_invoker.h"
 #include "core/services/recorder/recorder_controller.h"
+#include "lynx/core/value_wrapper/android/value_impl_android.h"
 
 void Invoke(JNIEnv* env, jobject jcaller, jlong nativePtr, jobject array) {
   auto callbackWeakImpl =
@@ -29,7 +30,7 @@ void Invoke(JNIEnv* env, jobject jcaller, jlong nativePtr, jobject array) {
         "callbackImpl.lock() is a nullptr");
     return;
   }
-  callbackImpl->setArguments(
+  callbackImpl->SetArguments(
       lynx::base::android::ScopedGlobalJavaRef<jobject>(env, array));
   std::shared_ptr<lynx::piper::LynxModuleAndroid> callback_invoker =
       callbackImpl->callback_invoker_.lock();
@@ -87,101 +88,12 @@ ModuleCallbackAndroid::CallbackPair ModuleCallbackAndroid::createCallbackImpl(
   return pair;
 }
 
-void ModuleCallbackAndroid::Invoke(Runtime* runtime,
-                                   ModuleCallbackFunctionHolder* holder) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (runtime == nullptr) {
-    LOGE("lynx ModuleCallback has null runtime.");
-    if (timing_collector_ != nullptr) {
-      timing_collector_->OnErrorOccurred(
-          NativeModuleStatusCode::PARAMETER_ERROR);
-    }
-    return;
-  }
-  piper::Scope scope(*runtime);
-
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, "JNIValueToJSValue");
-  uint64_t convert_params_start = base::CurrentSystemTimeMilliseconds();
-  TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_convert_params_start",
-      [convert_params_start,
-       timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
-        ctx.event()->add_debug_annotations(
-            "timestamp", std::to_string(convert_params_start));
-        if (timing_collector != nullptr) {
-          ctx.event()->add_flow_ids(timing_collector->FlowId());
-        }
-      });
-  auto arr = jsArrayFromJavaOnlyArray(env, arguments.Get(), runtime);
-  if (!arr) {
-    LOGE(
-        "invoke JSB callback fail! Reason: Transfer JAVA value to "
-        "js value fail.");
-    if (timing_collector_ != nullptr) {
-      timing_collector_->OnErrorOccurred(
-          NativeModuleStatusCode::PARAMETER_ERROR);
-    }
-    return;
-  }
-  auto size = (*arr).length(*runtime);
-  if (!size) {
-    if (timing_collector_ != nullptr) {
-      timing_collector_->OnErrorOccurred(NativeModuleStatusCode::FAILURE);
-    }
-    return;
-  }
-  piper::Value values[*size];
-  for (size_t index = 0; index < *size; index++) {
-    auto item = (*arr).getValueAtIndex(*runtime, index);
-    if (!item) {
-      if (timing_collector_ != nullptr) {
-        timing_collector_->OnErrorOccurred(
-            NativeModuleStatusCode::PARAMETER_ERROR);
-      }
-      return;
-    }
-    values[index] = std::move(*item);
-  }
-  uint64_t convert_params_end = base::CurrentSystemTimeMilliseconds();
-  TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_convert_params_end",
-      [convert_params_start, convert_params_end,
-       timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
-        ctx.event()->add_debug_annotations("timestamp",
-                                           std::to_string(convert_params_end));
-        ctx.event()->add_debug_annotations(
-            "jsb_callback_convert_params",
-            std::to_string(convert_params_end - convert_params_start));
-        if (timing_collector != nullptr) {
-          ctx.event()->add_flow_ids(timing_collector->FlowId());
-        }
-      });
-  TRACE_EVENT_END(LYNX_TRACE_CATEGORY_JSB);
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "InvokeCallback");
-  TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_invoke_start",
-      [convert_params_end,
-       timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
-        ctx.event()->add_debug_annotations("timestamp",
-                                           std::to_string(convert_params_end));
-        if (timing_collector != nullptr) {
-          ctx.event()->add_flow_ids(timing_collector->FlowId());
-        }
-      });
-#if ENABLE_TESTBENCH_RECORDER
-  tasm::recorder::NativeModuleRecorder::GetInstance().RecordCallback(
-      module_name_.c_str(), method_name_.c_str(), values[0], runtime,
-      callback_id(), record_id_);
-#endif
-  holder->function_.call(*runtime, values, *size);
-  if (timing_collector_ != nullptr) {
-    timing_collector_->EndCallbackInvoke(
-        (convert_params_end - convert_params_start), convert_params_end);
-    if (group_interceptor_) {
-      group_interceptor_->OnCallbackInvoked(timing_collector_, this);
-    }
-  }
-}
+void ModuleCallbackAndroid::SetArguments(
+    base::android::ScopedGlobalJavaRef<jobject> obj) {
+  arguments = obj;
+  auto pub_array = std::make_shared<base::android::JavaOnlyArray>(arguments);
+  SetArgs(std::make_unique<pub::ValueImplAndroid>(std::move(pub_array)));
+};
 
 ModuleCallbackAndroid::ModuleCallbackAndroid(
     int64_t callback_id, std::shared_ptr<LynxModuleAndroid> callback_invoker)

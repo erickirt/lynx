@@ -60,6 +60,9 @@ class Value {
   // Transfer type: If a type is a transfer type, it must be parsed through
   // ParseTransferValue
   virtual bool IsTransfer() const { return false; };
+  // LynxObject type: if a type is a LynxObject type, it must be parsed through
+  // ParseLynxObject
+  virtual bool IsLynxObject() const { return false; };
 
   // Getter
   virtual bool Bool() const = 0;
@@ -154,6 +157,12 @@ class Value {
 
   // Transfer
   virtual std::unique_ptr<pub::Value> ParseTransferValue(
+      std::shared_ptr<PubValueFactory> value_factory) const {
+    return nullptr;
+  }
+
+  // LynxObject
+  virtual std::unique_ptr<pub::Value> ParseLynxObject(
       std::shared_ptr<PubValueFactory> value_factory) const {
     return nullptr;
   }

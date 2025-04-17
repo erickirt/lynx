@@ -167,6 +167,15 @@ piper::Value ValueUtils::ConvertValueToPiperValue(piper::Runtime& rt,
             rt, static_cast<const ValueImplPiper*>(transfer_value.get())
                     ->backend_value());
       }
+    } else if (value.IsLynxObject()) {
+      auto lynx_object =
+          value.ParseLynxObject(std::make_shared<PiperValueFactory>(rt));
+      if (lynx_object && lynx_object->backend_type() ==
+                             ValueBackendType::ValueBackendTypePiper) {
+        return piper::Value(
+            rt, static_cast<const ValueImplPiper*>(lynx_object.get())
+                    ->backend_value());
+      }
     }
   }
   return piper::Value();

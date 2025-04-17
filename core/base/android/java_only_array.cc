@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/include/platform/android/scoped_java_ref.h"
 #include "core/base/android/android_jni.h"
 #include "core/base/android/java_only_map.h"
 #include "core/base/android/java_value.h"
@@ -265,9 +266,12 @@ JavaValue JavaOnlyArray::JavaOnlyArrayGetJavaValueAtIndex(JNIEnv* env,
       env->ReleaseByteArrayElements(j_byte_array.Get(), array_ptr, JNI_FALSE);
       return ret;
     }
-    case PiperData:
     case LynxObject: {
-      // TODO(wujintian): Support PiperData and LynxObject
+      return JavaValue(JavaOnlyArrayGetObjectAtIndex(env, array, index),
+                       JavaValue::JavaValueType::LynxObject);
+    }
+    case PiperData: {
+      // TODO(wujintian): Support PiperData
       return JavaValue();
     }
   }

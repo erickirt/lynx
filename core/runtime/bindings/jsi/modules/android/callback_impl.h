@@ -14,7 +14,6 @@
 #include "base/include/closure.h"
 #include "base/include/platform/android/scoped_java_ref.h"
 #include "core/runtime/bindings/jsi/modules/lynx_jsi_module_callback.h"
-#include "core/runtime/jsi/jsi.h"
 
 namespace lynx {
 namespace piper {
@@ -39,14 +38,11 @@ class ModuleCallbackAndroid : public ModuleCallback {
   std::weak_ptr<LynxModuleAndroid> callback_invoker_;
   std::weak_ptr<LynxPromiseImpl> promise;
 
-  inline void setArguments(base::android::ScopedGlobalJavaRef<jobject> obj) {
-    arguments = obj;
-  };
+  void SetArguments(base::android::ScopedGlobalJavaRef<jobject> obj);
+
   base::android::ScopedGlobalJavaRef<jobject> GetArgumentsRef() const {
     return arguments;
   }
-
-  void Invoke(Runtime* runtime, ModuleCallbackFunctionHolder* holder) override;
 
  private:
   base::android::ScopedGlobalJavaRef<jobject> arguments;
