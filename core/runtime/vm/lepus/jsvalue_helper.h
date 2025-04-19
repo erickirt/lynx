@@ -33,6 +33,9 @@ namespace lynx {
 namespace lepus {
 class Value;
 
+using JSValueIteratorCallback =
+    base::MoveOnlyClosure<void, LEPUSContext*, LEPUSValue&, LEPUSValue&>;
+
 class LEPUSValueHelper {
  public:
   static constexpr int64_t MAX_SAFE_INTEGER = 9007199254740991;
@@ -264,27 +267,6 @@ class LEPUSValueHelper {
     return !!ret;
   }
 
-  static inline bool IsLepusEqualJsValue(LEPUSContext* ctx,
-                                         const lepus::Value& src,
-                                         const LEPUSValue& dst) {
-    if (IsArray(ctx, dst)) {  // dst is arrary
-      if (!src.IsArray()) return false;
-      return IsLepusEqualJsArray(ctx, src.Array().get(), dst);
-    } else if (IsObject(dst)) {  // dst is object. including js object and lepus
-                                 // table ref
-      if (!src.IsTable()) return false;
-      return IsLepusEqualJsObject(ctx, src.Table().get(), dst);
-    } else if (IsJsFunction(ctx, dst)) {
-      return false;
-    }
-    // the last need to be translated to lepus::Value for doing equal,
-    // and the dst is not array or object, so the convert is light
-    return src == ToLepusValue(ctx, dst);
-  }
-
-  static bool IsJsValueEqualJsValue(LEPUSContext* ctx, const LEPUSValue& left,
-                                    const LEPUSValue& right);
-
   static void PrintValue(std::ostream& s, LEPUSContext* ctx,
                          const LEPUSValue& val, uint32_t prefix = 1);
   static void Print(LEPUSContext* ctx, const LEPUSValue& val);
@@ -330,12 +312,6 @@ class LEPUSValueHelper {
     reinterpret_cast<JSValueIteratorCallback*>(pfunc)->operator()(ctx, key,
                                                                   value);
   }
-
-  static bool IsLepusEqualJsArray(LEPUSContext* ctx, lepus::CArray* src,
-                                  const LEPUSValue& dst);
-
-  static bool IsLepusEqualJsObject(LEPUSContext* ctx, lepus::Dictionary* src,
-                                   const LEPUSValue& dst);
 
   static lepus::Value ToLepusArray(LEPUSContext* ctx, const LEPUSValue& val,
                                    int32_t flag = 0);

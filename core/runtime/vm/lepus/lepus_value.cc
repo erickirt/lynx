@@ -41,17 +41,13 @@ Value::Value(CreateAsUndefinedTag) { value_.type = lynx_value_undefined; }
 Value::Value(const Value& value) { Copy(value); }
 
 Value::Value(Value&& value) noexcept {
-  if (p_val_ && IsJSValue()) {
-    p_val_->Reset(cell_->rt_);
-  }
   cell_ = value.cell_;
   value_ = value.value_;
-
-  if (value.p_val_ && IsJSValue()) {
-    p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-    p_val_->Reset(cell_->rt_, value.p_val_->Get());
-    value.p_val_->Reset(cell_->rt_);
+  if (value.IsJSValue()) {
+    lynx_value_move_reference(cell_->env_, value.value_, value.value_ref_,
+                              &value_ref_);
   }
+  value.value_ref_ = nullptr;
   value.cell_ = nullptr;
   value.value_ = {.val_int64 = 0, .type = lynx_value_null, .tag = 0};
 }
@@ -198,12 +194,7 @@ Value::Value(LEPUSContext* ctx, const LEPUSValue& val) {
       .val_ptr = reinterpret_cast<lynx_value_ptr>(LEPUS_VALUE_GET_INT64(val)),
       .type = lynx_value_extended,
       .tag = tag};
-  if (cell_->gc_enable_) {
-    p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-    p_val_->Reset(ctx, val);
-  } else {
-    LEPUS_DupValue(ctx, val);
-  }
+  lynx_value_add_reference(cell_->env_, value_, &value_ref_);
 }
 
 Value::Value(LEPUSContext* ctx, LEPUSValue&& val) {
@@ -224,10 +215,7 @@ Value::Value(LEPUSContext* ctx, LEPUSValue&& val) {
       .val_ptr = reinterpret_cast<lynx_value_ptr>(LEPUS_VALUE_GET_INT64(val)),
       .type = lynx_value_extended,
       .tag = tag};
-  if (cell_->gc_enable_) {
-    p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-    p_val_->Reset(ctx, val);
-  }
+  lynx_value_move_reference(cell_->env_, value_, nullptr, &value_ref_);
   val = LEPUS_UNDEFINED;
 }
 
@@ -235,12 +223,7 @@ Value::Value(lynx_api_env env, const lynx_value& value) : value_(value) {
   if (value.type == lynx_value_extended && env) {
     auto* ctx = lynx_value_api_get_context_from_env(env);
     cell_ = Context::GetContextCellFromCtx(ctx);
-    if (cell_->gc_enable_) {
-      p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-      p_val_->Reset(ctx, WrapJSValue());
-    } else {
-      LEPUS_DupValue(ctx, WrapJSValue());
-    }
+    lynx_value_add_reference(cell_->env_, value_, &value_ref_);
   } else if (!env) {
     DupValue();
   }
@@ -249,10 +232,7 @@ Value::Value(lynx_api_env env, lynx_value&& value) : value_(std::move(value)) {
   if (value.type == lynx_value_extended && env) {
     auto* ctx = lynx_value_api_get_context_from_env(env);
     cell_ = Context::GetContextCellFromCtx(ctx);
-    if (cell_->gc_enable_) {
-      p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-      p_val_->Reset(ctx, WrapJSValue());
-    }
+    lynx_value_move_reference(cell_->env_, value_, nullptr, &value_ref_);
   }
 }
 
@@ -304,8 +284,7 @@ void Value::ToLepusValueRecursively(Value& value, bool deep_convert) {
     return;
   }
   int32_t flag = deep_convert ? 1 : 0;
-  value = LEPUSValueHelper::ToLepusValue(value.context(), value.WrapJSValue(),
-                                         flag);
+  value = ToLepusValue(value.cell_->env_, value.value_, flag);
 }
 
 Value::~Value() { FreeValue(); }
@@ -931,8 +910,11 @@ Value Value::Clone(const Value& src, bool clone_as_jsvalue) {
 
 Value Value::CloneRecursively(const Value& src, bool clone_as_jsvalue) {
   if (src.IsJSValue()) {
-    return LEPUSValueHelper::DeepCopyJsValue(src.cell_->ctx_, src.WrapJSValue(),
-                                             clone_as_jsvalue);
+    if (clone_as_jsvalue) {
+      return Value(src.cell_->env_, src.DeepCopyExtendedValue());
+    } else {
+      return ToLepusValue(src.cell_->env_, src.value_, 1);
+    }
   }
   switch (src.value_.type) {
     case lynx_value_null:
@@ -1017,8 +999,11 @@ Value Value::CloneRecursively(const Value& src, bool clone_as_jsvalue) {
 Value Value::ShallowCopy(const Value& src, bool clone_as_jsvalue) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, "Value::ShallowCopy");
   if (src.IsJSValue()) {
-    return LEPUSValueHelper::ShallowCopyJsValue(
-        src.cell_->ctx_, src.WrapJSValue(), clone_as_jsvalue);
+    if (clone_as_jsvalue) {
+      return Value(src.cell_->env_, src.DeepCopyExtendedValue());
+    } else {
+      return ToLepusValue(src.cell_->env_, src.value_, 2);
+    }
   }
   switch (src.value_.type) {
     case lynx_value_map: {
@@ -1080,14 +1065,15 @@ bool operator==(const Value& left, const Value& right) {
   }
   // process JSValue type
   if (left.IsJSValue() && right.IsJSValue()) {
-    return LEPUSValueHelper::IsJsValueEqualJsValue(
-        left.context(), left.WrapJSValue(), right.WrapJSValue());
+    bool ret;
+    lynx_value_equals(left.cell_->env_, left.value_, right.value_, &ret);
+    return ret;
   } else if (right.IsJSValue()) {
-    return LEPUSValueHelper::IsLepusEqualJsValue(right.cell_->ctx_, left,
-                                                 right.WrapJSValue());
+    return Value::IsLepusValueEqualToExtendedValue(right.cell_->env_, left,
+                                                   right.value_);
   } else if (left.IsJSValue()) {
-    return LEPUSValueHelper::IsLepusEqualJsValue(left.cell_->ctx_, right,
-                                                 left.WrapJSValue());
+    return Value::IsLepusValueEqualToExtendedValue(left.cell_->env_, right,
+                                                   left.value_);
   }
   if (left.IsNumber() && right.IsNumber()) {
     return fabs(left.Number() - right.Number()) < 0.000001;
@@ -1161,7 +1147,7 @@ void Value::Print() const {
 void Value::PrintValue(std::ostream& output, bool ignore_other,
                        bool pretty) const {
   if (IsJSValue()) {
-    LEPUSValueHelper::PrintValue(output, cell_->ctx_, WrapJSValue());
+    lynx_value_print(cell_->env_, value_, &output, nullptr);
     return;
   }
   switch (value_.type) {
@@ -1339,44 +1325,22 @@ void Value::Copy(const Value& value) {
   }
   value.DupValue();
   FreeValue();
-
-  if (p_val_ && IsJSValue()) {
-    p_val_->Reset(cell_->rt_);
-  }
   cell_ = value.cell_;
   value_ = value.value_;
-  if (value.p_val_ && IsJSValue()) {
-    p_val_ = (p_val_ == nullptr) ? new GCPersistent() : p_val_;
-    p_val_->Reset(cell_->rt_, value.p_val_->Get());
+  if (value.IsJSValue()) {
+    lynx_value_add_reference(value.cell_->env_, value.value_, &value_ref_);
   }
 }
 
 void Value::DupValue() const {
-  if (IsJSValue()) {
-    if (!cell_->gc_enable_) {
-      LEPUSValue val = WrapJSValue();
-      LEPUS_DupValueRT(cell_->rt_, val);
-    }
-    return;
-  }
   if (!IsReference() || !value_.val_ptr) return;
   reinterpret_cast<fml::RefCountedThreadSafeStorage*>(value_.val_ptr)->AddRef();
 }
 
 void Value::FreeValue() {
-  if (unlikely(p_val_)) {
-    if (IsJSValue() && cell_->rt_) {
-      p_val_->Reset(cell_->rt_);
-    }
-    delete p_val_;
-    p_val_ = nullptr;
-  }
   if (IsJSValue()) {
-    if (unlikely(!cell_->rt_)) return;
-    if (!cell_->gc_enable_) {
-      LEPUSValue val = WrapJSValue();
-      LEPUS_FreeValueRT(cell_->rt_, val);
-    }
+    lynx_value_remove_reference(cell_->env_, value_, value_ref_);
+    value_ref_ = nullptr;
     return;
   }
   if (!IsReference() || !value_.val_ptr) return;
@@ -1484,25 +1448,19 @@ std::string Value::ToString() const {
 }
 
 void Value::IteratorJSValue(const LepusValueIterator& callback) const {
-  if (LEPUSValueHelper::IsJsObject(WrapJSValue())) {
-    JSValueIteratorCallback callback_wrap =
-        [&callback](LEPUSContext* ctx, LEPUSValue& key, LEPUSValue& value) {
-          lepus::Value keyWrap(ctx, key);
-          lepus::Value valueWrap(ctx, value);
+  if (IsJSValue() && (value_.tag >> 16) == lynx_value_object) {
+    ExtendedValueIteratorCallback callback_wrap =
+        [&callback](lynx_api_env env, const lynx_value& key,
+                    const lynx_value& value) {
+          lepus::Value keyWrap(env, key);
+          lepus::Value valueWrap(env, value);
           callback(keyWrap, valueWrap);
         };
-    LEPUSValueHelper::IteratorJsValue(cell_->ctx_, WrapJSValue(),
-                                      &callback_wrap);
+    IterateExtendedValue(cell_->env_, value_, &callback_wrap);
   }
 }
 
-bool Value::IsJSValue() const {
-#if defined(__aarch64__) && !defined(OS_WIN) && !DISABLE_NANBOX
-  return value_.type == lynx_value_extended;
-#else
-  return cell_ && value_.type == lynx_value_extended;
-#endif
-}
+bool Value::IsJSValue() const { return value_.type == lynx_value_extended; }
 
 double Value::LEPUSNumber() const {
   DCHECK(IsJSNumber());
@@ -1610,6 +1568,160 @@ ValueType Value::LegacyTypeFromLynxValue(const lynx_value& value) {
       break;
   }
   return Value_Nil;
+}
+
+Value Value::ToLepusValue(lynx_api_env env, const lynx_value& val,
+                          int32_t flag) {
+  static Value empty_value;
+  if (!env) {
+    return empty_value;
+  }
+  if (val.type != lynx_value_extended) {
+    if (likely(flag == 0)) {
+      return Value(env, val);
+    } else if (flag == 1) {
+      return Value::Clone(Value(env, val));
+    } else {
+      Value ret(env, val);
+      if (!ret.MarkConst()) {
+        ret = Value::Clone(ret);
+      }
+      return ret;
+    }
+  }
+  lynx_value_type type;
+  lynx_value_typeof(env, val, &type);
+  switch (type) {
+    case lynx_value_null:
+      return lepus::Value();
+    case lynx_value_undefined: {
+      return lepus::Value(Value::kCreateAsUndefinedTag);
+    }
+    case lynx_value_bool: {
+      bool ret;
+      lynx_value_get_bool(env, val, &ret);
+      return lepus::Value(ret);
+    }
+    case lynx_value_double: {
+      double ret;
+      lynx_value_get_double(env, val, &ret);
+      return lepus::Value(ret);
+    }
+    case lynx_value_int32: {
+      int32_t ret;
+      lynx_value_get_int32(env, val, &ret);
+      return lepus::Value(ret);
+    }
+    case lynx_value_int64: {
+      int64_t ret;
+      lynx_value_get_int64(env, val, &ret);
+      return lepus::Value(ret);
+    }
+    case lynx_value_string: {
+      void* str;
+      lynx_value_get_string_ref(env, val, &str);
+      auto* base_str = reinterpret_cast<base::RefCountedStringImpl*>(str);
+      return lepus::Value(
+          base::String::Unsafe::ConstructWeakRefStringFromRawRef(base_str));
+    }
+    case lynx_value_array: {
+      return ToLepusArray(env, val, flag);
+    }
+    case lynx_value_map: {
+      return ToLepusMap(env, val, flag);
+    }
+    case lynx_value_function: {
+      if (flag == 0) {
+        return lepus::Value(env, val);
+      }
+      return empty_value;
+    }
+    default:
+      LOGE("not support type:" << type);
+      break;
+  }
+
+  return empty_value;
+}
+
+Value Value::ToLepusArray(lynx_api_env env, const lynx_value& val,
+                          int32_t flag) {
+  auto arr = CArray::Create();
+  ExtendedValueIteratorCallback callback =
+      [&arr, flag](lynx_api_env env, const lynx_value& key,
+                   const lynx_value& value) {
+        arr->emplace_back(ToLepusValue(env, value, flag));
+      };
+  IterateExtendedValue(env, val, &callback);
+  return Value(std::move(arr));
+}
+
+Value Value::ToLepusMap(lynx_api_env env, const lynx_value& val, int32_t flag) {
+  auto map = Dictionary::Create();
+  ExtendedValueIteratorCallback callback =
+      [&map, flag](lynx_api_env env, const lynx_value& key,
+                   const lynx_value& value) {
+        std::string str;
+        lynx_value_to_string_utf8(env, key, &str);
+        map->SetValue(std::move(str), ToLepusValue(env, value, flag));
+      };
+  IterateExtendedValue(env, val, &callback);
+  return Value(std::move(map));
+}
+
+bool Value::IsLepusValueEqualToExtendedValue(lynx_api_env env,
+                                             const lepus::Value& src,
+                                             const lynx_value& dst) {
+  lynx_value_type type;
+  lynx_value_typeof(env, dst, &type);
+  if (type == lynx_value_array) {
+    if (!src.IsArray()) return false;
+    return IsLepusArrayEqualToExtendedArray(env, src.Array().get(), dst);
+  } else if (type == lynx_value_map) {
+    if (!src.IsTable()) return false;
+    return IsLepusDictEqualToExtendedDict(env, src.Table().get(), dst);
+  } else if (type == lynx_value_function) {
+    return false;
+  }
+
+  return src == ToLepusValue(env, dst);
+}
+
+bool Value::IsLepusArrayEqualToExtendedArray(lynx_api_env env,
+                                             lepus::CArray* src,
+                                             const lynx_value& dst) {
+  uint32_t len;
+  lynx_value_get_length(env, dst, &len);
+  if (src->size() != static_cast<size_t>(len)) {
+    return false;
+  }
+  for (uint32_t i = 0; i < src->size(); i++) {
+    lynx_value val;
+    lynx_api_status status = lynx_value_get_element(env, dst, i, &val);
+    if (status != lynx_api_ok) return false;
+    lepus::Value dst_element(env, std::move(val));
+    if (src->get(i) != dst_element) return false;
+  }
+  return true;
+}
+
+bool Value::IsLepusDictEqualToExtendedDict(lynx_api_env env,
+                                           lepus::Dictionary* src,
+                                           const lynx_value& dst) {
+  uint32_t len;
+  lynx_value_get_length(env, dst, &len);
+  if (src->size() != static_cast<size_t>(len)) {
+    return false;
+  }
+  for (auto& it : *src) {
+    lynx_value val;
+    lynx_api_status status =
+        lynx_value_get_named_property(env, dst, it.first.c_str(), &val);
+    if (status != lynx_api_ok) return false;
+    lepus::Value dst_property(env, std::move(val));
+    if (it.second != dst_property) return false;
+  }
+  return true;
 }
 
 // #endif

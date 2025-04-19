@@ -10,7 +10,6 @@ extern "C" {
 #endif
 
 #include "base/include/value/lynx_value_types.h"
-#include "quickjs/include/quickjs.h"
 
 #define MAKE_LYNX_VALUE(val, tag)                                            \
   {                                                                          \
@@ -18,13 +17,14 @@ extern "C" {
     .type = lynx_value_extended, .tag = tag                                  \
   }
 
-// TODO(frendy): move this to single file
-lynx_api_env lynx_value_api_new_env(LEPUSContext* ctx);
-void lynx_value_api_delete_env(lynx_api_env env);
-LEPUSContext* lynx_value_api_get_context_from_env(lynx_api_env env);
-
 lynx_api_status lynx_value_get_bool(lynx_api_env env, lynx_value value,
                                     bool* result);
+lynx_api_status lynx_value_get_double(lynx_api_env env, lynx_value value,
+                                      double* result);
+lynx_api_status lynx_value_get_int32(lynx_api_env env, lynx_value value,
+                                     int32_t* result);
+lynx_api_status lynx_value_get_int64(lynx_api_env env, lynx_value value,
+                                     int64_t* result);
 lynx_api_status lynx_value_is_integer(lynx_api_env env, lynx_value value,
                                       bool* result);
 lynx_api_status lynx_value_get_integer(lynx_api_env env, lynx_value value,
@@ -63,6 +63,23 @@ lynx_api_status lynx_value_to_string_utf8(lynx_api_env env, lynx_value value,
                                           void* result);
 lynx_api_status lynx_value_typeof(lynx_api_env env, lynx_value value,
                                   lynx_value_type* result);
+lynx_api_status lynx_value_iterate_value(lynx_api_env env, lynx_value object,
+                                         lynx_value_iterator_callback callback,
+                                         void* pfunc, void* raw_data);
+lynx_api_status lynx_value_equals(lynx_api_env env, lynx_value lhs,
+                                  lynx_value rhs, bool* result);
+lynx_api_status lynx_value_deep_copy_value(lynx_api_env env, lynx_value src,
+                                           lynx_value* result);
+lynx_api_status lynx_value_print(lynx_api_env env, lynx_value value,
+                                 void* stream,
+                                 lynx_value_print_callback callback);
+lynx_api_status lynx_value_add_reference(lynx_api_env env, lynx_value value,
+                                         lynx_value_ref* result);
+lynx_api_status lynx_value_move_reference(lynx_api_env env, lynx_value src_val,
+                                          lynx_value_ref src_ref,
+                                          lynx_value_ref* result);
+lynx_api_status lynx_value_remove_reference(lynx_api_env env, lynx_value value,
+                                            lynx_value_ref ref);
 
 #ifdef __cplusplus
 }

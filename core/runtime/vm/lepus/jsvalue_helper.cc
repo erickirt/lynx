@@ -301,39 +301,6 @@ base::RefCountedStringImpl* LEPUSValueHelper::ToLepusStringRefCountedImpl(
   return reinterpret_cast<base::RefCountedStringImpl*>(cache);
 }
 
-bool LEPUSValueHelper::IsLepusEqualJsArray(LEPUSContext* ctx,
-                                           lepus::CArray* src,
-                                           const LEPUSValue& dst) {
-  if (src->size() != static_cast<size_t>(GetLength(ctx, dst))) {
-    return false;
-  }
-  for (uint32_t i = 0; i < src->size(); i++) {
-    lepus::Value dst_element(ctx, GetPropertyJsValue(ctx, dst, i));
-    if (src->get(i) != dst_element) return false;
-  }
-  return true;
-}
-
-bool LEPUSValueHelper::IsLepusEqualJsObject(LEPUSContext* ctx,
-                                            lepus::Dictionary* src,
-                                            const LEPUSValue& dst) {
-  if (src->size() != static_cast<size_t>(GetLength(ctx, dst))) {
-    return false;
-  }
-  for (auto& it : *src) {
-    lepus::Value dst_property(ctx,
-                              GetPropertyJsValue(ctx, dst, it.first.c_str()));
-    if (it.second != dst_property) return false;
-  }
-  return true;
-}
-
-bool LEPUSValueHelper::IsJsValueEqualJsValue(LEPUSContext* ctx,
-                                             const LEPUSValue& left,
-                                             const LEPUSValue& right) {
-  return LEPUS_VALUE_GET_BOOL(LEPUS_DeepEqual(ctx, left, right));
-}
-
 const char* LEPUSValueHelper::GetType(LEPUSContext* ctx,
                                       const LEPUSValue& val) {
   switch (LEPUS_VALUE_GET_TAG(val)) {

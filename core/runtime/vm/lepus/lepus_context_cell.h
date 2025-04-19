@@ -16,6 +16,11 @@ extern "C" {
 }
 #endif
 
+lynx_api_env lynx_value_api_new_env(LEPUSContext* ctx);
+void lynx_value_api_delete_env(lynx_api_env env);
+void lynx_value_api_detach_context_from_env(lynx_api_env env);
+LEPUSContext* lynx_value_api_get_context_from_env(lynx_api_env env);
+
 namespace lynx {
 namespace lepus {
 
@@ -33,6 +38,8 @@ class ContextCell {
       gc_enable_ = LEPUS_IsGCModeRT(rt_);
     }
   };
+
+  void DetachEnv() { lynx_value_api_detach_context_from_env(env_); }
 
   ~ContextCell() { lynx_value_api_delete_env(env_); }
 

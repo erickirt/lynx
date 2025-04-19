@@ -38,11 +38,12 @@ namespace lepus {
 
 class Value;
 
-using JSValueIteratorCallback =
-    base::MoveOnlyClosure<void, LEPUSContext*, LEPUSValue&, LEPUSValue&>;
-
 using LepusValueIterator =
     base::MoveOnlyClosure<void, const lepus::Value&, const lepus::Value&>;
+
+using ExtendedValueIteratorCallback =
+    base::MoveOnlyClosure<void, lynx_api_env, const lynx_value&,
+                          const lynx_value&>;
 
 typedef void* point_t;
 #define NormalNumberType(V) \
@@ -92,7 +93,6 @@ class CDate;
 class Dictionary;
 class Closure;
 class RegExp;
-class LEPUSValueHelper;
 class ByteArray;
 class QuickContext;
 class RefCounted;
@@ -104,7 +104,7 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
  private:
   ContextCell* cell_ = nullptr;
   lynx_value value_;
-  GCPersistent* p_val_ = nullptr;
+  lynx_value_ref value_ref_ = nullptr;
 
  public:
   explicit Value() = default;
@@ -662,6 +662,29 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   static ValueType LegacyTypeFromLynxValue(const lynx_value& value);
   static lynx_value_type ToLynxValueType(ValueType type);
 
+  static inline void IterateExtendedValue(
+      lynx_api_env env, const lynx_value& val,
+      ExtendedValueIteratorCallback* pfunc) {
+    if (!env || !val.val_ptr) {
+      LOGE("IterateExtendedValue but env or value is nil");
+      return;
+    }
+    lynx_value_iterate_value(env, val, LynxValueIteratorCallback,
+                             reinterpret_cast<void*>(pfunc), nullptr);
+  }
+
+  /* The function is used for :
+    1. convert lynx_value to lepus::Value when flag == 0;
+    2. deep clone lynx_value to lepus::Value when flag == 1;
+    3. shallow copy lynx_value to lepus::Value when flag == 2;
+  flag default's value is 0
+  */
+  static Value ToLepusValue(lynx_api_env env, const lynx_value& val,
+                            int32_t flag = 0);
+  static bool IsLepusValueEqualToExtendedValue(lynx_api_env env,
+                                               const lepus::Value& src,
+                                               const lynx_value& dst);
+
  private:
   void Copy(const Value& value);
 
@@ -669,9 +692,32 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
 
   Value GetPropertyFromTableOrArray(const std::string& key) const;
   bool SetPropertyToTableOrArray(const std::string& key, const Value& update);
+  inline lynx_value DeepCopyExtendedValue() const {
+    lynx_value ret;
+    lynx_value_deep_copy_value(cell_->env_, value_, &ret);
+    return ret;
+  }
 
   static void ToLepusValueRecursively(Value& value, bool deep_convert);
   static Value CloneRecursively(const Value& src, bool clone_as_jsvalue);
+
+  static inline void LynxValueIteratorCallback(lynx_api_env env, lynx_value key,
+                                               lynx_value value, void* pfunc,
+                                               void* raw_data) {
+    reinterpret_cast<ExtendedValueIteratorCallback*>(pfunc)->operator()(
+        env, key, value);
+  }
+
+  static Value ToLepusArray(lynx_api_env env, const lynx_value& val,
+                            int32_t flag = 0);
+  static Value ToLepusMap(lynx_api_env env, const lynx_value& val,
+                          int32_t flag = 0);
+  static bool IsLepusArrayEqualToExtendedArray(lynx_api_env env,
+                                               lepus::CArray* src,
+                                               const lynx_value& dst);
+  static bool IsLepusDictEqualToExtendedDict(lynx_api_env env,
+                                             lepus::Dictionary* src,
+                                             const lynx_value& dst);
 };
 }  // namespace lepus
 }  // namespace lynx
