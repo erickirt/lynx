@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "third_party/binding/napi/shim/shim_napi.h"
 
 #ifdef USE_PRIMJS_NAPI
@@ -24,7 +25,7 @@ Napi::Value TriggerGC(const Napi::CallbackInfo& info) {
       piper::NapiEnvironment::From(info.Env())->GetJSRuntime().lock();
 
   if (runtime) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "TriggerGC");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, TRIGGER_GC);
     runtime->RequestGC();
   }
 
@@ -36,7 +37,7 @@ Napi::Value TriggerGCForTesting(const Napi::CallbackInfo& info) {
       piper::NapiEnvironment::From(info.Env())->GetJSRuntime().lock();
 
   if (runtime) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "TriggerGCForTesting");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, TRIGGER_GC_FOR_TESTING);
     runtime->RequestGCForTesting();
   }
 

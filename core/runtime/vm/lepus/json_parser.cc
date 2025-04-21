@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/lepus_date.h"
 #include "core/runtime/vm/lepus/table.h"
@@ -62,7 +61,7 @@ std::string writeFile(const uint8_t* content, const char* file, int len,
 }
 
 lepus_value jsonValueTolepusValue(const char* json) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "jsonValueTolepusValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, JSON_VALUE_TO_LEPUS_VALUE);
   rapidjson::Document document;
   if (document.Parse(json).HasParseError()) {
     LOGE("error: source is not valid json file! msg:"
@@ -75,7 +74,7 @@ lepus_value jsonValueTolepusValue(const char* json) {
 }
 
 lepus_value jsonValueTolepusValue(const rapid_value& rapValue) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "rapidJsonValueTolepusValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, RAPID_JSON_VALUE_TO_LEPUS_VALUE);
   rapidjson::Type type = rapValue.GetType();
   switch (type) {
     case rapidjson::Type::kNullType:
@@ -121,7 +120,7 @@ lepus_value jsonValueTolepusValue(const rapid_value& rapValue) {
 
 void qjsArrayToJSONString(std::stringstream& ss, const lepus::Value& value,
                           bool ordered) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "qjsArrayToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICKJS_ARRAY_TO_JSON_STRING);
   if (value.IsJSArray()) {
     ss << "[";
     uint32_t js_array_size = value.GetLength();
@@ -141,7 +140,7 @@ void qjsArrayToJSONString(std::stringstream& ss, const lepus::Value& value,
 
 void qjsObjectToJSONString(std::stringstream& ss, const lepus::Value& value,
                            bool ordered) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "qjsObjectToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICKJS_OBJECT_TO_JSON_STRING);
   if (value.IsJSTable()) {
     uint32_t js_object_length = value.GetLength();
     uint32_t current_idx = 0;
@@ -182,7 +181,7 @@ void qjsObjectToJSONString(std::stringstream& ss, const lepus::Value& value,
 
 void qjsValueToJSONString(std::stringstream& ss, const lepus::Value& value,
                           bool ordered) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "qjsValueToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICKJS_VALUE_TO_JSON_STRING);
   if (value.IsJSValue()) {
     if (value.IsJSArray()) {
       qjsArrayToJSONString(ss, value, ordered);
@@ -199,7 +198,7 @@ void qjsValueToJSONString(std::stringstream& ss, const lepus::Value& value,
 void lepusValueToJSONString(std::stringstream& ss, const lepus_value& value,
                             bool ordered,
                             const std::shared_ptr<LepusValueSet>& all_set) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "lepusValueToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JSON_STRING);
   if (value.IsJSValue()) {
     qjsValueToJSONString(ss, value, ordered);
     return;
@@ -304,7 +303,7 @@ void lepusValueToJSONString(std::stringstream& ss, const lepus_value& value,
 }
 
 std::string lepusValueToJSONString(const lepus_value& value, bool in_order) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "lepusValueToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JSON_STRING);
   DCHECK(value.IsObject() || value.IsArrayOrJSArray());
   std::stringstream ss;
   lepusValueToJSONString(ss, value, in_order);
@@ -313,7 +312,7 @@ std::string lepusValueToJSONString(const lepus_value& value, bool in_order) {
 
 std::string lepusValueMapToJSONString(
     const std::unordered_map<base::String, lepus::Value>& map) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "lepusValueMapToJSONString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LEPUS_VALUE_MAP_TO_JSON_STRING);
   std::stringstream ss;
   ss << "{";
   for (auto it = map.begin(); it != map.end();) {
@@ -330,7 +329,7 @@ std::string lepusValueMapToJSONString(
 }
 
 std::string lepusValueToString(const lepus_value& value) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "lepusValueToString");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_STRING);
   std::stringstream ss;
   lepusValueToJSONString(ss, value, false);
   return ss.str();

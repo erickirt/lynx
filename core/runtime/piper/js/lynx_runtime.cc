@@ -8,7 +8,6 @@
 #include "base/include/debug/lynx_assert.h"
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/events/closure_event_listener.h"
 #include "core/renderer/tasm/config.h"
@@ -20,6 +19,7 @@
 #include "core/runtime/piper/js/lynx_api_handler.h"
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/runtime/piper/js/template_delegate.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/json_parser.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/services/timing_handler/timing_constants.h"
@@ -120,7 +120,7 @@ void LynxRuntime::Init(
       LoadPreloadJSSource(std::move(preload_js_paths), force_reload_js_core);
 
   tasm::TimingCollector::Instance()->Mark(tasm::timing::kLoadCoreStart);
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_VITALS, "LynxJSLoadCore");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_VITALS, LYNX_JS_LOAD_CORE);
   // FIXME(wangboyong):invoke before decode...in fact in 1.4
   // here NeedGlobalConsole always return true...
   // bool need_console = delegate_->NeedGlobalConsole();
@@ -134,13 +134,13 @@ void LynxRuntime::Init(
                            << " " << this);
 
 #if ENABLE_NAPI_BINDING
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_VITALS, "Lynx::PrepareNapiEnvironment");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_VITALS, PREPARE_NAPI_ENV);
   PrepareNapiEnvironment();
   TRACE_EVENT_END(LYNX_TRACE_CATEGORY_VITALS);
 #endif
   tasm::TimingCollector::Instance()->Mark(tasm::timing::kLoadCoreEnd);
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "LynxCreateAndLoadApp");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, CREATE_AND_LOAD_APP);
   app_ = js_executor_->createNativeAppInstance(
       GetRuntimeId(), delegate_.get(), std::make_unique<LynxApiHandler>(this));
   LOGI(" lynxRuntime:" << this << " create APP " << app_.get());
@@ -190,7 +190,7 @@ void LynxRuntime::UpdateState(State state) {
       break;
     }
     case State::kRuntimeReady: {
-      TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_VITALS, "TimeToInteractive");
+      TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_VITALS, TIME_TO_INTERACTIVE);
       OnRuntimeReady();
       break;
     }
@@ -220,7 +220,7 @@ void LynxRuntime::PrepareNapiEnvironment() {
 void LynxRuntime::RegisterNapiModules() {
   LOGI("napi registering module");
   TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS,
-              "RuntimeLifecycleObserver::OnRuntimeAttach");
+              RUNTIME_LIFECYCLE_OBSERVER_RUNTIME_ATTACH);
   lifecycle_observer_->OnRuntimeAttach(napi_environment_->proxy()->Env());
 }
 #endif
@@ -290,7 +290,7 @@ void LynxRuntime::CallJSCallback(
   }
   if (callback->timing_collector_ != nullptr) {
     TRACE_EVENT_INSTANT(
-        LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_thread_switch_end",
+        LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_THREAD_SWITCH_END,
         [collector = callback->timing_collector_,
          callback_thread_switch_end](lynx::perfetto::EventContext ctx) {
           ctx.event()->add_debug_annotations(
@@ -314,7 +314,7 @@ void LynxRuntime::CallJSCallback(
   uint64_t callback_call_start_time = base::CurrentSystemTimeMilliseconds();
   if (callback->timing_collector_ != nullptr) {
     TRACE_EVENT_INSTANT(
-        LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_call_start",
+        LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_CALL_START,
         [callback_call_start_time,
          timing_collector =
              callback->timing_collector_](lynx::perfetto::EventContext ctx) {
@@ -359,7 +359,7 @@ void LynxRuntime::CallJSApiCallback(piper::ApiCallBack callback) {
     return;
   }
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSApiCallback",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, RUNTIME_CALL_JS_API_CALLBACK,
               [&](lynx::perfetto::EventContext ctx) {
                 auto* debug = ctx.event()->add_debug_annotations();
                 debug->set_name("CallbackID");
@@ -378,7 +378,7 @@ void LynxRuntime::CallJSApiCallbackWithValue(piper::ApiCallBack callback,
     return;
   }
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSApiCallbackWithValue",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, RUNTIME_CALL_JS_API_CALLBACK_WITH_VALUE,
               [&](lynx::perfetto::EventContext ctx) {
                 auto* debug = ctx.event()->add_debug_annotations();
                 debug->set_name("CallbackID");
@@ -396,7 +396,7 @@ void LynxRuntime::CallJSApiCallbackWithValue(piper::ApiCallBack callback,
     return;
   }
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSApiCallbackWithValue",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, RUNTIME_CALL_JS_API_CALLBACK_WITH_VALUE,
               [&](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations(
                     "callback_id", std::to_string(callback.id()));

@@ -20,12 +20,11 @@
 #include "core/base/android/jni_helper.h"
 #include "core/base/android/piper_data.h"
 #include "core/base/js_constants.h"
-#include "core/base/lynx_trace_categories.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/runtime/bindings/jsi/modules/lynx_module.h"
 #include "core/runtime/common/utils.h"
 #include "core/runtime/jsi/jsi.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "core/value_wrapper/android/value_impl_android.h"
@@ -388,7 +387,7 @@ base::expected<std::unique_ptr<pub::Value>, ErrorPair> MethodInvoker::Invoke(
   base::android::JniLocalScope scope(env);
   base::android::JavaValue transfer_method_params[args_count_];
   jvalue java_arguments[required_arg_count];
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "JSValueToJNIValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, JS_VALUE_TO_JNI_VALUE);
   for (size_t i = 0; i < args_count_; i++) {
     char type = signature_[i + 2];
     base::expected<jvalue, std::string> ret;
@@ -422,7 +421,7 @@ base::expected<std::unique_ptr<pub::Value>, ErrorPair> MethodInvoker::Invoke(
   if (!ret.has_value()) {
     return base::unexpected(std::move(ret.error()));
   }
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "OnMethodInvoked");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, MODULE_ON_METHOD_INVOKE);
   LOGI("LynxModule, MethodInvoker::InvokeMethod, method: ("
        << module_name_ << "." << method_name_ << "." << first_arg_str
        << ") did fire " << this)

@@ -8,6 +8,7 @@
 #include "base/include/fml/synchronization/waitable_event.h"
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/trace/trace_event_def.h"
 
 namespace lynx {
 namespace base {
@@ -39,13 +40,13 @@ void ThreadMerger::Merge(fml::TaskRunner* owner, fml::TaskRunner* subsumed) {
 
 ThreadMerger::ThreadMerger(fml::TaskRunner* owner, fml::TaskRunner* subsumed)
     : owner_(owner), subsumed_(subsumed) {
-  TRACE_EVENT("lynx", "ThreadMerger::ThreadMerger");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, THREAD_MERGER_CONSTRUCTOR);
 
   Merge(owner_, subsumed_);
 }
 
 ThreadMerger::~ThreadMerger() {
-  TRACE_EVENT("lynx", "ThreadMerger::~ThreadMerger");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, THREAD_MERGER_DECONSTRUCTOR);
   if (owner_ == subsumed_) {
     return;
   }

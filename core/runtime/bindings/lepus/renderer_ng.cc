@@ -8,12 +8,12 @@
 #include "base/include/log/logging.h"
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/css/css_style_sheet_manager.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/runtime/bindings/common/event/runtime_constants.h"
 #include "core/runtime/bindings/lepus/renderer.h"
 #include "core/runtime/bindings/lepus/renderer_functions.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/builtin.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 
@@ -170,7 +170,7 @@ void Utils::RegisterNGMethodToGestureManager(lepus::Context* context,
 
 static lepus::Value SlotFunction(lepus::Context* context, lepus::Value* argv,
                                  int32_t argc) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SlotFunction");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SLOT_FUNCTION);
   return lepus::Value();
 }
 

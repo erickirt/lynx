@@ -8,9 +8,9 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/bindings/jsi/modules/module_delegate.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/event_report/event_tracker.h"
 
 namespace lynx {
@@ -41,7 +41,7 @@ void NativeModuleInfoCollector::EndCallFunc(uint64_t start_time) {
   timing_.jsb_func_call_end_ = base::CurrentSystemTimeMilliseconds();
   timing_.jsb_func_call_ = timing_.jsb_func_call_end_ - start_time;
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_func_call_end",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FUNC_CALL_END,
       [this](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations(
             "timestamp", std::to_string(timing_.jsb_func_call_end_));
@@ -58,7 +58,7 @@ void NativeModuleInfoCollector::EndFuncParamsConvert(uint64_t start_time) {
   uint64_t end = base::CurrentSystemTimeMilliseconds();
   timing_.jsb_func_convert_params_ = end - start_time;
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_func_convert_params_end",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FUNC_CONVERT_PARAMS_END,
       [this, end](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("timestamp", std::to_string(end));
         ctx.event()->add_debug_annotations(
@@ -75,7 +75,7 @@ void NativeModuleInfoCollector::EndPlatformMethodInvoke(uint64_t start_time) {
   uint64_t end = base::CurrentSystemTimeMilliseconds();
   timing_.jsb_func_platform_method_ = end - start_time;
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_func_platform_method_end",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FUNC_PLATFORM_METHOD_END,
       [this, end](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("timestamp", std::to_string(end));
         ctx.event()->add_debug_annotations(
@@ -92,7 +92,7 @@ void NativeModuleInfoCollector::CallbackThreadSwitchStart() {
   timing_.jsb_callback_thread_switch_start_ =
       base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_thread_switch_start",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_THREAD_SWITCH_START,
       [this](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations(
             "timestamp",
@@ -109,15 +109,15 @@ void NativeModuleInfoCollector::EndCallbackInvoke(uint64_t convert_params_time,
   uint64_t end = base::CurrentSystemTimeMilliseconds();
   timing_.jsb_callback_convert_params_ = convert_params_time;
   timing_.jsb_callback_invoke_ = end - invoke_start;
-  TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_invoke_end",
-      [this, end](lynx::perfetto::EventContext ctx) {
-        ctx.event()->add_debug_annotations("timestamp", std::to_string(end));
-        ctx.event()->add_debug_annotations(
-            "jsb_callback_invoke.duration",
-            std::to_string(timing_.jsb_callback_invoke_));
-        ctx.event()->add_flow_ids(flow_id_);
-      });
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_INVOKE_END,
+                      [this, end](lynx::perfetto::EventContext ctx) {
+                        ctx.event()->add_debug_annotations("timestamp",
+                                                           std::to_string(end));
+                        ctx.event()->add_debug_annotations(
+                            "jsb_callback_invoke.duration",
+                            std::to_string(timing_.jsb_callback_invoke_));
+                        ctx.event()->add_flow_ids(flow_id_);
+                      });
 }
 
 void NativeModuleInfoCollector::EndCallCallback(uint64_t switch_end_time,
@@ -129,16 +129,16 @@ void NativeModuleInfoCollector::EndCallCallback(uint64_t switch_end_time,
   timing_.jsb_callback_call_start_ = start_time;
   timing_.jsb_callback_call_end_ = base::CurrentSystemTimeMilliseconds();
   timing_.jsb_callback_call_ = timing_.jsb_callback_call_end_ - start_time;
-  TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_call_end",
-      [this](lynx::perfetto::EventContext ctx) {
-        ctx.event()->add_debug_annotations(
-            "timestamp", std::to_string(timing_.jsb_callback_call_end_));
-        ctx.event()->add_debug_annotations(
-            "jsb_callback_call.duration",
-            std::to_string(timing_.jsb_callback_call_));
-        ctx.event()->add_flow_ids(flow_id_);
-      });
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_CALL_END,
+                      [this](lynx::perfetto::EventContext ctx) {
+                        ctx.event()->add_debug_annotations(
+                            "timestamp",
+                            std::to_string(timing_.jsb_callback_call_end_));
+                        ctx.event()->add_debug_annotations(
+                            "jsb_callback_call.duration",
+                            std::to_string(timing_.jsb_callback_call_));
+                        ctx.event()->add_flow_ids(flow_id_);
+                      });
 }
 
 void NativeModuleInfoCollector::OnErrorOccurred(
@@ -181,7 +181,7 @@ NativeModuleInfoCollector::~NativeModuleInfoCollector() {
   if (delegate == nullptr) {
     return;
   }
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "JSBTiming::Flush",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FLUSH,
               [this](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_terminating_flow_ids(flow_id_);
               });

@@ -12,8 +12,8 @@
 #include "base/include/string/string_number_convert.h"
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/utils/value_utils.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/byte_array.h"
 #include "core/runtime/vm/lepus/context.h"
@@ -201,7 +201,7 @@ Value::Value(lynx_api_env env, lynx_value&& value)
 // nested use of recursive implementation to prevent excessive trace
 // instrumentation
 Value Value::ToLepusValue(bool deep_convert) const {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Value::ToLepusValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VALUE_TO_LEPUS_VALUE);
   ToLepusValueRecursively(const_cast<lepus::Value&>(*this), deep_convert);
   return *this;
 }
@@ -940,7 +940,7 @@ Value Value::CloneRecursively(const Value& src, bool clone_as_jsvalue) {
 
 // copy the first level, and mark last as const.
 Value Value::ShallowCopy(const Value& src, bool clone_as_jsvalue) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Value::ShallowCopy");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VALUE_SHADOW_COPY);
   if (src.IsJSValue()) {
     if (clone_as_jsvalue) {
       return Value(src.env_, src.DeepCopyExtendedValue());

@@ -14,12 +14,11 @@
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/darwin/lynx_env_darwin.h"
-#include "core/base/lynx_trace_categories.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/tasm/config.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/common/utils.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/recorder/recorder_controller.h"
 
@@ -226,7 +225,7 @@ NSInvocation *LynxModuleDarwin::getMethodInvocation(
                           "Please check the arguments.", base::LynxErrorLevel::Error});
     }
   };
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "JSValueToObjCValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, JS_VALUE_TO_OBJC_VALUE);
   // index: i + 2 ==> objc arguments: [this, _cmd, args..., resoledBlock, rejectedBlock]
   for (size_t i = 0; i < count; i++) {
     auto arg = args->GetValueAtIndex(static_cast<int>(i));
@@ -564,7 +563,7 @@ base::expected<std::unique_ptr<pub::Value>, std::string> LynxModuleDarwin::invok
   }
   LOGV("LynxModuleDarwin::invokeObjCMethod, module: " << module_name_ << " method: " << methodName
                                                       << " did PerformMethodInvocation");
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "OnMethodInvoked");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, MODULE_ON_METHOD_INVOKE);
   return res;
 }
 
@@ -676,7 +675,7 @@ base::expected<piper::Value, std::string> LynxModuleDarwin::createPromise(
 
 base::expected<std::unique_ptr<pub::Value>, std::string> PerformMethodInvocation(NSInvocation *inv,
                                                                                  const id module) {
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, "Fire");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, MODULE_INVOKE_FIRE);
   const char *returnType = [[inv methodSignature] methodReturnType];
   void (^block)() = ^{
     [inv invokeWithTarget:module];
@@ -695,7 +694,7 @@ base::expected<std::unique_ptr<pub::Value>, std::string> PerformMethodInvocation
       [NSNumber numberWithDouble:(double)value_for_type]);
 #endif
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "ObjCValueToJSIValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, OBJC_VALUE_TO_JSI_VALUE);
   switch (returnType[0]) {
     case _C_VOID:
       return std::make_unique<lynx::pub::ValueImplDarwin>(nil);

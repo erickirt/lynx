@@ -4,7 +4,7 @@
 
 #include "core/base/darwin/vsync_monitor_darwin.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/base/trace/trace_event_def.h"
 
 #import <Foundation/Foundation.h>
 #import <QuartzCore/CADisplayLink.h>
@@ -74,7 +74,7 @@
     return;
   }
   link.paused = YES;
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxVSyncPulse::onMainDisplay");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VSYNC_MONITOR_DARWIN_ON_MAIN_DISPLAY);
   if (_callback) {
     CFTimeInterval timestamp = _displayLink.timestamp;
     _callback(timestamp * 1e+9, (timestamp + _displayLink.duration) * 1e+9);

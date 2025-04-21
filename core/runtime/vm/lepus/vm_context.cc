@@ -22,7 +22,6 @@
 #include "core/runtime/vm/lepus/path_parser.h"
 // #include "ast_dump.h"
 #include "base/include/string/string_utils.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/vm/lepus/lepus_date.h"
@@ -67,7 +66,7 @@ namespace lepus {
 VMContext::~VMContext() { DestroyInspector(); }
 
 void VMContext::Initialize() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "VMContext::Initialize");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VM_CONTEXT_INIT);
   RegisterBuiltin(this);
   RegisterLepusVerion();
 }
@@ -80,7 +79,7 @@ bool VMContext::Execute(Value* ret_val) {
     return false;
   }
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "Lepus.Execute");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, VM_CONTEXT_EXECUTE);
   EnsureLynx();
 
   Value* top = heap().top_++;
@@ -138,7 +137,7 @@ Value VMContext::CallEpilogue(Value* function, size_t arg_count) {
 Value VMContext::CallArgs(const base::String& name, const Value* args[],
                           size_t args_count,
                           [[maybe_unused]] bool pause_suppression_mode) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "VMContext::Call",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, VM_CONTEXT_CALL,
               [&](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("name", name.str());
               });
@@ -216,8 +215,7 @@ bool VMContext::UpdateTopLevelVariableByPath(base::Vector<std::string>& path,
 
 bool VMContext::CheckTableShadowUpdatedWithTopLevelVariable(
     const lepus::Value& update) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "VMContext::CheckTableShadowUpdatedWithTopLevelVariable");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VM_CONTEXT_CHECK_TABLE_SHADOW_UPDATED);
   bool enable_deep_check = false;
 #if ENABLE_INSPECTOR && (ENABLE_TRACE_PERFETTO || ENABLE_TRACE_SYSTRACE)
   if (lynx::tasm::LynxEnv::GetInstance().IsTableDeepCheckEnabled()) {
@@ -367,7 +365,7 @@ int32_t VMContext::CallFunction(Value* function, size_t argc, Value* ret) {
     current_frame_ = frame.prev_frame_;
     return 1;
   } else if (function->IsCFunction()) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "VMContext::CallCFunction");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, VM_CONTEXT_CALL_C_FUNCTION);
     heap_.top_ = function + argc + 1;
     Frame frame(function + 1, function, ret, nullptr, nullptr, current_frame_,
                 0);
@@ -1444,7 +1442,7 @@ void VMContext::ClosureManager::AddClosure(fml::RefPtr<lepus::Closure>& closure,
 }
 
 void VMContext::ClosureManager::CleanUpClosuresCreatedAfterExecuted() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CleanUpClosuresCreatedAfterExecuted");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, VM_CONTEXT_CLEAN_CLOSURES_AFTER_EXECUTED);
   for (auto& itr : all_closures_after_executed_) {
     itr->SetContext(Value());
   }

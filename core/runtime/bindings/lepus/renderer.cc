@@ -17,6 +17,7 @@
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/runtime/bindings/common/event/runtime_constants.h"
 #include "core/runtime/bindings/lepus/renderer_functions.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/builtin.h"
 
 namespace lynx {
@@ -158,7 +159,7 @@ void Utils::RegisterMethodToContextProxy(lepus::Context* context,
 #undef PREPARE_ARGS
 
 static ALLOW_UNUSED_TYPE lepus::Value SlotFunction(lepus::Context* context) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SlotFunction");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SLOT_FUNCTION);
   return lepus::Value();
 }
 
