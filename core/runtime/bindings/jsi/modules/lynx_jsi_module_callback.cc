@@ -9,6 +9,7 @@
 #include "base/trace/native/trace_event.h"
 #include "core/runtime/bindings/jsi/modules/module_interceptor.h"
 #include "core/runtime/piper/js/template_delegate.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 #if ENABLE_TESTBENCH_RECORDER
 #include "core/services/recorder/native_module_recorder.h"
@@ -26,7 +27,7 @@ ModuleCallback::ModuleCallback(int64_t callback_id)
 
 void ModuleCallback::Invoke(Runtime* runtime,
                             ModuleCallbackFunctionHolder* holder) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "InvokeCallback",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, MODULE_INVOKE_CALLBACK,
               [this](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_terminating_flow_ids(CallbackFlowId());
                 ctx.event()->add_debug_annotations("module_name", module_name_);
@@ -36,10 +37,10 @@ void ModuleCallback::Invoke(Runtime* runtime,
     LOGW("callback's args is invalid.");
     return;
   }
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, "PubValueToJSValue");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, PUB_VALUE_TO_JS_VALUE);
   uint64_t convert_params_start = base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_convert_params_start",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_CONVERT_PARAMS_START,
       [convert_params_start,
        timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations(
@@ -61,7 +62,7 @@ void ModuleCallback::Invoke(Runtime* runtime,
   });
   uint64_t convert_params_end = base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_convert_params_end",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_CONVERT_PARAMS_END,
       [convert_params_start, convert_params_end,
        timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("timestamp",
@@ -80,10 +81,10 @@ void ModuleCallback::Invoke(Runtime* runtime,
       callback_id(), record_id_);
 #endif  // ENABLE_TESTBENCH_RECORDER
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "InvokeCallback");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, MODULE_INVOKE_CALLBACK);
   uint64_t invoke_js_callback_start = base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_callback_invoke_start",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_CALLBACK_INVOKE_START,
       [do_invoke_start_timestamp = base::CurrentSystemTimeMilliseconds(),
        timing_collector = timing_collector_](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations(

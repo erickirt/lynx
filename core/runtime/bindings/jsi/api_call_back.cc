@@ -9,6 +9,7 @@
 #include "base/trace/native/trace_event.h"
 #include "core/runtime/jsi/jsi.h"
 #include "core/runtime/piper/js/lynx_runtime.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 
 namespace lynx {
 namespace piper {
@@ -23,7 +24,7 @@ ApiCallBack ApiCallBackManager::createCallbackImpl(piper::Function func) {
   // If you want to trace ApiCallBack, you can use
   // `ctx.event()->add_flow_ids(callback.trace_flow_id());` to
   // add you trace in the lifecycle of ApiCallBack.
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ApiCallBackManager::createCallbackImpl",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, API_CALLBACK_MANAGER_CREATE_CALLBACK,
               [=](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_flow_ids(callback.trace_flow_id());
               });

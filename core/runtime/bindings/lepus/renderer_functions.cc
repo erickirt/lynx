@@ -19,8 +19,6 @@
 #include "base/include/string/string_number_convert.h"
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/css/css_style_sheet_manager.h"
 #include "core/renderer/css/css_utils.h"
@@ -66,6 +64,7 @@
 #include "core/runtime/bindings/common/event/runtime_constants.h"
 #include "core/runtime/bindings/lepus/event/lepus_event_listener.h"
 #include "core/runtime/bindings/lepus/renderer.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/builtin.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
@@ -223,16 +222,16 @@ lepus::Value GetSystemInfoFromTasm(TemplateAssembler* tasm) {
  RETURN(lepus::Value(element));
  ```
  */
-#define ON_NODE_CREATE(node)                                   \
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Devtool::ON_NODE_CREATE"); \
-  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                   \
-                              ->page_proxy()                   \
-                              ->element_manager()              \
+#define ON_NODE_CREATE(node)                                \
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DEVTOOL_ON_NODE_CREATE); \
+  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                \
+                              ->page_proxy()                \
+                              ->element_manager()           \
                               ->PrepareNodeForInspector(node.get());)
 
 /* Use this macro when air element is created */
 #define ON_AIR_NODE_CREATED(node)                                           \
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Devtool::ON_AIR_NODE_CREATED");         \
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DEVTOOL_ON_AIR_NODE_CREATE);             \
   auto* page =                                                              \
       GET_TASM_POINTER() -> page_proxy() -> element_manager() -> AirRoot(); \
   bool enableAsync = page->EnableAsyncCalc();                               \
@@ -252,11 +251,11 @@ lepus::Value GetSystemInfoFromTasm(TemplateAssembler* tasm) {
  ON_NODE_MODIFIED(element);
  ```
  */
-#define ON_NODE_MODIFIED(node)                                   \
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Devtool::ON_NODE_MODIFIED"); \
-  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                     \
-                              ->page_proxy()                     \
-                              ->element_manager()                \
+#define ON_NODE_MODIFIED(node)                                \
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DEVTOOL_ON_NODE_MODIFIED); \
+  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                  \
+                              ->page_proxy()                  \
+                              ->element_manager()             \
                               ->OnElementNodeSetForInspector(node.get());)
 
 /* Use this macro when fiber element is added to another fiber element. For
@@ -281,7 +280,7 @@ lepus::Value GetSystemInfoFromTasm(TemplateAssembler* tasm) {
  information. The same goes for calling ON_NODE_ADDED before InsertNode.
  */
 #define ON_NODE_ADDED(node)                                                  \
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Devtool::ON_NODE_ADDED");                \
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DEVTOOL_ON_NODE_ADDED);                   \
   EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                                 \
                               ->page_proxy()                                 \
                               ->element_manager()                            \
@@ -312,11 +311,11 @@ lepus::Value GetSystemInfoFromTasm(TemplateAssembler* tasm) {
  this time, and DevTool cannot get the corresponding parent and accurate
  information. The same goes for calling ON_NODE_ADDED before InsertNode.
  */
-#define ON_NODE_REMOVED(node)                                 \
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "Devtool::ON_NODE_ADDED"); \
-  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                  \
-                              ->page_proxy()                  \
-                              ->element_manager()             \
+#define ON_NODE_REMOVED(node)                                \
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DEVTOOL_ON_NODE_REMOVED); \
+  EXEC_EXPR_FOR_INSPECTOR(GET_TASM_POINTER()                 \
+                              ->page_proxy()                 \
+                              ->element_manager()            \
                               ->OnElementNodeRemovedForInspector(node.get());)
 
 void UpdateComponentConfig(TemplateAssembler* tasm, RadonComponent* component) {
@@ -368,7 +367,7 @@ void InnerThemeReplaceParams(lepus::Context* ctx, std::string& retStr,
 lepus::Value InnerTranslateResourceForTheme(lepus::Context* ctx,
                                             lepus::Value* argv, int argc,
                                             const char* keyIn) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "InnerTranslateResourceForTheme");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, INNER_TRANSLATE_RESOURCE_FOR_THEME);
   const long params_size = argc;
   int res_start_index = 0;
   DCHECK(argc >= 1);
@@ -1184,7 +1183,7 @@ RENDERER_FUNCTION_CC(SetValueToMap) {
 }
 
 RENDERER_FUNCTION_CC(AttachPage) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AttachPage");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ATTACH_PAGE);
   LOGI("AttachPage" << ctx);
   CHECK_ARGC_EQ(AttachPage, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AttachPage);
@@ -1204,7 +1203,7 @@ RENDERER_FUNCTION_CC(CreateVirtualNode) {
   CHECK_ARGC_GE(CreateVirtualNode, 1);
   CONVERT_ARG_AND_CHECK(name_val, 0, String, CreateVirtualNode);
   auto tag_name = name_val->String();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateVirtualNode", "tagName",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_VIRTUAL_NODE, "tagName",
               tag_name.str());
   RadonNodeIndexType eid = kRadonInvalidNodeIndex;
   if (argc > 1) {
@@ -1217,7 +1216,7 @@ RENDERER_FUNCTION_CC(CreateVirtualNode) {
 }
 
 RENDERER_FUNCTION_CC(CreateVirtualPage) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateVirtualPage");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_VIRTUAL_PAGE);
 
   // notify devtool page is updated
   EXEC_EXPR_FOR_INSPECTOR(
@@ -1331,7 +1330,7 @@ RENDERER_FUNCTION_CC(CreateVirtualComponent) {
 }
 
 RENDERER_FUNCTION_CC(AppendChild) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AppendChild");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APPEND_CHILD);
   CHECK_ARGC_EQ(AppendChild, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AppendChild);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, AppendChild);
@@ -1343,7 +1342,7 @@ RENDERER_FUNCTION_CC(AppendChild) {
 }
 
 RENDERER_FUNCTION_CC(AppendSubTree) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AppendSubTree");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APPEND_SUB_TREE);
   CHECK_ARGC_EQ(AppendChild, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AppendSubTree);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, AppendSubTree);
@@ -1355,7 +1354,7 @@ RENDERER_FUNCTION_CC(AppendSubTree) {
 }
 
 RENDERER_FUNCTION_CC(CloneSubTree) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CloneSubTree");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CLONE_SUB_TREE);
   CHECK_ARGC_EQ(CloneSubTree, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, CloneSubTree);
 
@@ -1365,7 +1364,7 @@ RENDERER_FUNCTION_CC(CloneSubTree) {
 }
 
 RENDERER_FUNCTION_CC(SetAttributeTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetAttributeTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_ATTRIBUTE_TO);
   CHECK_ARGC_EQ(SetAttributeTo, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetAttributeTo);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetAttributeTo);
@@ -1402,7 +1401,7 @@ RENDERER_FUNCTION_CC(SetAttributeTo) {
 }
 
 RENDERER_FUNCTION_CC(SetContextData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetContextData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_CONTEXT_DATA);
   //  TODO: Handle SetContextData for radon-diff
   //  CHECK_ARGC_EQ(SetContextData, 3);
   //  CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetContextData);
@@ -1425,7 +1424,7 @@ RENDERER_FUNCTION_CC(SetContextData) {
 }
 
 RENDERER_FUNCTION_CC(SetStaticStyleTo2) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStaticStyleTo2");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STATIC_STYLe_TO_2);
   CHECK_ARGC_EQ(SetStaticStyleTo2, 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStaticStyleTo2);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, SetStaticStyleTo2);
@@ -1448,7 +1447,7 @@ RENDERER_FUNCTION_CC(SetStaticStyleTo2) {
 }
 
 RENDERER_FUNCTION_CC(SetScriptEventTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetScriptEventTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_SCRIPT_EVENT_TO);
 
   if (LEPUS_CONTEXT()->IsLepusContext()) {
     LOGI("SetScriptEventTo failed since context is lepus context.");
@@ -1473,7 +1472,7 @@ RENDERER_FUNCTION_CC(SetScriptEventTo) {
 std::unique_ptr<ListComponentInfo> ComponentInfoFromContext(lepus::Context* ctx,
                                                             lepus::Value* argv,
                                                             int argc) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ComponentInfoFromContext");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, COMPONENT_INFO_FROM_CONTEXT);
   CONVERT_ARG(name, 1);
   CONVERT_ARG(data, 2);
   CONVERT_ARG(props, 3);
@@ -1499,7 +1498,7 @@ std::unique_ptr<ListComponentInfo> ComponentInfoFromContext(lepus::Context* ctx,
 }
 
 RENDERER_FUNCTION_CC(AppendListComponentInfo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AppendListComponentInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APPEND_LIST_COMPONENT_INFO);
   CHECK_ARGC_GE(AppendListComponentInfo, 9);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AppendListComponentInfo);
   auto radon_list =
@@ -1515,7 +1514,7 @@ RENDERER_FUNCTION_CC(CreateVirtualPlug) {
   CHECK_ARGC_EQ(CreateVirtualPlug, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, CreateVirtualPlug);
   auto tag_name = arg0->String();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateVirtualPlug", "tagName",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_VIRTUAL_PLUG, "tagName",
               tag_name.str());
   auto* plug = new RadonPlug(tag_name, nullptr);
   RETURN(lepus::Value(static_cast<RadonBase*>(plug)));
@@ -1526,8 +1525,8 @@ RENDERER_FUNCTION_CC(CreateVirtualPlugWithComponent) {
   CONVERT_ARG_AND_CHECK(arg0, 0, String, CreateVirtualPlugWithComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, CreateVirtualPlugWithComponent);
   auto tag_name = arg0->String();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateVirtualPlugWithComponent", "tagName",
-              tag_name.str());
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_VIRTUAL_PLUG_WITH_COMPONENT,
+              "tagName", tag_name.str());
   RadonComponent* comp = reinterpret_cast<RadonComponent*>(arg1->CPoint());
   auto* plug = new RadonPlug(tag_name, nullptr);
   plug->SetComponent(comp);
@@ -1535,7 +1534,7 @@ RENDERER_FUNCTION_CC(CreateVirtualPlugWithComponent) {
 }
 
 RENDERER_FUNCTION_CC(MarkComponentHasRenderer) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "MarkComponentHasRenderer");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, MARK_COMPONENT_HAS_RENDER);
   CHECK_ARGC_EQ(MarkComponentHasRenderer, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, MarkComponentHasRenderer);
   // TODO(radon): radon diff support.
@@ -1546,7 +1545,7 @@ RENDERER_FUNCTION_CC(MarkComponentHasRenderer) {
 }
 
 RENDERER_FUNCTION_CC(SetStaticAttrTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStaticAttrTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STATIC_ATTRIBUTE_TO);
   CHECK_ARGC_EQ(SetStaticAttrTo, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStaticAttrTo);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetStaticAttrTo);
@@ -1561,7 +1560,7 @@ RENDERER_FUNCTION_CC(SetStaticAttrTo) {
 }
 
 RENDERER_FUNCTION_CC(SetStyleTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStyleTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STYLE_TO);
   CHECK_ARGC_EQ(SetStyleTo, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStyleTo);
   CONVERT_ARG(arg1, 1);
@@ -1594,7 +1593,7 @@ RENDERER_FUNCTION_CC(SetStyleTo) {
 }
 
 RENDERER_FUNCTION_CC(SetDynamicStyleTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetDynamicStyleTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_DYNAMIC_STYLE_TO);
   CHECK_ARGC_EQ(SetDynamicStyleTo, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetDynamicStyleTo);
   CONVERT_ARG(arg1, 1);
@@ -1645,7 +1644,7 @@ RENDERER_FUNCTION_CC(SetDynamicStyleTo) {
 }
 
 RENDERER_FUNCTION_CC(SetStaticStyleTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStaticStyleTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STATIC_STYLE_TO);
   CHECK_ARGC_EQ(SetStaticStyleTo, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStaticStyleTo);
   CONVERT_ARG(arg1, 1);
@@ -1670,7 +1669,7 @@ RENDERER_FUNCTION_CC(SetStaticStyleTo) {
 }
 
 RENDERER_FUNCTION_CC(SetDataSetTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetDataSetTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_DATA_SET_TO);
   CHECK_ARGC_EQ(SetDataSetTo, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetDataSetTo);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetDataSetTo);
@@ -1683,7 +1682,7 @@ RENDERER_FUNCTION_CC(SetDataSetTo) {
 }
 
 RENDERER_FUNCTION_CC(SetStaticEventTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStaticEventTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STATIC_EVENT_TO);
   CHECK_ARGC_EQ(SetDataSetTo, 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStaticEventTo);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetStaticEventTo);
@@ -1699,7 +1698,7 @@ RENDERER_FUNCTION_CC(SetStaticEventTo) {
 }
 
 RENDERER_FUNCTION_CC(SetClassTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetClassTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_CLASS_TO);
   CHECK_ARGC_EQ(SetClassTo, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetClassTo);
   CONVERT_ARG(arg1, 1);
@@ -1723,7 +1722,7 @@ RENDERER_FUNCTION_CC(SetClassTo) {
 }
 
 RENDERER_FUNCTION_CC(SetStaticClassTo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetStaticClassTo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_STATIC_CLASS_TO);
   CHECK_ARGC_EQ(SetStaticClassTo, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetStaticClassTo);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetStaticClassTo);
@@ -1736,7 +1735,7 @@ RENDERER_FUNCTION_CC(SetStaticClassTo) {
 }
 
 RENDERER_FUNCTION_CC(SetId) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetId");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_ID);
   CHECK_ARGC_EQ(SetId, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetId);
   CONVERT_ARG(arg1, 1);
@@ -1775,7 +1774,7 @@ RENDERER_FUNCTION_CC(UpdateComponentInfo) {
 }
 
 RENDERER_FUNCTION_CC(GetComponentInfo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GetComponentInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, GET_COMPONENT_INFO);
   CHECK_ARGC_EQ(GetComponentInfo, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, GetComponentInfo);
   auto* component_info_storage = GetRadonComponent(ctx, arg0);
@@ -1791,13 +1790,13 @@ RENDERER_FUNCTION_CC(CreateSlot) {
   CONVERT_ARG_AND_CHECK(arg0, 0, String, CreateSlot);
 
   auto tag_name = arg0->String();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateSlot", "SlotName", tag_name.str());
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_SLOT, "SlotName", tag_name.str());
   auto* slot = new RadonSlot(tag_name);
   RETURN(lepus::Value(slot));
 }
 
 RENDERER_FUNCTION_CC(SetProp) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetProp");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_PROP);
   CHECK_ARGC_EQ(SetProp, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetProp);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetProp);
@@ -1820,7 +1819,7 @@ RENDERER_FUNCTION_CC(SetProp) {
 }
 
 RENDERER_FUNCTION_CC(SetData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_DATA);
   CHECK_ARGC_EQ(SetData, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetData);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, SetData);
@@ -1833,7 +1832,7 @@ RENDERER_FUNCTION_CC(SetData) {
 }
 
 RENDERER_FUNCTION_CC(AppendVirtualPlugToComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AppendVirtualPlugToComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APPEND_VIRTUAL_PLUG_TO_COMPONENT);
   CHECK_ARGC_EQ(AppendVirtualPlugToComponent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AppendVirtualPlugToComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, AppendVirtualPlugToComponent);
@@ -1847,7 +1846,7 @@ RENDERER_FUNCTION_CC(AppendVirtualPlugToComponent) {
 }
 
 RENDERER_FUNCTION_CC(AddVirtualPlugToComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AddVirtualPlugToComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ADD_VIRTUAL_PLUG_TO_COMPONENT);
   CHECK_ARGC_EQ(AddVirtualPlugToComponent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AddVirtualPlugToComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, AddVirtualPlugToComponent);
@@ -1862,7 +1861,7 @@ RENDERER_FUNCTION_CC(AddVirtualPlugToComponent) {
 }
 
 RENDERER_FUNCTION_CC(AddFallbackToDynamicComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AddFallbackToDynamicComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ADD_FALLBACK_TO_DYNAMIC_COMPONENT);
   CHECK_ARGC_EQ(AddFallbackToDynamicComponent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, AddFallbackToDynamicComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, AddFallbackToDynamicComponent);
@@ -1877,7 +1876,7 @@ RENDERER_FUNCTION_CC(AddFallbackToDynamicComponent) {
 }
 
 RENDERER_FUNCTION_CC(GetComponentData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GetComponentData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, GET_COMPONENT_DATA);
   CHECK_ARGC_EQ(GetComponentData, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, GetComponentData);
   auto* component = GetRadonComponent(LEPUS_CONTEXT(), arg0);
@@ -1888,7 +1887,7 @@ RENDERER_FUNCTION_CC(GetComponentData) {
 }
 
 RENDERER_FUNCTION_CC(GetComponentProps) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GetComponentProps");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, GET_COMPONENT_PROPS);
   CHECK_ARGC_EQ(GetComponentProps, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, GetComponentProps);
   auto* component = GetRadonComponent(LEPUS_CONTEXT(), arg0);
@@ -1899,7 +1898,7 @@ RENDERER_FUNCTION_CC(GetComponentProps) {
 }
 
 RENDERER_FUNCTION_CC(GetComponentContextData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GetComponentContextData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, GET_COMPONENT_CONTEXT_DATA);
   CHECK_ARGC_EQ(GetComponentContextData, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, GetComponentContextData);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, GetComponentContextData);
@@ -1914,7 +1913,7 @@ RENDERER_FUNCTION_CC(CreateComponentByName) {
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, CreateComponentByName);
   CONVERT_ARG_AND_CHECK(arg2, 2, Number, CreateComponentByName);
   const std::string& component_name = arg0->StdString();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateComponentByName", "componentName",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_COMPONENT_BY_NAME, "componentName",
               component_name);
   int component_instance_id = static_cast<int>(arg2->Number());
   lepus::Context* context = LEPUS_CONTEXT();
@@ -1965,7 +1964,7 @@ RENDERER_FUNCTION_CC(CreateComponentByName) {
 }
 
 RENDERER_FUNCTION_CC(CreateDynamicVirtualComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateDynamicVirtualComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_DYNAMIC_VIRTUAL_COMPONENT);
   // Get Params
   CHECK_ARGC_GE(CreateDynamicVirtualComponent, 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, CreateDynamicVirtualComponent);
@@ -2045,7 +2044,7 @@ RENDERER_FUNCTION_CC(CreateDynamicVirtualComponent) {
 }
 
 RENDERER_FUNCTION_CC(ProcessComponentData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ProcessComponentData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, PROCESS_COMPONENT_DATA);
   CHECK_ARGC_EQ(ProcessComponentData, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, ProcessComponentData);
   RadonComponent* component = reinterpret_cast<RadonComponent*>(arg0->CPoint());
@@ -2076,7 +2075,7 @@ RENDERER_FUNCTION_CC(RenderDynamicComponent) {
   RadonLazyComponent* component = static_cast<RadonLazyComponent*>(
       reinterpret_cast<RadonBase*>(arg2->CPoint()));
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LazyBundle::RenderEntrance",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LAZY_BUNDLE_RENDER_ENTRANCE,
               [entry_name](lynx::perfetto::EventContext ctx) {
                 auto* debug = ctx.event()->add_debug_annotations();
                 debug->set_name("entry_name");
@@ -2110,7 +2109,7 @@ RENDERER_FUNCTION_CC(RenderDynamicComponent) {
 }
 
 RENDERER_FUNCTION_CC(RegisterDataProcessor) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "RegisterDataProcessor");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, REGISTER_DATA_PROCESSOR);
   DCHECK(ARGC() >= 2);
   DCHECK(ARGC() <= 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, RegisterDataProcessor);
@@ -2135,7 +2134,7 @@ RENDERER_FUNCTION_CC(RegisterDataProcessor) {
 }
 
 RENDERER_FUNCTION_CC(AddEventListener) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AddEventListener");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ADD_EVENT_LISTENER);
   DCHECK(ARGC() == 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, RegisterDataProcessor);
   CONVERT_ARG_AND_CHECK(arg1, 1, Callable, RegisterDataProcessor);
@@ -2145,14 +2144,14 @@ RENDERER_FUNCTION_CC(AddEventListener) {
 }
 
 RENDERER_FUNCTION_CC(ReFlushPage) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ReFlushPage)");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, RE_FLUSH_PAGE);
   auto* tasm = GET_TASM_POINTER();
   tasm->ReFlushPage();
   RETURN_UNDEFINED();
 }
 
 RENDERER_FUNCTION_CC(SetComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_COMPONENT);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, SetComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, CPointer, SetComponent);
 
@@ -2169,7 +2168,7 @@ RENDERER_FUNCTION_CC(SetComponent) {
 }
 
 RENDERER_FUNCTION_CC(RegisterElementWorklet) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "RegisterElementWorklet");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, REGISTER_ELEMENT_WORKLET);
 
   if (LEPUS_CONTEXT()->IsLepusContext()) {
     LOGI("RegisterElementWorklet failed since context is lepus context.");
@@ -2193,7 +2192,7 @@ RENDERER_FUNCTION_CC(RegisterElementWorklet) {
 }
 
 RENDERER_FUNCTION_CC(CreateVirtualListNode) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateVirtualListNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_VIRTUAL_LIST_NODE);
   CHECK_ARGC_EQ(CreateVirtualListNode, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, CPointer, CreateVirtualListNode);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, CreateVirtualListNode);
@@ -2301,7 +2300,7 @@ RENDERER_FUNCTION_CC(MarkPageElement) {
 }
 
 RENDERER_FUNCTION_CC(SendGlobalEvent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SendGlobalEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SEND_GLOBAL_EVENT);
   auto* tasm = GET_TASM_POINTER();
   CHECK_ARGC_EQ(SendGlobalEvent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, SendGlobalEvent);
@@ -2312,7 +2311,7 @@ RENDERER_FUNCTION_CC(SendGlobalEvent) {
 
 /* Element API BEGIN */
 RENDERER_FUNCTION_CC(FiberCreateElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_ELEMENT);
   // parameter size >= 2
   // [0] String -> element's tag
   // [1] Number -> parent component/page's unique id
@@ -2339,7 +2338,7 @@ RENDERER_FUNCTION_CC(FiberCreateElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreatePage) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreatePage");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_PAGE);
 
   // notify devtool page is updated.
   EXEC_EXPR_FOR_INSPECTOR(
@@ -2368,7 +2367,7 @@ RENDERER_FUNCTION_CC(FiberCreatePage) {
 // __GetPageElement does not require any parameters and returns the current
 // PageElement. If there is no PageElement, it returns null.
 RENDERER_FUNCTION_CC(FiberGetPageElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetPageElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_PAGE_ELEMENT);
   auto* self = GET_TASM_POINTER();
   auto& manager = self->page_proxy()->element_manager();
 
@@ -2380,7 +2379,7 @@ RENDERER_FUNCTION_CC(FiberGetPageElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_COMPONENT);
   // parameter size >= 6
   // [0] Number -> parent component/page's unique id
   // [1] String -> self's componentID
@@ -2431,7 +2430,7 @@ RENDERER_FUNCTION_CC(FiberCreateComponent) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateView) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateView");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_VIEW);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2457,7 +2456,7 @@ RENDERER_FUNCTION_CC(FiberCreateView) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateList) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateList");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_LIST);
   // parameter size >= 3
   // [0] Number -> parent component/page's unique id
   // [1] Function -> componentAtIndex callback
@@ -2501,7 +2500,7 @@ RENDERER_FUNCTION_CC(FiberCreateList) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateScrollView) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateScrollView");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_SCROLL_VIEW);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2538,7 +2537,7 @@ RENDERER_FUNCTION_CC(FiberCreateScrollView) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateText) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateText");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_TEXT);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2573,7 +2572,7 @@ RENDERER_FUNCTION_CC(FiberCreateText) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateImage) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateImage");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_IMAGE);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2608,7 +2607,7 @@ RENDERER_FUNCTION_CC(FiberCreateImage) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateRawText) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateRawText");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_RAW_TEXT);
   // parameter size >= 1
   // [0] String -> raw text's content
   // [1] Object|Undefined -> optional info, not used now
@@ -2625,7 +2624,7 @@ RENDERER_FUNCTION_CC(FiberCreateRawText) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateIf) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateIf");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_IF);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2643,7 +2642,7 @@ RENDERER_FUNCTION_CC(FiberCreateIf) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateFor) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateFor");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_FOR);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2662,7 +2661,7 @@ RENDERER_FUNCTION_CC(FiberCreateFor) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateBlock) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateBlock");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_BLOCK);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2682,7 +2681,7 @@ RENDERER_FUNCTION_CC(FiberCreateBlock) {
 }
 
 RENDERER_FUNCTION_CC(FiberAddConfig) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAddConfig");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ADD_CONFIG);
   // parameter size = 3
   // [0] RefCounted -> element
   // [1] String -> key
@@ -2699,7 +2698,7 @@ RENDERER_FUNCTION_CC(FiberAddConfig) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetConfig) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetConfig");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_CONFIG);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] any -> value
@@ -2716,7 +2715,7 @@ RENDERER_FUNCTION_CC(FiberSetConfig) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateNonElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateNonElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_NO_ELEMENT);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -2764,7 +2763,7 @@ RENDERER_FUNCTION_CC(FiberCreateWrapperElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberAppendElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAppendElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_APPEND_ELEMENT);
   // parameter size = 2
   // [0] RefCounted -> parent element
   // [1] RefCounted -> child element
@@ -2782,7 +2781,7 @@ RENDERER_FUNCTION_CC(FiberAppendElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberRemoveElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberRemoveElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_REMOVE_ELEMENT);
   // parameter size = 2
   // [0] RefCounted -> parent element
   // [1] RefCounted -> child element
@@ -2803,7 +2802,7 @@ RENDERER_FUNCTION_CC(FiberRemoveElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberInsertElementBefore) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberInsertElementBefore");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_INSERT_ELEMENT_BEFORE);
   // parameter size = 3
   // [0] RefCounted -> parent element
   // [1] RefCounted -> child element
@@ -2828,7 +2827,7 @@ RENDERER_FUNCTION_CC(FiberInsertElementBefore) {
 }
 
 RENDERER_FUNCTION_CC(FiberFirstElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberFirstElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_FIRST_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> parent element
   CHECK_ARGC_GE(FiberFirstElement, 1);
@@ -2850,7 +2849,7 @@ RENDERER_FUNCTION_CC(FiberFirstElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberLastElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberLastElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_LAST_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> parent element
   CHECK_ARGC_GE(FiberLastElement, 1);
@@ -2872,7 +2871,7 @@ RENDERER_FUNCTION_CC(FiberLastElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberNextElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberNextElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_NEXT_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberNextElement, 1);
@@ -2898,7 +2897,7 @@ RENDERER_FUNCTION_CC(FiberNextElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberAsyncResolveElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAsyncResolveElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ASYNC_RESOLVE_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> element to be async resolved
   // [return] undefined
@@ -2917,7 +2916,7 @@ RENDERER_FUNCTION_CC(FiberAsyncResolveElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberReplaceElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberReplaceElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_REPLACE_ELEMENT);
   // parameter size = 2
   // [0] RefCounted -> new element
   // [1] RefCounted -> old element
@@ -2954,7 +2953,7 @@ RENDERER_FUNCTION_CC(FiberReplaceElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberReplaceElements) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberReplaceElements");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_REPLACE_ELEMENTS);
   // parameter size = 3
   // [0] RefCounted -> parent
   // [0] RefCounted | Array | Null -> new element
@@ -3028,7 +3027,7 @@ RENDERER_FUNCTION_CC(FiberReplaceElements) {
 }
 
 RENDERER_FUNCTION_CC(FiberSwapElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSwapElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SWAP_ELEMENT);
   // parameter size = 2
   // [0] RefCounted -> left element
   // [1] RefCounted -> right element
@@ -3080,7 +3079,7 @@ RENDERER_FUNCTION_CC(FiberSwapElement) {
 // This function accepts only one parameter, the 0th is the element. The return
 // value is the element's parent.
 RENDERER_FUNCTION_CC(FiberGetParent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetParent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_PARENT);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetParent, 1);
@@ -3099,7 +3098,7 @@ RENDERER_FUNCTION_CC(FiberGetParent) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetChildren) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetChildren");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_CHILDREN);
   // parameter size = 1
   // [0] RefCounted -> parent element
   CHECK_ARGC_GE(FiberGetChildren, 1);
@@ -3119,7 +3118,7 @@ RENDERER_FUNCTION_CC(FiberGetChildren) {
 }
 
 RENDERER_FUNCTION_CC(FiberIsTemplateElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberIsTemplateElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_IS_TEMPLATE_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberIsTemplateElement, 1);
@@ -3132,7 +3131,7 @@ RENDERER_FUNCTION_CC(FiberIsTemplateElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberIsPartElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberIsPartElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_IS_PART_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberIsPartElement, 1);
@@ -3145,7 +3144,7 @@ RENDERER_FUNCTION_CC(FiberIsPartElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberMarkTemplateElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberMarkTemplateElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_MARK_TEMPLATE_ELEMENT);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberMarkTemplateElement, 1);
@@ -3158,7 +3157,7 @@ RENDERER_FUNCTION_CC(FiberMarkTemplateElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberMarkPartElement) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberMarkPartElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_MARK_PART_ELEMENT);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] string -> id
@@ -3173,7 +3172,7 @@ RENDERER_FUNCTION_CC(FiberMarkPartElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetTemplateParts) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetTemplateParts");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_TEMPLATE_PARTS);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetTemplateParts, 1);
@@ -3232,7 +3231,7 @@ RENDERER_FUNCTION_CC(FiberCloneElement) {
 }
 
 RENDERER_FUNCTION_CC(FiberElementIsEqual) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberElementIsEqual");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ELEMENT_IS_EQUAL);
   // parameter size = 2
   // [0] RefCounted -> left element
   // [1] RefCounted -> right element
@@ -3250,7 +3249,7 @@ RENDERER_FUNCTION_CC(FiberElementIsEqual) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetElementUniqueID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetElementUniqueID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ELEMENT_UNIQUE_ID);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetElementUniqueID, 1);
@@ -3264,7 +3263,7 @@ RENDERER_FUNCTION_CC(FiberGetElementUniqueID) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetTag) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetTag");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_TAG);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetTag, 1);
@@ -3278,7 +3277,7 @@ RENDERER_FUNCTION_CC(FiberGetTag) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetAttribute) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetAttribute");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_ATTRIBUTE);
   // parameter size = 3
   // [0] RefCounted -> element
   // [1] String/Number -> key
@@ -3309,7 +3308,7 @@ RENDERER_FUNCTION_CC(FiberSetAttribute) {
 // returns the value corresponding to this attribute key, if there is no
 // corresponding attribute, it returns null.
 RENDERER_FUNCTION_CC(FiberGetAttributeByName) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetAttributeByName");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ATTRIBUTE_BY_NAME);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String -> key
@@ -3345,7 +3344,7 @@ RENDERER_FUNCTION_CC(FiberGetAttributeByName) {
 // an array, which are the attribute keys of the element. If there are no
 // attributes, it returns an empty array.
 RENDERER_FUNCTION_CC(FiberGetAttributeNames) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetAttributeNames");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ATTRIBUTE_NAMES);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetAttributeNames, 1);
@@ -3369,7 +3368,7 @@ RENDERER_FUNCTION_CC(FiberGetAttributeNames) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetAttributes) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetAttributes");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ATTRIBUTES);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetAttributes, 1);
@@ -3395,7 +3394,7 @@ RENDERER_FUNCTION_CC(FiberGetAttributes) {
 }
 
 RENDERER_FUNCTION_CC(FiberAddClass) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAddClass");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ADD_CLASS);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String -> class name
@@ -3412,7 +3411,7 @@ RENDERER_FUNCTION_CC(FiberAddClass) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetClasses) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetClasses");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_CLASSES);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String -> classes
@@ -3453,7 +3452,7 @@ RENDERER_FUNCTION_CC(FiberSetClasses) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetClasses) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetClasses");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_CLASSES);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetClasses, 1);
@@ -3471,7 +3470,7 @@ RENDERER_FUNCTION_CC(FiberGetClasses) {
 }
 
 RENDERER_FUNCTION_CC(FiberAddInlineStyle) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAddInlineStyle");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ADD_INLINE_STYLE);
   // parameter size = 3
   // [0] RefCounted -> element
   // [1] Number | String -> css property id
@@ -3498,7 +3497,7 @@ RENDERER_FUNCTION_CC(FiberAddInlineStyle) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetInlineStyles) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetInlineStyles");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_INLINE_STYLES);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String -> inline-style
@@ -3538,7 +3537,7 @@ RENDERER_FUNCTION_CC(FiberSetInlineStyles) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetInlineStyles) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetInlineStyles");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_INLINE_STYLES);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetInlineStyles, 1);
@@ -3551,7 +3550,7 @@ RENDERER_FUNCTION_CC(FiberGetInlineStyles) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetParsedStyles) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetParsedStyles");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_PARSED_STYLES);
   // parameter size >= 2
   // [0] RefCounted -> element
   // [1] String -> parsed styles' key
@@ -3589,7 +3588,7 @@ RENDERER_FUNCTION_CC(FiberGetComputedStyles) {
 // it is callable, overwrite the previous name and type and add the
 // corresponding lepus event.
 RENDERER_FUNCTION_CC(FiberAddEvent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAddEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ADD_EVENT);
   // parameter size = 4
   // [0] RefCounted -> element
   // [1] String -> type
@@ -3634,7 +3633,7 @@ RENDERER_FUNCTION_CC(FiberAddEvent) {
 }
 
 RENDERER_FUNCTION_CC(CreateGestureDetector) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateGestureDetector");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CREATE_GESTURE_DETECTOR);
   // parameter size = 5
   // [0] RefCounted -> element/vdom
   // [1] (long)id -> gesture id
@@ -3691,7 +3690,7 @@ RENDERER_FUNCTION_CC(CreateGestureDetector) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetGestureDetector) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetGestureDetector");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_GESTURE_DETECTOR);
   // parameter size = 5
   // [0] RefCounted -> element/vdom
   // [1] (long)id -> gesture id
@@ -3749,7 +3748,7 @@ RENDERER_FUNCTION_CC(FiberSetGestureDetector) {
 }
 
 RENDERER_FUNCTION_CC(FiberRemoveGestureDetector) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberRemoveGestureDetector");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_REMOVE_GESTURE_DETECTOR);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] (long)id -> gesture id
@@ -3777,7 +3776,7 @@ RENDERER_FUNCTION_CC(FiberRemoveGestureDetector) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetGestureState) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberRemoveGestureDetector");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_GESTURE_STATE);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] (long)id -> gesture id
@@ -3802,7 +3801,7 @@ RENDERER_FUNCTION_CC(FiberSetGestureState) {
 // to consume the gesture or lets elements outside of lynxView consume the
 // gesture.
 RENDERER_FUNCTION_CC(FiberConsumeGesture) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberConsumeGesture");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CONSUME_GESTURE);
   // parameter size = 3
   // [0] RefCounted -> element
   // [1] (long)id -> gesture id
@@ -3834,7 +3833,7 @@ RENDERER_FUNCTION_CC(FiberConsumeGesture) {
 // deleted first, and then the array will be traversed to add corresponding
 // events.
 RENDERER_FUNCTION_CC(FiberSetEvents) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetEvents");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_EVENTS);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] Array -> events : [{name, type, function}]
@@ -3907,7 +3906,7 @@ RENDERER_FUNCTION_CC(FiberSetEvents) {
 // lepusFunction and piperEventContent. The event must contain name and type,
 // and may contain only one of jsFunction, lepusFunction and piperEventContent.
 RENDERER_FUNCTION_CC(FiberGetEvent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_EVENT);
   // parameter size >= 3
   // [0] RefCounted -> element
   // [1] String -> event name
@@ -3952,7 +3951,7 @@ RENDERER_FUNCTION_CC(FiberGetEvent) {
 // name and type, and may contain only one of jsFunction, lepusFunction and
 // piperEventContent.
 RENDERER_FUNCTION_CC(FiberGetEvents) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetEvents");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_EVENTS);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetEvents, 1);
@@ -3991,7 +3990,7 @@ RENDERER_FUNCTION_CC(FiberGetEvents) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_ID);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String|undefined -> id
@@ -4012,7 +4011,7 @@ RENDERER_FUNCTION_CC(FiberSetID) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ID);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetID, 1);
@@ -4026,7 +4025,7 @@ RENDERER_FUNCTION_CC(FiberGetID) {
 }
 
 RENDERER_FUNCTION_CC(FiberAddDataset) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberAddDataset");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ADD_DATA_SET);
   // parameter size = 3
   // [0] RefCounted -> element
   // [1] String -> key
@@ -4045,7 +4044,7 @@ RENDERER_FUNCTION_CC(FiberAddDataset) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetDataset) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetDataset");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_DATA_SET);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] any -> dataset
@@ -4062,7 +4061,7 @@ RENDERER_FUNCTION_CC(FiberSetDataset) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetDataset) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetDataset");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_DATA_SET);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetDataset, 1);
@@ -4081,7 +4080,7 @@ RENDERER_FUNCTION_CC(FiberGetDataset) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetDataByKey) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetDataByKey");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_DATA_BY_KEY);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] String -> key
@@ -4105,7 +4104,7 @@ RENDERER_FUNCTION_CC(FiberGetDataByKey) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetComponentID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetComponentID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_COMPONENT_ID);
   // parameter size = 1
   // [0] RefCounted -> component element
   CHECK_ARGC_GE(FiberGetComponentID, 1);
@@ -4128,7 +4127,7 @@ RENDERER_FUNCTION_CC(FiberGetComponentID) {
 }
 
 RENDERER_FUNCTION_CC(FiberUpdateComponentID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUpdateComponentID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UPDATE_COMPONENT_ID);
   // parameter size = 2
   // [0] RefCounted -> component element
   // [1] String -> component id
@@ -4145,7 +4144,7 @@ RENDERER_FUNCTION_CC(FiberUpdateComponentID) {
 }
 
 RENDERER_FUNCTION_CC(FiberUpdateListCallbacks) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUpdateListCallbacks");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UPDATE_LIST_CALLBACKS);
   // parameter size >= 3
   // [0] RefCounted -> list element
   // [1] Function -> component_at_index callback
@@ -4168,7 +4167,7 @@ RENDERER_FUNCTION_CC(FiberUpdateListCallbacks) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetCSSId) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetCSSId");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_CSS_ID);
   auto* self = GET_TASM_POINTER();
   // parameter size = 2
   // [0] RefCounted|Array<RefCounted> -> element(s)
@@ -4221,7 +4220,7 @@ RENDERER_FUNCTION_CC(FiberSetCSSId) {
 // The generated pipelineOptions will need to be flushed
 // by invoking FiberFlushElementTree.
 RENDERER_FUNCTION_CC(GeneratePipelineOptions) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GeneratePipelineOptions");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, GENERATE_PIPELINE_OPTIONS);
   RETURN(PipelineOptionsToLepusValue(PipelineOptions()));
 }
 
@@ -4230,7 +4229,7 @@ RENDERER_FUNCTION_CC(GeneratePipelineOptions) {
 // Generally, the pipelineOptions generated by GeneratePipelineOptions
 // can be immediately used to call OnPipelineStart.
 RENDERER_FUNCTION_CC(OnPipelineStart) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "OnPipelineStart");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ON_PIPELINE_START);
   // parameter size = 1
   // [0] String -> pipeline id
   // [1] String -> pipeline origin
@@ -4252,7 +4251,7 @@ RENDERER_FUNCTION_CC(OnPipelineStart) {
 }
 
 RENDERER_FUNCTION_CC(BindPipelineIDWithTimingFlag) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "BindPipelineIDWithTimingFlag");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BIND_PIPELINE_ID_WITH_TIMING_FLAG);
   // parameter size = 2
   // [0] String -> pipeline id
   // [1] String -> timing flag
@@ -4269,7 +4268,7 @@ RENDERER_FUNCTION_CC(BindPipelineIDWithTimingFlag) {
 }
 
 RENDERER_FUNCTION_CC(MarkTiming) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "MarkTiming");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, MARK_TIMING);
   // parameter size = 2
   // [0] String -> pipeline id
   // [1] String -> timing key
@@ -4290,7 +4289,7 @@ RENDERER_FUNCTION_CC(MarkTiming) {
 RENDERER_FUNCTION_CC(AddTimingListener) { RETURN_UNDEFINED(); }
 
 RENDERER_FUNCTION_CC(FiberFlushElementTree) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberFlushElementTree");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_FLUSH_ELEMENT_TREE);
   // parameter size >= 0
   // [0] RefCounted -> element, flush the tree with the element as the root node
   // [1] Object -> options
@@ -4502,7 +4501,7 @@ RENDERER_FUNCTION_CC(FiberFlushElementTree) {
 }
 
 RENDERER_FUNCTION_CC(FiberOnLifecycleEvent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberOnLifecycleEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ON_LIFECYCLE_EVENT);
   // parameter size = 1
   // [0] Array -> component event info
   CHECK_ARGC_GE(FiberOnLifecycleEvent, 1);
@@ -4513,7 +4512,7 @@ RENDERER_FUNCTION_CC(FiberOnLifecycleEvent) {
 }
 
 RENDERER_FUNCTION_CC(FiberElementFromBinary) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberElementFromBinary");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ELEMENT_FROM_BINARY);
   // parameter size >= 2
   // [0] String -> template id
   // [1] Number -> component id
@@ -4565,7 +4564,7 @@ RENDERER_FUNCTION_CC(FiberElementFromBinaryAsync) {
 }
 
 RENDERER_FUNCTION_CC(FiberQueryComponent) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberQueryComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_QUERY_COMPONENT);
   // supporting usage: QueryComponent(url, (result) => {});
   auto* tasm = GET_TASM_POINTER();
   CHECK_ARGC_GE(FiberQueryComponent, 1);
@@ -4589,7 +4588,7 @@ RENDERER_FUNCTION_CC(FiberQueryComponent) {
 }
 
 RENDERER_FUNCTION_CC(FiberQuerySelector) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberQuerySelector");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_QUERY_SELECTOR);
   CHECK_ARGC_GE(FiberQuerySelector, 3);
   CONVERT_ARG(arg0, 0);
   if (!arg0->IsRefCounted()) {
@@ -4612,7 +4611,7 @@ RENDERER_FUNCTION_CC(FiberQuerySelector) {
 }
 
 RENDERER_FUNCTION_CC(FiberUpdateComponentInfo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUpdateComponentInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UPDATE_COMPONENT_INFO);
   // parameter size = 2
   // [0] RefCounted -> component element
   // [1] Object -> component info
@@ -4666,7 +4665,7 @@ RENDERER_FUNCTION_CC(FiberUpdateComponentInfo) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetElementConfig) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetElementConfig");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ELEMENT_CONFIG);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_GE(FiberGetElementConfig, 1);
@@ -4683,7 +4682,7 @@ RENDERER_FUNCTION_CC(FiberGetElementConfig) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetInlineStyle) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetInlineStyle");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_INLINE_STYLE);
   // parameter size = 2
   // [0] RefCounted -> element
   // [1] Number -> css property id
@@ -4704,7 +4703,7 @@ RENDERER_FUNCTION_CC(FiberGetInlineStyle) {
 }
 
 RENDERER_FUNCTION_CC(FiberQuerySelectorAll) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberQuerySelectorAll");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_QUERY_SELECTOR);
   CHECK_ARGC_GE(FiberQuerySelectorAll, 3);
   CONVERT_ARG(arg0, 0);
   if (!arg0->IsRefCounted()) {
@@ -4730,7 +4729,7 @@ RENDERER_FUNCTION_CC(FiberQuerySelectorAll) {
 }
 
 RENDERER_FUNCTION_CC(FiberSetLepusInitData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberSetLepusInitData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_SET_LEPUS_INIT_DATA);
   // parameter size >= 1
   // [0] Object -> lepus init data
   CHECK_ARGC_GE(FiberSetLepusInitData, 1);
@@ -4749,7 +4748,7 @@ RENDERER_FUNCTION_CC(FiberSetLepusInitData) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetDiffData) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetDiffData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_DIFF_DATA);
   // parameter size >= 2
   // [0] Object -> old data, the current page data
   // [1] Object -> new data, incoming data of updating
@@ -4820,7 +4819,7 @@ RENDERER_FUNCTION_CC(FiberGetDiffData) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetElementByUniqueID) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetElementByUniqueID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_ELEMENT_BY_UNIQUE_ID);
   // parameter size >= 1
   // [0] Number -> element uniqueId
   CHECK_ARGC_GE(FiberGetElementByUniqueID, 1);
@@ -4840,7 +4839,7 @@ RENDERER_FUNCTION_CC(FiberGetElementByUniqueID) {
 }
 
 RENDERER_FUNCTION_CC(FiberUpdateIfNodeIndex) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUpdateIfNodeIndex");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UPDATE_IF_NODE_INDEX);
   // parameter size >= 2
   // [0] RefCounted -> element
   // [1] Number -> if index
@@ -4860,7 +4859,7 @@ RENDERER_FUNCTION_CC(FiberUpdateIfNodeIndex) {
 }
 
 RENDERER_FUNCTION_CC(FiberUpdateForChildCount) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUpdateForChildCount");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UPDATE_FOR_CHILD_COUNT);
   // parameter size >= 2
   // [0] Object -> origin data
   // [1] Number -> for child count
@@ -4880,7 +4879,7 @@ RENDERER_FUNCTION_CC(FiberUpdateForChildCount) {
 }
 
 RENDERER_FUNCTION_CC(LoadLepusChunk) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LoadLepusChunk");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LOAD_LEPUS_CHUNK);
   // parameter size == 2
   // [0] String -> path of lepus chunk
   // [1] Object -> options
@@ -4915,7 +4914,7 @@ RENDERER_FUNCTION_CC(LoadLepusChunk) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateFrame) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateFrame");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_FRAME);
   // parameter size >= 1
   // [0] Number -> parent component/page's unique id
   // [1] Object|Undefined -> optional info, not used now
@@ -4940,7 +4939,7 @@ RENDERER_FUNCTION_CC(FiberCreateFrame) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateElementWithProperties) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateElementWithProperties");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_ELEMENT_WITH_PROPS);
   // parameter description
   CONVERT_ARG(arg0, 0);
   ElementBuiltInTagEnum enum_tag =
@@ -5107,7 +5106,7 @@ RENDERER_FUNCTION_CC(FiberCreateElementWithProperties) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateSignal) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateSignal");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_SIGNAL);
   CHECK_ARGC_GE(FiberCreateSignal, 1);
   CONVERT_ARG(arg0, 0);  // init value
 
@@ -5126,7 +5125,7 @@ RENDERER_FUNCTION_CC(FiberCreateSignal) {
 }
 
 RENDERER_FUNCTION_CC(FiberWriteSignal) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberWriteSignal");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_WRITE_SIGNAL);
   CHECK_ARGC_GE(FiberCreateSignal, 2);
   CONVERT_ARG(arg0, 0);  // signal or signal array
   CONVERT_ARG(arg1, 1);  // value or value array
@@ -5180,7 +5179,7 @@ RENDERER_FUNCTION_CC(FiberWriteSignal) {
 }
 
 RENDERER_FUNCTION_CC(FiberReadSignal) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberReadSignal");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_READ_SIGNAL);
   CHECK_ARGC_GE(FiberCreateSignal, 1);
   CONVERT_ARG(arg0, 0);  // signal or memo
 
@@ -5199,7 +5198,7 @@ RENDERER_FUNCTION_CC(FiberReadSignal) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateComputation) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateComputation");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_COMPUTATION);
   CHECK_ARGC_GE(FiberCreateComputation, 2);
   CONVERT_ARG(arg0, 0);  // block
   CONVERT_ARG(arg1, 1);  // init value
@@ -5213,7 +5212,7 @@ RENDERER_FUNCTION_CC(FiberCreateComputation) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateMemo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateMemo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_MEMO);
   CHECK_ARGC_GE(FiberCreateComputation, 2);
   CONVERT_ARG(arg0, 0);  // block
   CONVERT_ARG(arg1, 1);  // init value
@@ -5235,7 +5234,7 @@ RENDERER_FUNCTION_CC(FiberCreateMemo) {
 }
 
 RENDERER_FUNCTION_CC(FiberUnTrack) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberUnTrack");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_UN_TRACK);
   CHECK_ARGC_GE(FiberUnTrack, 1);
   CONVERT_ARG(arg0, 0);  // block
 
@@ -5249,7 +5248,7 @@ RENDERER_FUNCTION_CC(FiberUnTrack) {
 }
 
 RENDERER_FUNCTION_CC(FiberRunUpdates) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberRunUpdates");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_RUN_UPDATES);
   CHECK_ARGC_GE(FiberRunUpdates, 1);
   CONVERT_ARG(arg0, 0);  // block
 
@@ -5264,7 +5263,7 @@ RENDERER_FUNCTION_CC(FiberRunUpdates) {
 }
 
 RENDERER_FUNCTION_CC(FiberCreateScope) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCreateScope");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CREATE_SCOPE);
   CHECK_ARGC_GE(FiberCreateScope, 1);
   CONVERT_ARG(arg0, 0);  // block
 
@@ -5274,7 +5273,7 @@ RENDERER_FUNCTION_CC(FiberCreateScope) {
 }
 
 RENDERER_FUNCTION_CC(FiberGetScope) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberGetScope");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_GET_SCOPE);
 
   auto scope = GET_TASM_POINTER()->GetSignalContext()->GetTopScope();
 
@@ -5286,7 +5285,7 @@ RENDERER_FUNCTION_CC(FiberGetScope) {
 }
 
 RENDERER_FUNCTION_CC(FiberCleanUp) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberCleanUp");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_CLEAN_UP);
   CHECK_ARGC_GE(FiberCleanUp, 1);
   CONVERT_ARG(arg0, 0);  // scope
 
@@ -5316,7 +5315,7 @@ RENDERER_FUNCTION_CC(FiberCleanUp) {
 }
 
 RENDERER_FUNCTION_CC(FiberOnCleanUp) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FiberOnCleanUp");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ON_CLEAN_UP);
   CHECK_ARGC_GE(FiberOnCleanUp, 2);
   CONVERT_ARG(arg0, 0);  // scope
   CONVERT_ARG(arg1, 1);  // block
@@ -5356,7 +5355,7 @@ RENDERER_FUNCTION_CC(FiberOnCleanUp) {
 /* Element API END */
 
 RENDERER_FUNCTION_CC(SetSourceMapRelease) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetSourceMapRelease");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, SET_SOURCE_MAP_RELEASE);
   CHECK_ARGC_EQ(SendGlobalEvent, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Object, SetSourceMapRelease);
   LEPUS_CONTEXT()->SetSourceMapRelease(*arg0);
@@ -5364,7 +5363,7 @@ RENDERER_FUNCTION_CC(SetSourceMapRelease) {
 }
 
 RENDERER_FUNCTION_CC(ReportError) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ReportError");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, REPORT_ERROR);
   if (LEPUS_CONTEXT()->IsLepusNGContext()) {
     CHECK_ARGC_GE(ReportError, 1);
 
@@ -5412,7 +5411,7 @@ RENDERER_FUNCTION_CC(ReportError) {
 }
 
 RENDERER_FUNCTION_CC(LynxAddReporterCustomInfo) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "lynx.AddReporterCustomInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LYNX_ADD_REPORTER_CUSTOM_INFO);
   if (LEPUS_CONTEXT()->IsLepusNGContext()) {
     CHECK_ARGC_GE(LynxAddReporterCustomInfo, 1);
 
@@ -5436,7 +5435,7 @@ RENDERER_FUNCTION_CC(LynxAddReporterCustomInfo) {
 /* AirElement API BEGIN */
 RENDERER_FUNCTION_CC(AirCreateElement) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_ELEMENT);
   // parameter size >= 2
   // [0] String -> element's tag
   // [1] Number -> element's lepus_id
@@ -5511,7 +5510,7 @@ RENDERER_FUNCTION_CC(AirCreateElement) {
 
 RENDERER_FUNCTION_CC(AirGetElement) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT);
   CHECK_ARGC_GE(AirGetElement, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, AirGetElement);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirGetElement);
@@ -5533,7 +5532,7 @@ RENDERER_FUNCTION_CC(AirGetElement) {
 
 RENDERER_FUNCTION_CC(AirCreatePage) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreatePage");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_PAGE);
   // parameter size >= 2
   // [0] String -> componentID
   // [1] Number -> component/page's lepus id
@@ -5570,7 +5569,7 @@ RENDERER_FUNCTION_CC(AirCreatePage) {
 
 RENDERER_FUNCTION_CC(AirCreateComponent) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateComponent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_COMPONENT);
   CHECK_ARGC_GE(AirCreateComponent, 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, AirCreateComponent);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, AirCreateComponent);
@@ -5644,7 +5643,7 @@ RENDERER_FUNCTION_CC(AirCreateComponent) {
 
 RENDERER_FUNCTION_CC(AirCreateBlock) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateBlock");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_BLOCK);
   // parameter size >= 1
   // [1] Number -> air element's lepus id
   CHECK_ARGC_GE(AirCreateBlock, 1);
@@ -5688,7 +5687,7 @@ RENDERER_FUNCTION_CC(AirCreateBlock) {
 
 RENDERER_FUNCTION_CC(AirCreateIf) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateIf");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_IF);
   // parameter size >= 1
   // [1] Number -> air element's lepus id
   CHECK_ARGC_GE(AirCreateIf, 1);
@@ -5736,7 +5735,7 @@ RENDERER_FUNCTION_CC(AirCreateRadonIf) { RETURN_UNDEFINED(); }
 
 RENDERER_FUNCTION_CC(AirCreateFor) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateFor");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_FOR);
   // parameter size >= 1
   // [1] Number -> air element's lepus id
   CHECK_ARGC_GE(AirCreateFor, 1);
@@ -5782,7 +5781,7 @@ RENDERER_FUNCTION_CC(AirCreateFor) {
 
 RENDERER_FUNCTION_CC(AirCreatePlug) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreatePlug");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_PLUG);
   // TODO(liuli) support plug and slot later
 #endif
   RETURN_UNDEFINED();
@@ -5790,7 +5789,7 @@ RENDERER_FUNCTION_CC(AirCreatePlug) {
 
 RENDERER_FUNCTION_CC(AirCreateSlot) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateSlot");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_SLOT);
   // TODO(liuli) support plug and slot later
 #endif
   RETURN_UNDEFINED();
@@ -5798,7 +5797,7 @@ RENDERER_FUNCTION_CC(AirCreateSlot) {
 
 RENDERER_FUNCTION_CC(AirAppendElement) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirAppendElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_APPEND_ELEMENT);
   // parameter size = 2
   // [0] ptr -> parent element
   // [1] ptr -> child element
@@ -5819,7 +5818,7 @@ RENDERER_FUNCTION_CC(AirAppendElement) {
 
 RENDERER_FUNCTION_CC(AirRemoveElement) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirRemoveElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_REMOVE_ELEMENT);
   // parameter size = 2
   // [0] ptr -> parent element
   // [1] ptr -> child element
@@ -5837,7 +5836,7 @@ RENDERER_FUNCTION_CC(AirRemoveElement) {
 
 RENDERER_FUNCTION_CC(AirInsertElementBefore) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirInsertElementBefore");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_INSERT_ELEMENT_BEFORE);
   // parameter size = 3
   // [0] ptr -> parent element
   // [1] ptr -> child element
@@ -5862,7 +5861,7 @@ RENDERER_FUNCTION_CC(AirInsertElementBefore) {
 
 RENDERER_FUNCTION_CC(AirGetElementUniqueID) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElementUniqueID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT_UNIQUE_ID);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_EQ(AirGetElementUniqueID, 1);
@@ -5881,7 +5880,7 @@ RENDERER_FUNCTION_CC(AirGetElementUniqueID) {
 
 RENDERER_FUNCTION_CC(AirGetElementTag) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElementTag");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT_TAG);
   // parameter size = 1
   // [0] RefCounted -> element
   CHECK_ARGC_EQ(AirGetElementTag, 1);
@@ -5896,7 +5895,7 @@ RENDERER_FUNCTION_CC(AirGetElementTag) {
 
 RENDERER_FUNCTION_CC(AirSetAttribute) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetAttribute");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_ATTRIBUTE);
   // parameter size = 3
   // [0] ptr -> element
   // [1] String -> key
@@ -5918,7 +5917,7 @@ RENDERER_FUNCTION_CC(AirSetInlineStyles) {
   // parameter size = 2
   // [0] ptr -> element
   // [1] value -> styles
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetInlineStyles");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_INLINE_STYLES);
   CHECK_ARGC_EQ(AirSetInlineStyles, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetInlineStyles);
   CONVERT_ARG(arg1, 1);
@@ -5931,7 +5930,7 @@ RENDERER_FUNCTION_CC(AirSetInlineStyles) {
 
 RENDERER_FUNCTION_CC(AirSetEvent) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_EVENT);
   CHECK_ARGC_EQ(AirSetEvent, 4);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetEvent);
   CONVERT_ARG_AND_CHECK(type, 1, String, AirSetEvent);
@@ -5951,7 +5950,7 @@ RENDERER_FUNCTION_CC(AirSetEvent) {
 
 RENDERER_FUNCTION_CC(AirSetID) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_ID);
   CHECK_ARGC_EQ(AirSetID, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, SetId);
   CONVERT_ARG(arg1, 1);
@@ -5966,7 +5965,7 @@ RENDERER_FUNCTION_CC(AirSetID) {
 
 RENDERER_FUNCTION_CC(AirGetElementByID) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElementByID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT_BY_ID);
   CHECK_ARGC_EQ(AirGetElementByID, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, AirGetElementByID);
   const auto& id = arg0->StdString();
@@ -5983,7 +5982,7 @@ RENDERER_FUNCTION_CC(AirGetElementByID) {
 
 RENDERER_FUNCTION_CC(AirGetElementByUniqueID) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElementByUniqueID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT_BY_UNIQUE_ID);
   CHECK_ARGC_EQ(AirGetElementByUniqueID, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, AirGetElementByUniqueID);
   int id = static_cast<int>(arg0->Number());
@@ -6002,7 +6001,7 @@ RENDERER_FUNCTION_CC(AirGetElementByUniqueID) {
 
 RENDERER_FUNCTION_CC(AirGetRootElement) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetRootElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ROOT_ELEMENT);
 
   auto* self = GET_TASM_POINTER();
   auto& manager = self->page_proxy()->element_manager();
@@ -6019,7 +6018,7 @@ RENDERER_FUNCTION_CC(AirGetRootElement) {
 
 RENDERER_FUNCTION_CC(AirGetElementByLepusID) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetElementByLepusID");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_ELEMENT_BY_LEPUS_ID);
   CHECK_ARGC_EQ(AirGetElementByLepusID, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, AirGetElementByLepusID);
 
@@ -6069,7 +6068,7 @@ RENDERER_FUNCTION_CC(AirGetElementByLepusID) {
 
 RENDERER_FUNCTION_CC(AirUpdateIfNodeIndex) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirUpdateIfNodeIndex");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_UPDATE_IF_NODE_INDEX);
   CHECK_ARGC_EQ(AirUpdateIfNodeIndex, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirUpdateIfNodeIndex);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirUpdateIfNodeIndex);
@@ -6089,7 +6088,7 @@ RENDERER_FUNCTION_CC(AirUpdateIfNodeIndex) {
 
 RENDERER_FUNCTION_CC(AirUpdateForNodeIndex) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirUpdateForNodeIndex");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_UPDATE_FOR_NODE_INDEX);
   CHECK_ARGC_EQ(AirUpdateForNodeIndex, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirUpdateForNodeIndex);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirUpdateForNodeIndex);
@@ -6106,7 +6105,7 @@ RENDERER_FUNCTION_CC(AirUpdateForNodeIndex) {
 
 RENDERER_FUNCTION_CC(AirUpdateForChildCount) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirUpdateForChildCount");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_UPDATE_FOR_CHILD_COUNT);
   CHECK_ARGC_EQ(AirUpdateForChildCount, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirUpdateForChildCount);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirUpdateForChildCount);
@@ -6123,7 +6122,7 @@ RENDERER_FUNCTION_CC(AirUpdateForChildCount) {
 
 RENDERER_FUNCTION_CC(AirGetForNodeChildWithIndex) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetForNodeChildWithIndex");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_FOR_NODE_CHILD_WITH_INDEX);
   CHECK_ARGC_GE(AirGetForNodeChildWithIndex, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetForNodeChildWithIndex);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirGetForNodeChildWithIndex);
@@ -6143,7 +6142,7 @@ RENDERER_FUNCTION_CC(AirGetForNodeChildWithIndex) {
 
 RENDERER_FUNCTION_CC(AirPushForNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirPushForNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_PUSH_FOR_NODE);
   CHECK_ARGC_EQ(AirPushForNode, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirPushForNode);
 
@@ -6158,7 +6157,7 @@ RENDERER_FUNCTION_CC(AirPushForNode) {
 
 RENDERER_FUNCTION_CC(AirPopForNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirPopForNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_POP_FOR_NODE);
 
   auto* self = GET_TASM_POINTER();
   auto& manager = self->page_proxy()->element_manager();
@@ -6169,7 +6168,7 @@ RENDERER_FUNCTION_CC(AirPopForNode) {
 
 RENDERER_FUNCTION_CC(AirGetChildElementByIndex) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetChildElementByIndex");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_CHILD_ELEMENT_BY_INDEX);
   CHECK_ARGC_EQ(AirGetChildElementByIndex, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetChildElementByIndex);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirGetChildElementByIndex);
@@ -6188,7 +6187,7 @@ RENDERER_FUNCTION_CC(AirGetChildElementByIndex) {
 
 RENDERER_FUNCTION_CC(AirPushDynamicNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirPushDynamicNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_PUSH_DYNAMIC_NODE);
   CHECK_ARGC_GE(PushDynamicNode, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, PushDynamicNode);
   CONVERT_ARG_AND_CHECK(arg1, 1, RefCounted, PushDynamicNode);
@@ -6203,7 +6202,7 @@ RENDERER_FUNCTION_CC(AirPushDynamicNode) {
 
 RENDERER_FUNCTION_CC(AirGetDynamicNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetDynamicNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_DYNAMIC_NODE);
   CHECK_ARGC_GE(AirGetDynamicNode, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetDynamicNode);
   CONVERT_ARG_AND_CHECK(arg1, 1, Number, AirGetDynamicNode);
@@ -6224,7 +6223,7 @@ RENDERER_FUNCTION_CC(AirGetDynamicNode) {
 
 RENDERER_FUNCTION_CC(AirSetComponentProp) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetComponentProp");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_COMPONENT_PROP);
   CHECK_ARGC_EQ(AirSetComponentProp, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetComponentProp);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, AirSetComponentProp);
@@ -6243,7 +6242,7 @@ RENDERER_FUNCTION_CC(AirSetComponentProp) {
 
 RENDERER_FUNCTION_CC(AirRenderComponentInLepus) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirRenderComponentInLepus");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_RENDER_COMPONENT_IN_LEPUS);
   DCHECK(ARGC() == 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirRenderComponentInLepus);
 
@@ -6256,7 +6255,7 @@ RENDERER_FUNCTION_CC(AirRenderComponentInLepus) {
 
 RENDERER_FUNCTION_CC(AirUpdateComponentInLepus) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirUpdateComponentInLepus");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_UPDATE_COMPONENT_IN_LEPUS);
   CHECK_ARGC_GE(AirUpdateComponentInLepus, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirUpdateComponentInLepus);
   CONVERT_ARG_AND_CHECK(arg1, 1, Object, AirUpdateComponentInLepus);
@@ -6270,7 +6269,7 @@ RENDERER_FUNCTION_CC(AirUpdateComponentInLepus) {
 
 RENDERER_FUNCTION_CC(AirGetComponentInfo) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetComponentInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_COMPONENT_INFO);
   CHECK_ARGC_EQ(AirGetComponentInfo, 1);
 #endif
   RETURN_UNDEFINED();
@@ -6278,7 +6277,7 @@ RENDERER_FUNCTION_CC(AirGetComponentInfo) {
 
 RENDERER_FUNCTION_CC(AirUpdateComponentInfo) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirUpdateComponentInfo");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_UPDATE_COMPONENT_INFO);
   CHECK_ARGC_GE(AirUpdateComponentInfo, 4);
 #endif
   RETURN_UNDEFINED();
@@ -6286,7 +6285,7 @@ RENDERER_FUNCTION_CC(AirUpdateComponentInfo) {
 
 RENDERER_FUNCTION_CC(AirGetData) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_DATA);
   CHECK_ARGC_EQ(AirGetData, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetData);
 
@@ -6299,7 +6298,7 @@ RENDERER_FUNCTION_CC(AirGetData) {
 
 RENDERER_FUNCTION_CC(AirGetProps) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetProps");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_PROPS);
   CHECK_ARGC_EQ(AirGetProps, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetProps);
 
@@ -6312,7 +6311,7 @@ RENDERER_FUNCTION_CC(AirGetProps) {
 
 RENDERER_FUNCTION_CC(AirSetData) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_DATA);
   CHECK_ARGC_GE(AirSetData, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetData);
   CONVERT_ARG(arg1, 1);
@@ -6358,7 +6357,7 @@ RENDERER_FUNCTION_CC(AirFlushElement) {
 
 RENDERER_FUNCTION_CC(AirFlushElementTree) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirFlushRecursively");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_FLUSH_RECURSIVELY);
   CHECK_ARGC_EQ(AirFlushRecursively, 1);
 
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirFlushRecursively);
@@ -6371,7 +6370,7 @@ RENDERER_FUNCTION_CC(AirFlushElementTree) {
 
 RENDERER_FUNCTION_CC(TriggerLepusBridge) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TriggerLepusBridge");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TRIGGER_LEPUS_BRIDGE);
   CHECK_ARGC_GE(TriggerLepusBridge, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Object, TriggerLepusBridge);
 
@@ -6430,7 +6429,7 @@ RENDERER_FUNCTION_CC(TriggerLepusBridge) {
 
 RENDERER_FUNCTION_CC(TriggerLepusBridgeSync) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TriggerLepusBridgeSync");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TRIGGER_LEPUS_BRIDGE_ASYNC);
   CHECK_ARGC_GE(TriggerLepusBridge, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Object, TriggerLepusBridge);
 
@@ -6454,7 +6453,7 @@ RENDERER_FUNCTION_CC(TriggerLepusBridgeSync) {
 
 RENDERER_FUNCTION_CC(AirSetDataSet) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetDataSet");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_DATA_SET);
   CHECK_ARGC_EQ(AirSetDataSet, 3);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetDataSet);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, AirSetDataSet);
@@ -6472,7 +6471,7 @@ RENDERER_FUNCTION_CC(AirSetDataSet) {
 
 RENDERER_FUNCTION_CC(AirSendGlobalEvent) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSendGlobalEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SEND_GLOBAL_EVENT);
   CHECK_ARGC_EQ(AirSendGlobalEvent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, AirSendGlobalEvent);
   CONVERT_ARG(arg1, 1);
@@ -6484,7 +6483,7 @@ RENDERER_FUNCTION_CC(AirSendGlobalEvent) {
 
 RENDERER_FUNCTION_CC(RemoveEventListener) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "RemoveEventListener");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, REMOVE_EVENT_LISTENER);
   CHECK_ARGC_GE(RemoveEventListener, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, RemoveEventListener);
   auto* tasm = GET_TASM_POINTER();
@@ -6510,7 +6509,7 @@ RENDERER_FUNCTION_CC(SetTimeout) {
 }
 
 RENDERER_FUNCTION_CC(ClearTimeout) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ClearTimeout");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CLEAR_TIMEOUT);
   CHECK_ARGC_GE(ClearTimeout, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, ClearTimeout);
 
@@ -6535,7 +6534,7 @@ RENDERER_FUNCTION_CC(SetInterval) {
 }
 
 RENDERER_FUNCTION_CC(ClearTimeInterval) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ClearTimeInterval");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CLEAR_TIME_INTERVAL);
   CHECK_ARGC_GE(ClearTimeInterval, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, ClearTimeInterval);
 
@@ -6545,7 +6544,7 @@ RENDERER_FUNCTION_CC(ClearTimeInterval) {
 }
 
 RENDERER_FUNCTION_CC(RequestAnimationFrame) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "RequestAnimationFrame");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, REQUEST_ANIMATION_FRAME);
   CHECK_ARGC_GE(RequestAnimationFrame, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Callable, RequestAnimationFrame);
 
@@ -6568,7 +6567,7 @@ RENDERER_FUNCTION_CC(RequestAnimationFrame) {
 }
 
 RENDERER_FUNCTION_CC(CancelAnimationFrame) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CancelAnimationFrame");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CANCEL_ANIMATION_FRAME);
   CHECK_ARGC_GE(CancelAnimationFrame, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, CancelAnimationFrame);
 
@@ -6580,7 +6579,7 @@ RENDERER_FUNCTION_CC(CancelAnimationFrame) {
 
 RENDERER_FUNCTION_CC(TriggerComponentEvent) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TriggerComponentEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TRIGGER_COMPONENT_EVENT);
   CHECK_ARGC_GE(TriggerComponentEvent, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, String, TriggerComponentEvent);
   CONVERT_ARG_AND_CHECK(arg1, 1, Object, TriggerComponentEvent);
@@ -6594,7 +6593,7 @@ RENDERER_FUNCTION_CC(TriggerComponentEvent) {
 RENDERER_FUNCTION_CC(AirCreateRawText) {
 #if ENABLE_AIR
   BASE_STATIC_STRING_DECL(kRawText, "raw-text");
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirCreateRawText");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_CREATE_RAW_TEXT);
   CHECK_ARGC_GE(AirCreateRawText, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, Number, AirCreateRawText);
   const auto& lepus_id = static_cast<int32_t>(arg0->Number());
@@ -6638,7 +6637,7 @@ RENDERER_FUNCTION_CC(AirCreateRawText) {
 
 RENDERER_FUNCTION_CC(AirSetClasses) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirSetClasses");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_SET_CLASSES);
   CHECK_ARGC_EQ(AirSetClasses, 2);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirSetClasses);
   CONVERT_ARG_AND_CHECK(arg1, 1, String, AirSetClasses);
@@ -6652,7 +6651,7 @@ RENDERER_FUNCTION_CC(AirSetClasses) {
 
 RENDERER_FUNCTION_CC(AirPushComponentNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirPushComponentNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_PUSH_COMPONENT_NODE);
   CHECK_ARGC_EQ(AirPushComponentNode, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirPushComponentNode);
 
@@ -6667,7 +6666,7 @@ RENDERER_FUNCTION_CC(AirPushComponentNode) {
 
 RENDERER_FUNCTION_CC(AirPopComponentNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirPopComponentNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_POP_COMPONENT_NODE);
 
   auto* self = GET_TASM_POINTER();
   auto& manager = self->page_proxy()->element_manager();
@@ -6678,7 +6677,7 @@ RENDERER_FUNCTION_CC(AirPopComponentNode) {
 
 RENDERER_FUNCTION_CC(AirGetParentForNode) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirGetParentForNode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_GET_PARENT_FOR_NODE);
   CHECK_ARGC_GE(AirGetParentForNode, 1);
   CONVERT_ARG_AND_CHECK(arg0, 0, RefCounted, AirGetParentForNode);
 
@@ -6708,7 +6707,7 @@ RENDERER_FUNCTION_CC(AirGetParentForNode) {
 
 RENDERER_FUNCTION_CC(AirFlushTree) {
 #if ENABLE_AIR
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AirFlushTree");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_FLUSH_TREE);
   CONVERT_ARG_AND_CHECK(arg0, 0, Object, AirFlushTree);
 
   auto* self = GET_TASM_POINTER();

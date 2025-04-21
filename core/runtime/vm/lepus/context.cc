@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/utils/base/base_def.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/renderer/utils/lynx_env.h"
@@ -74,7 +73,7 @@ static LEPUSValue LepusRefSetPropertyCallBack(LEPUSContext* ctx,
     return LepusReportSetConstValueError(ctx, thisObj, prop);
   }
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "QuickContext::LepusRefSetPropertyCallBack");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICK_CONTEXT_SET_PROPERTY_CALLBACK);
   Value lepus_val = MK_JS_LEPUS_VALUE(ctx, val);
   bool gc_flag = LEPUS_IsGCMode(ctx);
   switch (pref->tag) {
@@ -132,7 +131,7 @@ static LEPUSValue LepusRefGetPropertyCallBack(LEPUSContext* ctx,
                                               LEPUSValue thisObj,
                                               LEPUSAtom prop, int idx) {
   DCHECK(LEPUS_IsLepusRef(thisObj));
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "QuickContext::LepusRefGetPropertyCallBack");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICK_CONTEXT_GET_PROPERTY_CALLBACK);
   LEPUSLepusRef* pref =
       static_cast<LEPUSLepusRef*>(LEPUS_VALUE_GET_PTR(thisObj));
   switch (pref->tag) {
@@ -210,8 +209,7 @@ static size_t LepusRefDeepEqualCallBack(LEPUSValue val1, LEPUSValue val2) {
 
 static LEPUSValue LepusConvertToObjectCallBack(LEPUSContext* ctx,
                                                LEPUSValue val) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "QuickContext::LepusConvertToObjectCallBack");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICK_CONTEXT_CONVERT_TO_OBJECT_CALLBACK);
   LEPUSLepusRef* pref = static_cast<LEPUSLepusRef*>(LEPUS_VALUE_GET_PTR(val));
   auto* ref_ptr = static_cast<lepus::RefCounted*>(pref->p);
   LEPUSValue result;
@@ -347,10 +345,10 @@ Context::Delegate* Context::GetDelegate() {
 std::shared_ptr<Context> Context::CreateContext(bool use_lepusng,
                                                 bool disable_tracing_gc) {
   if (use_lepusng) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "Context::CreateQuickContext");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, CONTEXT_CREATE_QUICK_CONTEXT);
     return std::make_shared<QuickContext>(disable_tracing_gc);
   } else {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "Context::CreateVMContext");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, CONTEXT_CREATE_VM_CONTEXT);
 #if !ENABLE_JUST_LEPUSNG
     return std::make_shared<VMContext>();
 #else

@@ -18,8 +18,6 @@
 #include "base/include/to_underlying.h"
 #include "base/include/value/base_string.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/data/lynx_view_data_manager.h"
 #include "core/renderer/dom/vdom/radon/node_select_options.h"
@@ -39,6 +37,7 @@
 #include "core/runtime/common/utils.h"
 #include "core/runtime/piper/js/lynx_api_handler.h"
 #include "core/runtime/piper/js/runtime_constant.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/services/timing_handler/timing_constants.h"
@@ -232,7 +231,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
         [this](Runtime& rt, const piper::Value& thisVal,
                const piper::Value* args,
                size_t count) -> base::expected<Value, JSINativeException> {
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "updateData");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PROXY_UPDATE_DATA);
           int32_t instance_id = static_cast<int32_t>(rt.getRuntimeId());
           tasm::timing::LongTaskMonitor::Scope long_task_scope(
               instance_id, tasm::timing::kUpdateDataByJSTask,
@@ -280,7 +279,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             callback =
                 ptr->CreateCallBack(args[2].getObject(rt).getFunction(rt));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "UpdateDataToTASM",
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PROXY_UPDATE_DATA_TO_TASM,
                       [&](lynx::perfetto::EventContext ctx) {
                         ctx.event()->add_debug_annotations(
                             "CallbackID", std::to_string(callback.id()));
@@ -547,7 +546,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                 "updateComponentData arg count must >= 3"));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "updateComponentData");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PROXY_UPDATE_COMPONENT_DATA);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -586,7 +585,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             }
 
             TRACE_EVENT(
-                LYNX_TRACE_CATEGORY, "updateComponentDataToTASM",
+                LYNX_TRACE_CATEGORY, APP_PROXY_UPDATE_COMPONENT_DATA_TO_TASM,
                 [&](lynx::perfetto::EventContext ctx) {
                   ctx.event()->add_debug_annotations(
                       "CallbackID", std::to_string(callback.id()));
@@ -642,7 +641,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                 "triggerComponentEvent arg count must be 2"));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "triggerComponentEvent");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PROXY_TRIGGER_COMPONENT_EVENT);
           std::string id;
           if (args[0].isString()) {
             id = args[0].getString(rt).utf8(rt);
@@ -656,7 +655,8 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
               return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                   "ParseJSValueToLepusValue error in triggerComponentEvent"));
             }
-            TRACE_EVENT(LYNX_TRACE_CATEGORY, "triggerComponentEventToTASM");
+            TRACE_EVENT(LYNX_TRACE_CATEGORY,
+                        APP_PROXY_TRIGGER_COMPONENT_EVENT_TO_TASM);
             ptr->triggerComponentEvent(id, std::move(*lepus_value_opt));
           }
 
@@ -674,7 +674,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
                 "selectComponent args count must be 4"));
           }
 
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "selectComponent");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PROXY_SELECT_COMPONENT);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -776,7 +776,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
                 BUILD_JSI_NATIVE_EXCEPTION("getPathInfo args count must be 5"));
           }
 
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::getPathInfo");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_GET_PATH_INFO);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -817,7 +817,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
                 BUILD_JSI_NATIVE_EXCEPTION("getEnv args count must be 1"));
           }
 
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::getEnv");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_GET_ENV);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return Value::undefined();
@@ -849,7 +849,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
                 "invokeUIMethod args count must be 6"));
           }
 
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::invokeUIMethod");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_INVOKE_UI_METHOD);
 
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
@@ -888,7 +888,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
                 BUILD_JSI_NATIVE_EXCEPTION("getFields args count must be 6"));
           }
 
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::getFields");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_GET_FIELDS);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -1063,7 +1063,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                 "callLepusMethod arg count must >= 2"));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "callLepusMethod");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_CALL_LEPUS_METHOD);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -1128,7 +1128,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                 "GeneratePipelineOptions arg count must == 0"));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "generatePipelineOptions");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_GENERATE_PIPELINE_OPTIONS);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -1281,7 +1281,7 @@ Value AppProxy::get(Runtime* rt, const PropNameID& name) {
             return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(
                 "triggerWorkletFunction arg count must >= 3"));
           }
-          TRACE_EVENT(LYNX_TRACE_CATEGORY, "triggerWorkletFunction");
+          TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_TRIGGER_WORKLET_FUNC);
           auto ptr = native_app_.lock();
           if (!ptr || ptr->IsDestroying()) {
             return piper::Value::undefined();
@@ -1819,7 +1819,7 @@ void App::CallDestroyLifetimeFun() {
   state_ = State::kDestroying;
 
   LOGI(" App::CallDestroyLifetimeFun start " << this);
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CardLifeTimeCallback:onDestroy");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_CALL_DESTROY_LIFE_TIME_FUNC);
   auto rt = rt_.lock();
   if (rt && js_app_.isObject()) {
     Scope scope(*rt);
@@ -1885,7 +1885,7 @@ void App::loadApp(tasm::TasmRuntimeBundle bundle,
 
   const auto& init_data = card_bundle_.init_data;
 
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "LepusValueToJSValue");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JS_VALUE);
   auto js_encoded_data = valueFromLepus(*rt, encoded_data);
   if (!js_encoded_data) {
     handleLoadAppFailed(
@@ -2006,14 +2006,14 @@ void App::handleLoadAppFailed(std::string error_msg) {
 }
 
 void App::LoadScriptAsync(const std::string& url, ApiCallBack callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::LoadScriptAsync", "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_LOAD_SCRIPT_ASYNC, "url", url);
   LOGI("App::LoadScriptAsync " << url << " " << this);
   delegate_->LoadScriptAsync(url, callback);
 }
 
 void App::OnScriptLoaded(const std::string& url, std::string script,
                          std::string err_msg, ApiCallBack callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "OnScriptLoaded", "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_ON_SCRIPT_LOADED, "url", url);
   if (!err_msg.empty()) {
     auto rt = rt_.lock();
     if (rt) {
@@ -2033,7 +2033,7 @@ void App::OnScriptLoaded(const std::string& url, std::string script,
 
 void App::EvaluateScript(const std::string& url, std::string script,
                          ApiCallBack callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::EvalScript", "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_EVAL_SCRIPT, "url", url);
   LOGI("App::EvaluateScript:" << url << " length: " << script.length());
 #if ENABLE_TESTBENCH_RECORDER
   tasm::recorder::TestBenchBaseRecorder::GetInstance().RecordScripts(
@@ -2095,7 +2095,7 @@ void App::onAppReload(tasm::TemplateData init_data) {
 void App::CallJSFunctionInLepusEvent(const std::string& component_id,
                                      const std::string& name,
                                      const lepus::Value& params) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallbackToLepusEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_CALLBACK_TO_LEPUS_EVENT);
   LOGI("App::CallJSFunctionInLepusEvent,func name: " << name << " " << this);
   std::optional<Value> res;
   constexpr const static char* kPageComponentID = "0";
@@ -2140,7 +2140,7 @@ std::optional<Value> App::SendPageEvent(const std::string& page_name,
     tasm::timing::LongTaskMonitor::Scope long_task_scope(
         instance_id, tasm::timing::kJSFuncTask,
         tasm::timing::kTaskNameJSAppSendPageEvent, handler);
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "SendPageEvent",
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_SEND_PAGE_EVENT,
                 [&](lynx::perfetto::EventContext ctx) {
                   ctx.event()->add_debug_annotations("event", handler);
                 });
@@ -2154,7 +2154,7 @@ std::optional<Value> App::SendPageEvent(const std::string& page_name,
 
     piper::String strName = piper::String::createFromUtf8(*rt, handler);
     piper::Value jsName(*rt, strName);
-    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "LepusValueToJSValue");
+    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JS_VALUE);
     auto data = valueFromLepus(*rt, info, jsi_object_wrapper_manager_.get());
     TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
     if (!data) {
@@ -2401,7 +2401,7 @@ void App::EraseApiCallBack(ApiCallBack callback) {
 }
 
 void App::NotifyUpdatePageData() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::updateCardData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_UPDATE_CARD_DATA);
   auto rt = rt_.lock();
   if (rt && IsJsAppStateValid()) {
     auto updated_card_data = delegate_->FetchUpdatedCardData();
@@ -2420,7 +2420,7 @@ void App::NotifyUpdatePageData() {
       if (!publishEvent) {
         continue;
       }
-      TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "LepusValueToJSValue");
+      TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JS_VALUE);
       auto jsValue = valueFromLepus(*rt, data.GetValue(),
                                     jsi_object_wrapper_manager_.get());
       if (!jsValue) {
@@ -2457,7 +2457,7 @@ void App::NotifyUpdatePageData() {
 }
 
 void App::NotifyUpdateCardConfigData() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::NotifyJSUpdateCardConfigData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_JS_UPDATE_CARD_CONFIG_DATA);
   auto rt = rt_.lock();
   if (rt && IsJsAppStateValid()) {
     Scope scope(*rt);
@@ -2469,7 +2469,7 @@ void App::NotifyUpdateCardConfigData() {
     if (!publishEvent) {
       return;
     }
-    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "LepusValueToJSValue");
+    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JS_VALUE);
 
     lepus::Value card_config_data = card_config_;
     auto jsValue = valueFromLepus(*rt, card_config_data,
@@ -2575,7 +2575,7 @@ std::optional<JSINativeException> App::batchedUpdateData(
   }
 
   TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                    "batchedUpdateData:JSValueToLepusValue");
+                    BATCHED_UPDATE_DATA_JS_VALUE_TO_LEPUS_VALUE);
   std::vector<runtime::UpdateDataTask> tasks;
   auto size = data_ary->size(*rt);
   if (!size) {
@@ -2684,7 +2684,7 @@ std::optional<JSINativeException> App::batchedUpdateData(
                        std::move(stacks));
   }
   TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "updateData:UpdateDataToTASM",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, UPDATE_DATA_TO_TASM,
               [&](lynx::perfetto::EventContext ctx) {
                 std::stringstream ss;
                 for (runtime::UpdateDataTask& task : tasks) {
@@ -2829,7 +2829,7 @@ piper::Value App::setTimeout(piper::Function func, int time) {
     return piper::Value::undefined();
   }
 
-  TRACE_EVENT("lynx", "BackgroundThread::SetTimeout", "delay", time,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BACKGROUND_THREAD_SET_TIMEOUT, "delay", time,
               "instance_id", rt->getRuntimeId());
   return js_task_adapter_->SetTimeout(std::move(func), time);
 }
@@ -2839,8 +2839,8 @@ piper::Value App::setInterval(piper::Function func, int time) {
   if (!rt || !js_task_adapter_) {
     return piper::Value::undefined();
   }
-  TRACE_EVENT("lynx", "BackgroundThread::SetInterval", "delay", time,
-              "instance_id", rt->getRuntimeId());
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BACKGROUND_THREAD_SET_INTERVAL, "delay",
+              time, "instance_id", rt->getRuntimeId());
   return js_task_adapter_->SetInterval(std::move(func), time);
 }
 
@@ -2975,7 +2975,7 @@ void App::OnIntersectionObserverEvent(int32_t observer_id, int32_t callback_id,
 std::optional<Value> App::PublishComponentEvent(const std::string& component_id,
                                                 const std::string& handler,
                                                 const lepus::Value& info) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "App::PublishComponentEvent",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_PUBLISH_COMPONENT_EVENT,
               [&](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("event", handler);
               });
@@ -3001,7 +3001,7 @@ std::optional<Value> App::PublishComponentEvent(const std::string& component_id,
 
     piper::Value js_id(piper::String::createFromUtf8(*rt, component_id));
     piper::Value js_handler(piper::String::createFromUtf8(*rt, handler));
-    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "LepusValueToJSValue");
+    TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, LEPUS_VALUE_TO_JS_VALUE);
     auto data = valueFromLepus(*rt, info, jsi_object_wrapper_manager_.get());
     TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
     if (!data) {
@@ -3044,7 +3044,7 @@ void App::triggerWorkletFunction(std::string component_id,
 void App::updateComponentData(const std::string& component_id,
                               lepus_value&& data, ApiCallBack callback,
                               runtime::UpdateDataType update_data_type) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxJSUpdateComponentData");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, JS_UPDATE_COMPONET_DATA);
   LOGI(" updateComponentData " << component_id << " " << this);
   tasm::PipelineOptions pipeline_options;
   pipeline_options.pipeline_origin = tasm::timing::kUpdateTriggeredByBts;
@@ -3163,7 +3163,7 @@ std::shared_ptr<Runtime> App::GetRuntime() { return rt_.lock(); }
 
 std::optional<lepus_value> App::ParseJSValueToLepusValue(
     const piper::Value& data, const std::string& component_id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "JSValueToLepusValue");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, JS_VALUE_TO_LEPUS_VALUE);
   auto rt = rt_.lock();
   if (rt) {
     // only React dsl support parse js function
@@ -3264,7 +3264,7 @@ void App::CallLepusMethod(const std::string& method_name, lepus::Value args,
   // ApiCallBack's creation and invocation use different trace_flow_id
   // generated in ApiCallBack's constructor
   auto trace_flow_id = TRACE_FLOW_ID();
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallLepusMethodInner",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_CALL_LEPUS_METHOD_INNER,
               [&](perfetto::EventContext ctx) {
                 ctx.event()->add_flow_ids(trace_flow_id);
                 ctx.event()->add_debug_annotations("method_name", method_name);
@@ -3439,7 +3439,7 @@ void App::DoFrame(int64_t time_stamp) {
   static constexpr int64_t kNanoSecondsPerMilliSecond = 1e+6;
   if (animation_frame_handler_ && !has_paused_animation_frame_) {
     // W3C window.requestAnimationFrame request milliseconds
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "AnimationFrame", "timestamp", time_stamp);
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, APP_DO_FRAME, "timestamp", time_stamp);
     animation_frame_handler_->DoFrame(time_stamp / kNanoSecondsPerMilliSecond,
                                       rt_.lock().get());
     fluency_tracer_.Trigger(time_stamp);

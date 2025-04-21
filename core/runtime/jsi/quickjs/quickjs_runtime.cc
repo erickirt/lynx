@@ -10,7 +10,6 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/runtime/common/args_converter.h"
 #include "core/runtime/jscache/js_cache_manager.h"
@@ -24,6 +23,7 @@
 #include "core/runtime/jsi/quickjs/quickjs_host_object.h"
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/runtime/profile/quickjs/quickjs_runtime_profiler.h"
+#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/event_report/event_tracker.h"
 
 #ifdef __cplusplus
@@ -142,7 +142,7 @@ base::expected<Value, JSINativeException> QuickjsRuntime::evaluateJavaScript(
     const std::string &source_url) {
   LOGI("QuickjsRuntime::evaluateJavaScript: " << source_url);
   std::string filename = BuildFilenameForDevTool(source_url);
-  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, "evaluateJavaScript", "source_url",
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, EVALUATE_JAVA_SCRIPT, "source_url",
                       filename, "runtime_id", getRuntimeId());
   auto eval_res = QuickjsHelper::evalBuf(
       this, context_->getContext(),
@@ -163,7 +163,7 @@ QuickjsRuntime::evaluateJavaScriptBytecode(
     const std::string &source_url) {
   LOGI("QuickjsRuntime::evaluateJavaScriptBytecode: " << source_url);
   std::string filename = BuildFilenameForDevTool(source_url);
-  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, "evaluateJavaScriptBytecode",
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, EVALUATE_JAVA_SCRIPT_BYTECODE,
                       "source_url", filename, "runtime_id", getRuntimeId());
   auto eval_res = QuickjsHelper::evalBin(
       this, context_->getContext(),
