@@ -18,6 +18,7 @@ group("lynx_test") {
     "//lynx/core/renderer/dom:dom_tests",
     "//lynx/core/renderer/events:events_test_exec",
     "//lynx/core/renderer/signal:signal_test_exec",
+    "//lynx/core/renderer/simple_styling:simple_styling_tests",
     "//lynx/core/renderer/starlight:starlight_tests",
     "//lynx/core/renderer/tasm/react/android/mapbuffer:mapbuffer_tests",
     "//lynx/core/renderer/ui_component/list:react_component_list_testset_group",

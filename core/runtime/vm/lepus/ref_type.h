@@ -29,6 +29,7 @@ enum class RefType : int32_t {
   kMemo,
   kScope,
   kOtherType,
+  kStyleObject,
 };
 
 enum class CustomRefCountedType : uint32_t {
