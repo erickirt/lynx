@@ -23,6 +23,7 @@ extern NSAttributedStringKey const LynxVerticalAlignKey;
 // TODO(zhixuan): Currently the flag below is always false, will link the flag with page config.
 @property(nonatomic, readonly) BOOL enableTextRefactor;
 @property(nonatomic, readonly) BOOL enableNewClipMode;
+@property(nonatomic, readonly) BOOL enableTextLayoutCache;
 @property(nonatomic, nullable) NSString* text;
 
 - (NSAttributedString*)generateAttributedString:

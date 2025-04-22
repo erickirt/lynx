@@ -640,6 +640,14 @@ class PageConfig final : public EntryConfig {
     enable_text_layer_render_ = enable_text_layer_render;
   }
 
+  void SetEnableTextLayoutCache(TernaryBool enable_text_layout_cache) {
+    enable_text_layout_cache_ = enable_text_layout_cache;
+  }
+
+  inline TernaryBool GetEnableTextLayoutCache() {
+    return enable_text_layout_cache_;
+  }
+
   inline bool GetEnableReduceInitDataCopy() {
     return enable_reduce_init_data_copy_;
   }
@@ -1412,6 +1420,8 @@ class PageConfig final : public EntryConfig {
   bool fix_css_import_rule_order_{true};
 
   TernaryBool enable_signal_api_{TernaryBool::UNDEFINE_VALUE};
+
+  TernaryBool enable_text_layout_cache_{TernaryBool::UNDEFINE_VALUE};
 
   template <typename T>
   using PageConfigSetter = void (PageConfig::*)(T);

@@ -3766,6 +3766,7 @@ public class abstract com::lynx::tasm::behavior::LynxContext : com.lynx.tasm.beh
   public boolean com.lynx.tasm.behavior.LynxContext.isNewClipModeEnabled();
   public boolean com.lynx.tasm.behavior.LynxContext.isTextOverflowEnabled();
   public boolean com.lynx.tasm.behavior.LynxContext.isTextBoringLayoutEnabled();
+  public boolean com.lynx.tasm.behavior.LynxContext.isTextLayoutCacheEnabled();
   public boolean com.lynx.tasm.behavior.LynxContext.useRelativeKeyboardHeightApi();
   public boolean com.lynx.tasm.behavior.LynxContext.getDefaultTextIncludePadding();
   public boolean com.lynx.tasm.behavior.LynxContext.getEnableEventRefactor();
@@ -4067,6 +4068,7 @@ public class com::lynx::tasm::LynxEnv :  {
   public boolean com.lynx.tasm.LynxEnv.enableTextBoringLayout();
   public boolean com.lynx.tasm.LynxEnv.enableFreshRateOpt();
   public boolean com.lynx.tasm.LynxEnv.enableCheckAccessFromNonUIThread();
+  public boolean com.lynx.tasm.LynxEnv.enableTextLayoutCache();
   public void com.lynx.tasm.LynxEnv.initNativeUIThread();
   public boolean com.lynx.tasm.LynxEnv.tryToLoadV8Bridge(boolean unused);
   public void com.lynx.tasm.LynxEnv.forceDisableQuickJsCache();
@@ -4102,6 +4104,7 @@ public enum com::lynx::tasm::LynxEnvKey {
   public com.lynx.tasm.LynxEnvKey.ENABLE_TEXT_BORING_LAYOUT ENABLE_TEXT_BORING_LAYOUT;
   public com.lynx.tasm.LynxEnvKey.ENABLE_REFRESH_RATE_OPT ENABLE_REFRESH_RATE_OPT;
   public com.lynx.tasm.LynxEnvKey.ENABLE_MULTI_JS_THREAD_BY_DEFAULT ENABLE_MULTI_JS_THREAD_BY_DEFAULT;
+  public com.lynx.tasm.LynxEnvKey.ENABLE_TEXT_LAYOUT_CACHE ENABLE_TEXT_LAYOUT_CACHE;
   public  final String com.lynx.tasm.LynxEnvKey.SP_KEY_ENABLE_DEBUG_MODE SP_KEY_ENABLE_DEBUG_MODE;
   public  final String com.lynx.tasm.LynxEnvKey.SP_KEY_ENABLE_LAUNCH_RECORD SP_KEY_ENABLE_LAUNCH_RECORD;
   public  final String com.lynx.tasm.LynxEnvKey.SP_KEY_FORCE_DISABLE_QUICKJS_CACHE SP_KEY_FORCE_DISABLE_QUICKJS_CACHE;
@@ -6675,6 +6678,7 @@ public class com::lynx::tasm::PageConfig :  {
   public boolean com.lynx.tasm.PageConfig.isTextRefactorEnabled();
   public boolean com.lynx.tasm.PageConfig.isTextOverflowEnabled();
   public boolean com.lynx.tasm.PageConfig.isTextBoringLayoutEnabled();
+  public boolean com.lynx.tasm.PageConfig.isTextLayoutCacheEnabled();
   public boolean com.lynx.tasm.PageConfig.isNewClipModeEnabled();
   public boolean com.lynx.tasm.PageConfig.useRelativeKeyboardHeightApi();
   public boolean com.lynx.tasm.PageConfig.isCSSParserEnabled();

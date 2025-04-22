@@ -41,6 +41,7 @@ BOOL LynxSameMeasureMode(LynxMeasureMode left, LynxMeasureMode right);
 @property(nonatomic, assign) BOOL enableTextRefactor;
 @property(nonatomic, assign) BOOL enableNewClipMode;
 @property(nonatomic, assign) LynxVerticalAlign textSingleLineVerticalAlign;
+@property(nonatomic, assign) BOOL enableTextLayoutCache;
 
 @property(readonly, nonatomic) BOOL widthUndifined;
 @property(readonly, nonatomic) BOOL heightUndifined;

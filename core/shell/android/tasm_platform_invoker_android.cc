@@ -116,6 +116,7 @@ constexpr const char* kEnableNewImage = "enableNewImage";
 constexpr const char* kEnableFiber = "enableFiber";
 constexpr const char* kEnableMultiTouch = "enableMultiTouch";
 constexpr const char* kEnableFlattenTranslateZ = "enableFlattenTranslateZ";
+constexpr const char* kEnableTextLayoutCache = "enableTextLayoutCache";
 
 }  // namespace
 
@@ -223,6 +224,11 @@ void TasmPlatformInvokerAndroid::OnPageConfigDecoded(
       config->GetTrailNewImage() == lynx::tasm::TernaryBool::TRUE_VALUE);
   java_config.PushBoolean(kEnableFiber, config->GetEnableFiberArch());
   java_config.PushBoolean(kEnableMultiTouch, config->GetEnableMultiTouch());
+  if (config->GetEnableTextLayoutCache() != tasm::TernaryBool::UNDEFINE_VALUE) {
+    java_config.PushBoolean(
+        kEnableTextLayoutCache,
+        config->GetEnableTextLayoutCache() == tasm::TernaryBool::TRUE_VALUE);
+  }
 
   Java_TasmPlatformInvoker_onPageConfigDecoded(
       base::android::AttachCurrentThread(), jni_object_.Get(),

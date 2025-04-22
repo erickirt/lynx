@@ -924,6 +924,13 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
     return false;
   }
 
+  public boolean isTextLayoutCacheEnabled() {
+    if (null != mPageConfig) {
+      return mPageConfig.isTextLayoutCacheEnabled();
+    }
+    return true;
+  }
+
   public boolean useRelativeKeyboardHeightApi() {
     if (null != mPageConfig) {
       return mPageConfig.useRelativeKeyboardHeightApi();

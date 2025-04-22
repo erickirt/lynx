@@ -54,6 +54,7 @@ NSAttributedStringKey const LynxVerticalAlignKey = @"LynxVerticalAlignKey";
     _styleDirty = YES;
     _attributes = nil;  // create on first layoutDidStart callback
     _enableTextRefactor = false;
+    _enableTextLayoutCache = true;
   }
   return self;
 }
@@ -63,6 +64,7 @@ NSAttributedStringKey const LynxVerticalAlignKey = @"LynxVerticalAlignKey";
   if (self.uiOwner != nil) {
     _enableTextRefactor = self.uiOwner.uiContext.enableTextRefactor;
     _enableNewClipMode = self.uiOwner.uiContext.enableNewClipMode;
+    _enableTextLayoutCache = self.uiOwner.uiContext.enableTextLayoutCache;
   }
 }
 

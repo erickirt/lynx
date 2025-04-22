@@ -31,6 +31,9 @@ public class TextRendererCache {
   }
 
   public TextRenderer getRenderer(LynxContext context, TextRendererKey key) {
+    if (!context.isTextLayoutCacheEnabled()) {
+      return new TextRenderer(context, key);
+    }
     /// 1. find from global cache
     TextRenderer renderer = mCache.get(key);
     if (renderer != null) {

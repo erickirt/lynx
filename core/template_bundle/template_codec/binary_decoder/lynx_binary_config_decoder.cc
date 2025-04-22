@@ -163,6 +163,8 @@ static constexpr const char* kEnableNewAnimator = "enableNewAnimator";
 static constexpr const char* kDisableQuickTracingGC = "disableQuickTracingGC";
 
 static constexpr const char* kFixCSSImportRuleOrder = "fixCSSImportRuleOrder";
+static constexpr const char* const kEnableTextLayoutCache =
+    "enableTextLayoutCache";
 
 /// Upload global feature switches in PageConfig with common data about lynx
 /// view. If you add a new  global feature switch, you should add it to report
@@ -667,6 +669,13 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
   if (doc.HasMember(kEnableTextLayerRender) &&
       doc[kEnableTextLayerRender].IsBool()) {
     page_config->SetEnableTextLayerRender(doc[kEnableTextLayerRender].GetBool()
+                                              ? TernaryBool::TRUE_VALUE
+                                              : TernaryBool::FALSE_VALUE);
+  }
+
+  if (doc.HasMember(kEnableTextLayoutCache) &&
+      doc[kEnableTextLayoutCache].IsBool()) {
+    page_config->SetEnableTextLayoutCache(doc[kEnableTextLayoutCache].GetBool()
                                               ? TernaryBool::TRUE_VALUE
                                               : TernaryBool::FALSE_VALUE);
   }

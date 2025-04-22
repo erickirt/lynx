@@ -188,6 +188,8 @@ public class LynxEnv {
 
   private boolean mForceDisableQuickJsCache = false;
 
+  private boolean mEnableTextLayoutCache = true;
+
   protected LynxEnv() {}
 
   public static LynxEnv inst() {
@@ -313,6 +315,7 @@ public class LynxEnv {
     initEnableTextBoringLayout();
     initEnableRefreshRateOpt();
     initEnableCheckAccessFromNonUiThread();
+    initEnableTextLayoutCache();
 
     ICURegister.loadLibrary(mLibraryLoader);
     // notify LynxEnv prepared
@@ -1289,6 +1292,10 @@ public class LynxEnv {
     return this.mEnableCheckAccessFromNonUIThread;
   }
 
+  public boolean enableTextLayoutCache() {
+    return this.mEnableTextLayoutCache;
+  }
+
   protected void initEnableGenericResourceFetcher() {
     mEnableGenericResourceFetcher =
         getBooleanFromExternalEnv(LynxEnvKey.ENABLE_GENERIC_RESOURCE_FETCHER, false);
@@ -1305,6 +1312,10 @@ public class LynxEnv {
   protected void initEnableCheckAccessFromNonUiThread() {
     mEnableCheckAccessFromNonUIThread =
         getBooleanFromExternalEnv(LynxEnvKey.ENABLE_CHECK_ACCESS_FROM_NON_UI_THREAD, false);
+  }
+
+  protected void initEnableTextLayoutCache() {
+    mEnableTextLayoutCache = getBooleanFromExternalEnv(LynxEnvKey.ENABLE_TEXT_LAYOUT_CACHE, true);
   }
 
   protected void initLynxTrailService(Context context) {

@@ -384,6 +384,7 @@ LYNX_REGISTER_SHADOW_NODE("text")
   spec.layoutManagerDelegate = _lineSpacingAdaptation;
   spec.verticalAlign = self.textVerticalAlign;
   spec.textSingleLineVerticalAlign = self.textSingleLineVerticalAlign;
+  spec.enableTextLayoutCache = self.enableTextLayoutCache;
 
   [self calculateLineAscenderAndDescenderForAttributeStr:self.attrString
                                             MeasureParam:param

@@ -83,6 +83,17 @@
   return _config->GetEnableTextLayerRender() == lynx::tasm::TernaryBool::TRUE_VALUE;
 }
 
+- (bool)enableTextLayoutCache {
+  if (_config->GetEnableTextLayoutCache() == lynx::tasm::TernaryBool::UNDEFINE_VALUE) {
+    auto new_value = [[LynxEnv sharedInstance] boolFromExternalEnv:LynxEnvEnableTextLayoutCache
+                                                      defaultValue:YES];
+    _config->SetEnableTextLayoutCache(new_value ? lynx::tasm::TernaryBool::TRUE_VALUE
+                                                : lynx::tasm::TernaryBool::FALSE_VALUE);
+  }
+
+  return _config->GetEnableTextLayoutCache() == lynx::tasm::TernaryBool::TRUE_VALUE;
+}
+
 - (bool)enableTextNonContiguousLayout {
   return _config->GetEnableTextNonContiguousLayout();
 }

@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setEnableNewImage:(BOOL)enable;
 - (void)setTrailUseNewImage:(BOOL)enable;
 - (void)setLogBoxImageSizeWarningThreshold:(NSInteger)threshold;
+- (void)setEnableTextLayoutCache:(BOOL)enable;
 
 - (void)didReceiveResourceError:(LynxError *)error
                      withSource:(NSString *)resourceUrl

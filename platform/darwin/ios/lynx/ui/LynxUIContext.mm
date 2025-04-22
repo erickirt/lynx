@@ -233,6 +233,7 @@
   [self setEnableNewImage:config.enableNewImage];
   [self setTrailUseNewImage:config.trailUseNewImage];
   [self setLogBoxImageSizeWarningThreshold:config.logBoxImageSizeWarningThreshold];
+  [self setEnableTextLayoutCache:config.enableTextLayoutCache];
 }
 
 - (void)setDefaultOverflowVisible:(BOOL)enable {
@@ -245,6 +246,10 @@
 
 - (void)setEnableTextLayerRender:(BOOL)enable {
   _enableTextLayerRender = enable;
+}
+
+- (void)setEnableTextLayoutCache:(BOOL)enable {
+  _enableTextLayoutCache = enable;
 }
 
 - (void)setDefaultImplicitAnimation:(BOOL)enable {

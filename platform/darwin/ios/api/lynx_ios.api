@@ -149,6 +149,7 @@ public protocol LUIConfig-p : <NSObject> {
   public bool LUIConfig-p::enableNewImage();
   public bool LUIConfig-p::trailUseNewImage();
   public NSUInteger LUIConfig-p::logBoxImageSizeWarningThreshold();
+  public bool LUIConfig-p::enableTextLayoutCache();
 }
 
 public class LUIConfigAdapter : NSObject, <LUIConfig> {
@@ -621,6 +622,7 @@ public class LynxBaseTextShadowNode : LynxShadowNode {
   public BOOL LynxBaseTextShadowNode::hasNonVirtualOffspring hasNonVirtualOffspring;
   public BOOL LynxBaseTextShadowNode::enableTextRefactor enableTextRefactor;
   public BOOL LynxBaseTextShadowNode::enableNewClipMode enableNewClipMode;
+  public BOOL LynxBaseTextShadowNode::enableTextLayoutCache enableTextLayoutCache;
   public NSString* LynxBaseTextShadowNode::text text;
   public NSAttributedString * LynxBaseTextShadowNode::generateAttributedString:withTextMaxLength:(nullable NSDictionary< NSAttributedStringKey, id > *baseTextAttribute,[withTextMaxLength] NSInteger __deprecated);
   public NSAttributedString * LynxBaseTextShadowNode::generateAttributedString:withTextMaxLength:withDirection:(nullable NSDictionary< NSAttributedStringKey, id > *baseTextAttribute,[withTextMaxLength] NSInteger textMaxLength,[withDirection] NSWritingDirection direction);
@@ -2009,6 +2011,7 @@ public class LynxLayoutSpec : NSObject {
   public BOOL LynxLayoutSpec::enableTextRefactor enableTextRefactor;
   public BOOL LynxLayoutSpec::enableNewClipMode enableNewClipMode;
   public LynxVerticalAlign LynxLayoutSpec::textSingleLineVerticalAlign textSingleLineVerticalAlign;
+  public BOOL LynxLayoutSpec::enableTextLayoutCache enableTextLayoutCache;
   public BOOL LynxLayoutSpec::widthUndifined widthUndifined;
   public BOOL LynxLayoutSpec::heightUndifined heightUndifined;
   public instancetype LynxLayoutSpec::initWithWidth:height:widthMode:heightMode:textOverflow:overflow:whiteSpace:maxLineNum:maxTextLength:textStyle:enableTailColorConvert:(CGFloat width,[height] CGFloat height,[widthMode] LynxMeasureMode widthMode,[heightMode] LynxMeasureMode heightMode,[textOverflow] LynxTextOverflowType textOverflow,[overflow] LynxOverflow overflow,[whiteSpace] LynxWhiteSpaceType whiteSpace,[maxLineNum] NSInteger maxLineNum,[maxTextLength] NSInteger maxTextLength,[textStyle] LynxTextStyle *textStyle,[enableTailColorConvert] BOOL enableTailColorConvert);
@@ -3765,6 +3768,7 @@ public class LynxUIContext : NSObject {
   public BOOL LynxUIContext::enableNewImage enableNewImage;
   public BOOL LynxUIContext::trailUseNewImage trailUseNewImage;
   public NSInteger LynxUIContext::logBoxImageSizeWarningThreshold logBoxImageSizeWarningThreshold;
+  public BOOL LynxUIContext::enableTextLayoutCache enableTextLayoutCache;
   public BOOL LynxUIContext()::imageMonitorEnabled imageMonitorEnabled;
   public BOOL LynxUIContext()::devtoolEnabled devtoolEnabled;
   public BOOL LynxUIContext()::fixNewImageDownSampling fixNewImageDownSampling;
@@ -3809,6 +3813,7 @@ public class LynxUIContext : NSObject {
   public void LynxUIContext()::setEnableNewImage:(BOOL enable);
   public void LynxUIContext()::setTrailUseNewImage:(BOOL enable);
   public void LynxUIContext()::setLogBoxImageSizeWarningThreshold:(NSInteger threshold);
+  public void LynxUIContext()::setEnableTextLayoutCache:(BOOL enable);
   public void LynxUIContext()::didReceiveResourceError:withSource:type:(LynxError *error, [withSource] NSString *resourceUrl, [type] NSString *type);
   public void LynxUIContext()::reportLynxError:(LynxError *error);
   public int32_t LynxUIContext()::instanceId();

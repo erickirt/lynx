@@ -5,6 +5,7 @@ package com.lynx.tasm.behavior.shadow.text;
 
 import static org.mockito.Mockito.mock;
 
+import android.text.Layout;
 import com.lynx.react.bridge.DynamicFromMap;
 import com.lynx.react.bridge.JavaOnlyMap;
 import com.lynx.tasm.behavior.LayoutNodeManager;
@@ -56,10 +57,14 @@ public class TextShadowNodeTest {
 
     textShadowNode.measure(
         layoutNode, 300.f, MeasureMode.EXACTLY, MeasureUtils.UNDEFINED, MeasureMode.UNDEFINED);
-    Assert.assertTrue("Text layout string should be end width 'truncation'",
-        textShadowNode.getTextRenderer().getTextLayout().getLineCount() == 1
-            && String.valueOf(textShadowNode.getTextRenderer().getTextLayout().getText())
-                   .endsWith("truncation"));
+    Layout layout = textShadowNode.getTextRenderer().getTextLayout();
+    Assert.assertTrue("Text layout string should be end with 'truncation'",
+        layout.getLineCount() == 1 && String.valueOf(layout.getText()).endsWith("truncation"));
+
+    textShadowNode.measure(
+        layoutNode, 300.f, MeasureMode.EXACTLY, MeasureUtils.UNDEFINED, MeasureMode.UNDEFINED);
+    Assert.assertEquals("Layout result of truncated text should not be same",
+        textShadowNode.getTextRenderer().getTextLayout(), layout);
 
     textShadowNode.setTextMaxLine("2");
     textShadowNode.onLayoutBefore();
