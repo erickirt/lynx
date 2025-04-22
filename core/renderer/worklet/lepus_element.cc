@@ -27,6 +27,7 @@
 #include "core/runtime/bindings/napi/worklet/napi_lepus_gesture.h"
 #include "core/runtime/bindings/napi/worklet/napi_loader_ui.h"
 #include "core/runtime/vm/lepus/context.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
 #include "core/runtime/vm/lepus/lepus_error_helper.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 #include "core/value_wrapper/value_impl_lepus.h"
@@ -145,17 +146,19 @@ tasm::EventResult LepusElement::FireElementWorklet(
   }
 
   // Get & Exec element worklet function
-  auto* ctx = func_val.context();
+  auto* ctx = lynx_value_api_get_context_from_env(func_val.env());
 
   // Using lepus::Value to wrap LEPUSValue, so that we don't have to
   // LEPUS_FreeValue it. When using as LEPUSValue, use WrapJSValue()
-  const auto func_val_wrapper = lepus::Value(ctx, func_val.ToJSValue(ctx));
-  const auto func_obj_wrapper = lepus::Value(ctx, func_obj.ToJSValue(ctx));
-  const auto value_wrapper = lepus::Value(ctx, value.ToJSValue(ctx, true));
+  const auto func_val_wrapper =
+      MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, func_val, false);
+  const auto func_obj_wrapper =
+      MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, func_obj, false);
+  const auto value_wrapper = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, value, true);
 
-  const auto func_val_js_value = func_val_wrapper.WrapJSValue();
-  const auto func_obj_js_value = func_obj_wrapper.WrapJSValue();
-  const auto value_js_value = value_wrapper.WrapJSValue();
+  const auto func_val_js_value = WRAP_AS_JS_VALUE(func_val_wrapper.value());
+  const auto func_obj_js_value = WRAP_AS_JS_VALUE(func_obj_wrapper.value());
+  const auto value_js_value = WRAP_AS_JS_VALUE(value_wrapper.value());
 
   if (!LEPUS_IsFunction(ctx, func_val_js_value)) {
     return tasm::EventResult::kDefault;
@@ -254,19 +257,22 @@ std::optional<lepus::Value> LepusElement::TriggerWorkletFunction(
 
   // Get function with method_name, and make sure it's OK
 
-  LEPUSContext* ctx = worklet_instance.context();
+  LEPUSContext* ctx =
+      lynx_value_api_get_context_from_env(worklet_instance.env());
 
   // Using lepus::Value to wrap LEPUSValue, so that we don't have to
   // LEPUS_FreeValue it. When using as LEPUSValue, use WrapJSValue()
   const auto worklet_instance_wrapper =
-      lepus::Value(ctx, worklet_instance.ToJSValue(ctx));
-  const auto worklet_module_function_wrapper = lepus::Value(
-      ctx, LEPUS_GetPropertyStr(ctx, worklet_instance_wrapper.WrapJSValue(),
-                                method_name.c_str()));
+      MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, worklet_instance, false);
+  const auto worklet_module_function_wrapper = MK_JS_LEPUS_VALUE(
+      ctx, LEPUS_GetPropertyStr(
+               ctx, WRAP_AS_JS_VALUE(worklet_instance_wrapper.value()),
+               method_name.c_str()));
 
-  const auto worklet_instance_js_value = worklet_instance_wrapper.WrapJSValue();
+  const auto worklet_instance_js_value =
+      WRAP_AS_JS_VALUE(worklet_instance_wrapper.value());
   const auto worklet_module_function_js_value =
-      worklet_module_function_wrapper.WrapJSValue();
+      WRAP_AS_JS_VALUE(worklet_module_function_wrapper.value());
 
   if (!LEPUS_IsFunction(ctx, worklet_module_function_js_value)) {
     tasm->ReportError(error::E_WORKLET_MODULE_EXCEPTION,
@@ -306,13 +312,13 @@ std::optional<lepus::Value> LepusElement::TriggerWorkletFunction(
       *reinterpret_cast<LEPUSValue*>(static_cast<napi_value>(component_ins));
 #endif  // USE_PRIMJS_NAPI
 
-  const auto args_wrapper = lepus::Value(ctx, args.ToJSValue(ctx, true));
+  const auto args_wrapper = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, args, true);
 
   std::optional<lepus::Value> call_result_value =
       LepusElement::CallLepusWithComponentInstance(
           tasm, ctx, worklet_module_function_js_value,
-          worklet_instance_js_value, args_wrapper.WrapJSValue(), component_obj,
-          nullptr);
+          worklet_instance_js_value, WRAP_AS_JS_VALUE(args_wrapper.value()),
+          component_obj, nullptr);
 
   return call_result_value;
 }
@@ -339,17 +345,18 @@ std::optional<lepus::Value> LepusElement::CallLepusWithComponentInstance(
     lepus_call_args.push_back(*gesture_instance);
   }
 
-  lepus::Value call_result_wrapper = lepus::Value(
+  lepus::Value call_result_wrapper = MK_JS_LEPUS_VALUE(
       ctx, LEPUS_Call(ctx, func_obj, this_obj,
                       static_cast<int>(lepus_call_args.size()),
                       static_cast<LEPUSValue*>(lepus_call_args.data())));
-  const auto call_result_js_value = call_result_wrapper.WrapJSValue();
+  const auto call_result_js_value =
+      WRAP_AS_JS_VALUE(call_result_wrapper.value());
 
   if (LEPUS_IsException(call_result_js_value)) {
     base::logging::LogStream ss;
     ss << "Worklet call function failed." << std::endl;
-    auto exception_wrapper = lepus::Value(ctx, LEPUS_GetException(ctx));
-    auto exception_js_value = exception_wrapper.WrapJSValue();
+    auto exception_wrapper = MK_JS_LEPUS_VALUE(ctx, LEPUS_GetException(ctx));
+    auto exception_js_value = WRAP_AS_JS_VALUE(exception_wrapper.value());
     const auto& msg =
         lepus::LepusErrorHelper::GetErrorMessage(ctx, exception_js_value);
     const auto& stack =
@@ -390,8 +397,8 @@ void LepusElement::ReportPendingJobException(
   else
     prefix = "Worklet call function pending job exception.";
   ss << prefix << std::endl;
-  auto exception_wrapper = lepus::Value(ctx, LEPUS_GetException(ctx));
-  auto exception_js_value = exception_wrapper.WrapJSValue();
+  auto exception_wrapper = MK_JS_LEPUS_VALUE(ctx, LEPUS_GetException(ctx));
+  auto exception_js_value = WRAP_AS_JS_VALUE(exception_wrapper.value());
   const auto& msg =
       lepus::LepusErrorHelper::GetErrorMessage(ctx, exception_js_value);
   const auto& stack =

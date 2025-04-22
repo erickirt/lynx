@@ -11,6 +11,7 @@
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/utils/value_utils.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
 #include "core/services/timing_handler/timing_constants.h"
 #include "core/services/timing_handler/timing_constants_deprecated.h"
 
@@ -168,8 +169,8 @@ void AirPageElement::DeriveFromMould(ComponentMould *data) {
   }
 
   if (context_->IsLepusNGContext()) {
-    init_data_ = lepus::Value(
-        context_->context(), data->data().ToJSValue(context_->context(), true));
+    init_data_ =
+        MK_JS_LEPUS_VALUE_WITH_CONVERT(context_->context(), data->data(), true);
   } else {
     init_data_ = std::move(init_data);
   }
@@ -178,7 +179,7 @@ void AirPageElement::DeriveFromMould(ComponentMould *data) {
 
   // make sure the data is table
   if (!data_.IsObject()) {
-    data_ = lepus::Value::CreateObject(context_);
+    data_ = lepus::LEPUSValueHelper::CreateObject(context_);
   }
 }
 

@@ -21,6 +21,8 @@
 #include "core/runtime/bindings/napi/napi_runtime_proxy_quickjs.h"
 #include "core/runtime/bindings/napi/worklet/napi_loader_ui.h"
 #include "core/runtime/vm/lepus/bytecode_generator.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
+#include "core/runtime/vm/lepus/lepus_context_cell.h"
 #include "core/shell/testing/mock_tasm_delegate.h"
 #include "third_party/googletest/googletest/include/gtest/gtest.h"
 
@@ -87,7 +89,8 @@ class WorkletEventTest : public ::testing::Test {
   fml::RefPtr<tasm::RadonElement> CreateElement(const std::string& js_var_name,
                                                 int32_t tag) {
     LEPUSValue node_raw_value = ctx_->SearchGlobalData(js_var_name);
-    lepus::Value node_value(ctx_->context(), node_raw_value);
+    lepus::Value node_value =
+        MK_JS_LEPUS_VALUE(ctx_->context(), node_raw_value);
     auto node = reinterpret_cast<tasm::RadonNode*>(node_value.CPoint());
     auto view = manager_->CreateNode("view", node->attribute_holder());
     view->CreateElementContainer(false);

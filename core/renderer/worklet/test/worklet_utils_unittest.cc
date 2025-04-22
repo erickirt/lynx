@@ -12,6 +12,8 @@
 #include "core/runtime/bindings/napi/napi_environment.h"
 #include "core/runtime/bindings/napi/napi_runtime_proxy_quickjs.h"
 #include "core/runtime/bindings/napi/worklet/napi_loader_ui.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
+#include "core/runtime/vm/lepus/lepus_context_cell.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 #include "third_party/googletest/googletest/include/gtest/gtest.h"
 
@@ -132,29 +134,29 @@ TEST_F(WorkletValueConverterMethods, IsJSValueEqual) {
   auto js_3 = LEPUS_NewInt64(ctx_.context(), 1);
   auto js_4 = LEPUS_NewFloat64(ctx_.context(), 1);
 
-  lepus::Value value_0(ctx_.context(), js_0);
-  lepus::Value value_1(ctx_.context(), js_1);
+  lepus::Value value_0 = MK_JS_LEPUS_VALUE(ctx_.context(), js_0);
+  lepus::Value value_1 = MK_JS_LEPUS_VALUE(ctx_.context(), js_1);
 
   // Number
-  lepus::Value value_2(ctx_.context(), js_2);
-  lepus::Value value_3(ctx_.context(), js_3);
-  lepus::Value value_4(ctx_.context(), js_4);
+  lepus::Value value_2 = MK_JS_LEPUS_VALUE(ctx_.context(), js_2);
+  lepus::Value value_3 = MK_JS_LEPUS_VALUE(ctx_.context(), js_3);
+  lepus::Value value_4 = MK_JS_LEPUS_VALUE(ctx_.context(), js_4);
 
   // Array
   auto js_5 = LEPUS_NewArray(ctx_.context());
-  lepus::Value ary_0(ctx_.context(), js_5);
+  lepus::Value ary_0 = MK_JS_LEPUS_VALUE(ctx_.context(), js_5);
   auto js_6 = LEPUS_NewArray(ctx_.context());
-  lepus::Value ary_1(ctx_.context(), js_6);
+  lepus::Value ary_1 = MK_JS_LEPUS_VALUE(ctx_.context(), js_6);
   auto js_7 = LEPUS_NewArray(ctx_.context());
-  lepus::Value ary_2(ctx_.context(), js_7);
+  lepus::Value ary_2 = MK_JS_LEPUS_VALUE(ctx_.context(), js_7);
 
   // Object
   auto js_8 = LEPUS_NewObject(ctx_.context());
-  lepus::Value obj_0(ctx_.context(), js_8);
+  lepus::Value obj_0 = MK_JS_LEPUS_VALUE(ctx_.context(), js_8);
   auto js_9 = LEPUS_NewObject(ctx_.context());
-  lepus::Value obj_1(ctx_.context(), js_9);
+  lepus::Value obj_1 = MK_JS_LEPUS_VALUE(ctx_.context(), js_9);
   auto js_10 = LEPUS_NewObject(ctx_.context());
-  lepus::Value obj_2(ctx_.context(), js_10);
+  lepus::Value obj_2 = MK_JS_LEPUS_VALUE(ctx_.context(), js_10);
 
   ary_0.SetProperty(0, value_0);
   ary_0.SetProperty(1, value_1);

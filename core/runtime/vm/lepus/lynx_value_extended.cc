@@ -11,6 +11,11 @@
 #include "core/runtime/vm/lepus/jsvalue_helper.h"
 #include "core/runtime/vm/lepus/lepus_context_cell.h"
 #include "core/runtime/vm/lepus/lynx_api_context_lepusng.h"
+#ifdef OS_IOS
+#include "persistent-handle.h"
+#else
+#include "quickjs/include/persistent-handle.h"
+#endif
 
 struct iterator_raw_data {
   lynx_api_env env;
@@ -498,5 +503,17 @@ lynx_api_status lynx_value_remove_reference(lynx_api_env env, lynx_value value,
     p_val->Reset(env->ctx->rt);
     delete p_val;
   }
+  return lynx_api_ok;
+}
+
+lynx_api_status lynx_value_has_ref_count(lynx_api_env env, lynx_value val,
+                                         bool* result) {
+  *result = LEPUS_VALUE_HAS_REF_COUNT(WrapJSValue(val));
+  return lynx_api_ok;
+}
+
+lynx_api_status lynx_value_is_uninitialized(lynx_api_env env, lynx_value val,
+                                            bool* result) {
+  *result = LEPUS_VALUE_IS_UNINITIALIZED(WrapJSValue(val));
   return lynx_api_ok;
 }

@@ -6410,10 +6410,9 @@ RENDERER_FUNCTION_CC(TriggerLepusBridge) {
           [](LEPUSContext* context, LEPUSValue value, int argc,
              LEPUSValue* argv) -> LEPUSValue { return LEPUS_UNDEFINED; };
       constexpr const static char* kCallback = "callback";
-      callback_closure = std::make_unique<lepus::Value>(
-          LEPUS_CONTEXT()->context(),
-          LEPUS_NewCFunction(LEPUS_CONTEXT()->context(), default_callback,
-                             kCallback, 0));
+      auto context = LEPUS_CONTEXT()->context();
+      callback_closure = lepus::LepusValueFactory(context).CreatePtr(
+          LEPUS_NewCFunction(context, default_callback, kCallback, 0));
     } else {
       callback_closure = std::make_unique<lepus::Value>(
           lepus::Closure::Create(lepus::Function::Create()));

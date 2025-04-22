@@ -75,7 +75,7 @@ static LEPUSValue LepusRefSetPropertyCallBack(LEPUSContext* ctx,
   }
 
   TRACE_EVENT(LYNX_TRACE_CATEGORY, "QuickContext::LepusRefSetPropertyCallBack");
-  Value lepus_val(ctx, val);
+  Value lepus_val = MK_JS_LEPUS_VALUE(ctx, val);
   bool gc_flag = LEPUS_IsGCMode(ctx);
   switch (pref->tag) {
     case Value_Table: {
@@ -144,14 +144,14 @@ static LEPUSValue LepusRefGetPropertyCallBack(LEPUSContext* ctx,
       auto it = dic->find(name);
       if (!LEPUS_IsGCMode(ctx)) LEPUS_FreeCString(ctx, name);
       if (it != dic->end()) {
-        return it->second.ToJSValue(ctx);
+        return LEPUSValueHelper::ToJsValue(ctx, it->second);
       }
     } break;
     case Value_Array: {
       auto* carray = LEPUSValueHelper::GetLepusArray(thisObj);
       if (idx >= 0) {
         if (static_cast<size_t>(idx) < carray->size()) {
-          return (carray->get(idx)).ToJSValue(ctx);
+          return LEPUSValueHelper::ToJsValue(ctx, carray->get(idx));
         }
         return LEPUS_UNDEFINED;
       } else if (LEPUSAtomIsLengthProp(ctx, prop)) {
@@ -226,10 +226,10 @@ static LEPUSValue LepusConvertToObjectCallBack(LEPUSContext* ctx,
     } break;
     case Value_RefCounted: {
       if (ref_ptr->js_object_cache) {
-        return ref_ptr->js_object_cache->ToJSValue(ctx);
+        return LEPUSValueHelper::ToJsValue(ctx, *(ref_ptr->js_object_cache));
       }
       result = LEPUSValueHelper::RefCountedToJSValue(ctx, *ref_ptr);
-      ref_ptr->js_object_cache = lepus::Value{ctx, result};
+      ref_ptr->js_object_cache = MK_JS_LEPUS_VALUE(ctx, result);
     } break;
     default:
       return LEPUS_UNDEFINED;
@@ -364,7 +364,7 @@ std::shared_ptr<Context> Context::CreateContext(bool use_lepusng,
 void Context::EnsureLynx() {
   // Initialize and inject Lynx if it has not been set before.
   if (lynx_.IsEmpty()) {
-    lynx_ = lepus::Value::CreateObject(this);
+    lynx_ = lepus::LEPUSValueHelper::CreateObject(this);
     RegisterMethodToLynx();
     SetGlobalData(BASE_STATIC_STRING(tasm::kGlobalLynx), lynx_);
   }

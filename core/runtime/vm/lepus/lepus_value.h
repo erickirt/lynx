@@ -27,11 +27,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#ifdef OS_IOS
-#include "persistent-handle.h"
-#else
-#include "quickjs/include/persistent-handle.h"
-#endif
 
 namespace lynx {
 namespace lepus {
@@ -102,7 +97,7 @@ typedef Value (*CFunction)(Context*);
 
 class BASE_EXPORT_FOR_DEVTOOL Value {
  private:
-  ContextCell* cell_ = nullptr;
+  lynx_api_env env_ = nullptr;
   lynx_value value_;
   lynx_value_ref value_ref_ = nullptr;
 
@@ -142,6 +137,8 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   explicit Value(void* data);
   explicit Value(CFunction val);
   explicit Value(bool for_nan, bool val);
+  explicit Value(lynx_value&& value);
+  Value(lynx_api_env env, int64_t val, int32_t tag);
   Value(lynx_api_env env, const lynx_value& value);
   Value(lynx_api_env env, lynx_value&& value);
 
@@ -418,28 +415,14 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
 
   bool MarkConst() const;
 
-  Value(LEPUSContext* ctx, const LEPUSValue& val);
-  Value(LEPUSContext* ctx, LEPUSValue&& val);
   BASE_EXPORT bool IsJSValue() const;
 
-  LEPUSContext* context() const { return cell_ ? cell_->ctx_ : nullptr; }
-
-  LEPUSValue ToJSValue(LEPUSContext* ctx, bool deep_convert = false) const;
+  lynx_api_env env() const { return env_; }
 
   /*
    deep convert jsvalue to lepus::Value when deep_convert == true;
    */
   Value ToLepusValue(bool deep_convert = false) const;
-
-  inline LEPUSValue WrapJSValue() const {
-    if (!IsJSValue()) return LEPUS_UNDEFINED;
-#if defined(__aarch64__) && !defined(OS_WIN) && !DISABLE_NANBOX
-    return (LEPUSValue){.as_int64 = value_.val_int64};
-#else
-    return LEPUS_MKPTR(static_cast<int8_t>((value_.tag & 0xff)),
-                       value_.val_ptr);
-#endif
-  }
 
   inline bool IsJSCPointer() const {
     return IsJSValue() && (value_.tag >> 16) == lynx_value_external;
@@ -448,7 +431,7 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   inline void* LEPUSCPointer() const {
     DCHECK(IsJSCPointer());
     void* ret;
-    lynx_value_get_external(cell_->env_, value_, &ret);
+    lynx_value_get_external(env_, value_, &ret);
     return ret;
   }
 
@@ -461,7 +444,7 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   inline bool LEPUSBool() const {
     if (!IsJSBool()) return false;
     bool ret;
-    lynx_value_get_bool(cell_->env_, value_, &ret);
+    lynx_value_get_bool(env_, value_, &ret);
     return ret;
   }
   inline bool IsJSString() const {
@@ -694,7 +677,12 @@ class BASE_EXPORT_FOR_DEVTOOL Value {
   bool SetPropertyToTableOrArray(const std::string& key, const Value& update);
   inline lynx_value DeepCopyExtendedValue() const {
     lynx_value ret;
-    lynx_value_deep_copy_value(cell_->env_, value_, &ret);
+    lynx_value_deep_copy_value(env_, value_, &ret);
+    return ret;
+  }
+  bool IsJSUninitialized() const {
+    bool ret;
+    lynx_value_is_uninitialized(env_, value_, &ret);
     return ret;
   }
 

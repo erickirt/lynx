@@ -61,8 +61,7 @@ int32_t LepusHasProperty(LEPUSContext* ctx, LEPUSValue obj, LEPUSAtom prop,
 int32_t LepusDeleteProperty(LEPUSContext* ctx, LEPUSValue this_obj,
                             LEPUSAtom prop, int32_t idx) {
   assert(LEPUS_IsLepusRef(this_obj));
-  static lepus::Value undefined =
-      lepus::Value(ctx, LEPUS_UNDEFINED).ToLepusValue();
+  static lepus::Value undefined = lepus::Value(Value::kCreateAsUndefinedTag);
   LEPUSLepusRef* pref =
       static_cast<LEPUSLepusRef*>(LEPUS_VALUE_GET_PTR(this_obj));
   int32_t ret = false;
@@ -149,7 +148,7 @@ int32_t LEPUSValueGetOwnPropertyNames(LEPUSContext* ctx, LEPUSValue this_obj,
 
 int32_t LEPUSValueDeepEqualCallBack(LEPUSContext* ctx, LEPUSValue val1,
                                     LEPUSValue val2) {
-  return lepus::Value(ctx, val1) == lepus::Value(ctx, val2);
+  return MK_JS_LEPUS_VALUE(ctx, val1) == MK_JS_LEPUS_VALUE(ctx, val2);
 }
 
 LEPUSValue LEPUSRefArrayPushCallBack(LEPUSContext* ctx, LEPUSValue this_val,
@@ -187,7 +186,7 @@ LEPUSValue LEPUSRefArrayPushCallBack(LEPUSContext* ctx, LEPUSValue this_val,
   }
 
   for (int32_t i = 0; i < argc; ++i) {
-    array->set(from + i, lepus::Value(ctx, argv[i]));
+    array->set(from + i, MK_JS_LEPUS_VALUE(ctx, argv[i]));
   }
   return LEPUS_NewInt64(ctx, new_len);
 }
@@ -209,10 +208,10 @@ LEPUSValue LEPUSRefArrayPopCallBack(LEPUSContext* ctx, LEPUSValue this_val,
   LEPUSValue res = LEPUS_UNDEFINED;
   if (old_size > 0) {
     if (shift) {
-      res = array->get(0).ToJSValue(ctx);
+      res = LEPUSValueHelper::ToJsValue(ctx, array->get(0));
       array->Erase(0);
     } else {
-      res = array->get(old_size - 1).ToJSValue(ctx);
+      res = LEPUSValueHelper::ToJsValue(ctx, array->get(old_size - 1));
       array->pop_back();
     }
   }
@@ -233,7 +232,8 @@ int64_t LEPUSRefArrayFindCallBack(LEPUSContext* ctx, LEPUSValue this_val,
   if (dir > 0) {
     assert(from_index >= 0);
     for (; from_index < array_size; ++from_index) {
-      op = array->get(static_cast<size_t>(from_index)).ToJSValue(ctx, false);
+      op = LEPUSValueHelper::ToJsValue(
+          ctx, array->get(static_cast<size_t>(from_index)), false);
       if (LEPUS_SameValue(ctx, op, value_to_find)) {
         if (!LEPUS_IsGCMode(ctx)) LEPUS_FreeValue(ctx, op);
         return from_index;
@@ -243,7 +243,8 @@ int64_t LEPUSRefArrayFindCallBack(LEPUSContext* ctx, LEPUSValue this_val,
   } else {
     assert(from_index < array_size);
     for (; from_index >= 0; --from_index) {
-      op = array->get(static_cast<size_t>(from_index)).ToJSValue(ctx, false);
+      op = LEPUSValueHelper::ToJsValue(
+          ctx, array->get(static_cast<size_t>(from_index)), false);
       if (LEPUS_SameValue(ctx, op, value_to_find)) {
         if (!LEPUS_IsGCMode(ctx)) LEPUS_FreeValue(ctx, op);
         return from_index;
@@ -292,7 +293,7 @@ LEPUSValue LEPUSRefArraySlice(LEPUSContext* ctx, LEPUSValue this_val,
   LEPUSValue v = LEPUS_UNDEFINED;
   func_scope.PushHandle(&v, HANDLE_TYPE_LEPUS_VALUE);
   for (size_t i = 0, k = start; i < count && k < array->size(); ++i, ++k) {
-    v = array->get(k).ToJSValue(ctx);
+    v = LEPUSValueHelper::ToJsValue(ctx, array->get(k));
     LEPUS_SetPropertyInt64(ctx, ret, i, v);
   }
 
@@ -300,7 +301,21 @@ LEPUSValue LEPUSRefArraySlice(LEPUSContext* ctx, LEPUSValue this_val,
     // first erase consecuitive n elements of array from start
     array->Erase(start, count);
     // then insert item_count elements
-    array->Insert(start, item_count, ctx, argv);
+    for (size_t i = start; i < start + item_count; ++i) {
+      LEPUSValue val = argv[i - start];
+      if (LEPUS_IsLepusRef(val)) {
+        array->Insert(
+            static_cast<uint32_t>(i),
+            lepus::Value(lepus::LEPUSValueHelper::ConstructLepusRefToLynxValue(
+                ctx, val)));
+      } else {
+        array->Insert(
+            static_cast<uint32_t>(i),
+            lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                         LEPUS_VALUE_GET_INT64(val),
+                         lepus::LEPUSValueHelper::CalculateTag(val)));
+      }
+    }
   }
   return ret;
 }

@@ -80,6 +80,10 @@ lynx_api_status lynx_value_move_reference(lynx_api_env env, lynx_value src_val,
                                           lynx_value_ref* result);
 lynx_api_status lynx_value_remove_reference(lynx_api_env env, lynx_value value,
                                             lynx_value_ref ref);
+lynx_api_status lynx_value_has_ref_count(lynx_api_env env, lynx_value val,
+                                         bool* result);
+lynx_api_status lynx_value_is_uninitialized(lynx_api_env env, lynx_value val,
+                                            bool* result);
 
 #ifdef __cplusplus
 }

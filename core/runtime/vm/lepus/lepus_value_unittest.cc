@@ -40,12 +40,7 @@ TEST_F(LepusValueTest, LepusValueNull) {
   ASSERT_TRUE(!v1.IsReference());
   ASSERT_TRUE(v1.IsFalse());
   ASSERT_TRUE(v1.Type() == Value_Nil);
-  // lepus::Value v2(quick_ctx_.LynxAPIEnv(), ToLynxValue(LEPUS_NULL));
-  // ASSERT_TRUE(v2.IsNil());
-  // lynx_value v_null_1 = ToLynxValue(LEPUS_NULL);
-  // lepus::Value v3(quick_ctx_.LynxAPIEnv(), v_null_1);
-  // ASSERT_TRUE(v3.IsNil());
-  lepus::Value v4(quick_ctx_.context(), LEPUS_NULL);
+  lepus::Value v4 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), LEPUS_NULL);
   ASSERT_TRUE(v4.IsNil());
   ASSERT_TRUE(v4.IsEmpty());
   ASSERT_TRUE(v4.IsJsNull());
@@ -61,8 +56,7 @@ TEST_F(LepusValueTest, LepusValueNull) {
   ASSERT_TRUE(v6.IsEmpty());
   ASSERT_TRUE(v6.IsFalse());
   ASSERT_TRUE(v6.Type() == Value_Undefined);
-  // lepus::Value v7(quick_ctx_.LynxAPIEnv(), ToLynxValue(LEPUS_UNDEFINED));
-  lepus::Value v7(quick_ctx_.context(), LEPUS_UNDEFINED);
+  lepus::Value v7 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), LEPUS_UNDEFINED);
   ASSERT_TRUE(v7.IsUndefined());
 
   lepus::Value v8 = v7;
@@ -71,7 +65,7 @@ TEST_F(LepusValueTest, LepusValueNull) {
   ASSERT_TRUE(v9.IsUndefined());
   v9 = std::move(v7);
   ASSERT_TRUE(v9.IsUndefined());
-  lepus::Value v10(quick_ctx_.context(), LEPUS_UNDEFINED);
+  lepus::Value v10 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), LEPUS_UNDEFINED);
   ASSERT_TRUE(v10.IsUndefined());
   ASSERT_TRUE(v10.IsEmpty());
   ASSERT_TRUE(v10.IsJSUndefined());
@@ -140,7 +134,7 @@ TEST_F(LepusValueTest, LepusValueNumber) {
   {
     int64_t num = (int64_t)INT32_MAX + 5;
     LEPUSValue val_int64 = LEPUS_NewInt64(quick_ctx_.context(), num);
-    lepus::Value v9(quick_ctx_.context(), val_int64);
+    lepus::Value v9 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int64);
     ASSERT_TRUE(v9.IsNumber());
     ASSERT_TRUE(v9.IsJSNumber());
     ASSERT_TRUE(v9.IsJSInteger());
@@ -151,7 +145,7 @@ TEST_F(LepusValueTest, LepusValueNumber) {
 
     int32_t num1 = 2345;
     LEPUSValue val_int32 = LEPUS_NewInt32(quick_ctx_.context(), num1);
-    lepus::Value v10(quick_ctx_.context(), val_int32);
+    lepus::Value v10 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int32);
     ASSERT_TRUE(v10.IsNumber());
     ASSERT_TRUE(v10.IsJSNumber());
     ASSERT_TRUE(v10.IsJSInteger());
@@ -161,7 +155,7 @@ TEST_F(LepusValueTest, LepusValueNumber) {
 
     double num2 = 3456.0f;
     LEPUSValue val_double = LEPUS_NewFloat64(quick_ctx_.context(), num2);
-    lepus::Value v11(quick_ctx_.context(), val_double);
+    lepus::Value v11 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_double);
     ASSERT_TRUE(v11.IsNumber());
     ASSERT_TRUE(v11.IsJSNumber());
     ASSERT_TRUE(v11.IsJSInteger());
@@ -172,7 +166,7 @@ TEST_F(LepusValueTest, LepusValueNumber) {
     lepus::Value v12(0);
     ASSERT_TRUE(v12.IsFalse());
     LEPUSValue val_int32_0 = LEPUS_NewInt32(quick_ctx_.context(), 0);
-    lepus::Value v13(quick_ctx_.context(), val_int32_0);
+    lepus::Value v13 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int32_0);
     ASSERT_TRUE(v13.IsFalse());
 
     LEPUS_FreeValue(quick_ctx_.context(), val_int64);
@@ -211,14 +205,14 @@ TEST_F(LepusValueTest, LepusValueString) {
     LEPUSRefCountHeader* p =
         (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str1);
     ASSERT_TRUE(p->ref_count == 1);
-    lepus::Value v2(quick_ctx_.context(), val_str1);
+    lepus::Value v2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1);
     ASSERT_TRUE(v2.IsString());
     ASSERT_TRUE(v2.IsJSString());
     ASSERT_TRUE(v2.GetLength() == 8);
     ASSERT_TRUE(v2.StdString() == "test_val");
     ASSERT_TRUE(v2.ToString() == "test_val");
     LEPUSValue val_bool = LEPUS_NewBool(quick_ctx_.context(), false);
-    lepus::Value b2(quick_ctx_.context(), val_bool);
+    lepus::Value b2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool);
     ASSERT_TRUE(b2.IsBool());
     ASSERT_TRUE(b2.StdString() == "false");
 
@@ -234,9 +228,7 @@ TEST_F(LepusValueTest, LepusValueString) {
 
     LEPUSValue val_str2 =
         LEPUS_NewStringLen(quick_ctx_.context(), "test_val", 8);
-    // lynx_value l_val1 = ToLynxValue(val_str2);
-    // lepus::Value v5(quick_ctx_.LynxAPIEnv(), l_val1);
-    lepus::Value v5(quick_ctx_.context(), val_str2);
+    lepus::Value v5 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2);
     ASSERT_TRUE(v5.IsString());
     ASSERT_TRUE(v5.StdString() == "test_val");
     LEPUSRefCountHeader* p2 =
@@ -322,7 +314,7 @@ TEST_F(LepusValueTest, LepusValueArray) {
   LEPUSValue val_str1 = LEPUS_NewStringLen(quick_ctx_.context(), "test_val", 8);
   {
     auto arr2 = lepus::CArray::Create();
-    arr2->push_back(lepus::Value(quick_ctx_.context(), val_str1));
+    arr2->push_back(MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
     arr2->push_back(lepus::Value("testing"));
     lepus::Value v2(arr2);
     LEPUSRefCountHeader* p1 =
@@ -337,7 +329,7 @@ TEST_F(LepusValueTest, LepusValueArray) {
     ASSERT_TRUE(r1.StdString() == "testing");
 
     LEPUSValue val_str2 = LEPUS_NewStringLen(quick_ctx_.context(), "str2", 4);
-    v2.SetProperty(2, lepus::Value(quick_ctx_.context(), val_str2));
+    v2.SetProperty(2, MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2));
     LEPUSRefCountHeader* p3 =
         (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str2);
     ASSERT_TRUE(p3->ref_count == 2);
@@ -348,7 +340,7 @@ TEST_F(LepusValueTest, LepusValueArray) {
     ASSERT_TRUE(p4->ref_count == 3);
     int64_t num = (int64_t)INT32_MAX + 3;
     LEPUSValue val_int64 = LEPUS_NewInt64(quick_ctx_.context(), num);
-    lepus::Value id3(quick_ctx_.context(), val_int64);
+    lepus::Value id3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int64);
     v2.SetProperty(3, id3);
     auto r3 = v2.GetProperty(3);
     ASSERT_TRUE(r3.Number() == num);
@@ -369,14 +361,14 @@ TEST_F(LepusValueTest, LepusValueArray) {
     }
     LEPUSValue val_arr =
         LEPUS_NewArrayWithValue(quick_ctx_.context(), 10, values.data());
-    lepus::Value arr3(quick_ctx_.context(), val_arr);
+    lepus::Value arr3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_arr);
     arr3.IteratorJSValue(
         [](const lepus::Value& key, const lepus::Value& element) {
           ASSERT_TRUE(key.Int32() == element.Int32());
         });
 
     LEPUSValue val_str3 = LEPUS_NewStringLen(quick_ctx_.context(), "str3", 4);
-    arr3.SetProperty(10, lepus::Value(quick_ctx_.context(), val_str3));
+    arr3.SetProperty(10, MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str3));
     auto r10 = arr3.GetProperty(10);
     ASSERT_TRUE(r10.StdString() == "str3");
 
@@ -425,7 +417,7 @@ TEST_F(LepusValueTest, LepusValueMap) {
   LEPUSValue val_str1 = LEPUS_NewStringLen(quick_ctx_.context(), "test_val", 8);
   {
     auto dict2 = lepus::Dictionary::Create();
-    dict2->SetValue("key1", lepus::Value(quick_ctx_.context(), val_str1));
+    dict2->SetValue("key1", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
     dict2->SetValue("key2", lepus::Value("testing"));
     lepus::Value v2(dict2);
     ASSERT_TRUE(v2.Contains("key1"));
@@ -441,7 +433,7 @@ TEST_F(LepusValueTest, LepusValueMap) {
     ASSERT_TRUE(r1.StdString() == "testing");
 
     LEPUSValue val_str2 = LEPUS_NewStringLen(quick_ctx_.context(), "str2", 4);
-    v2.SetProperty("key3", lepus::Value(quick_ctx_.context(), val_str2));
+    v2.SetProperty("key3", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2));
     LEPUSRefCountHeader* p3 =
         (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str2);
     ASSERT_TRUE(p3->ref_count == 2);
@@ -452,7 +444,7 @@ TEST_F(LepusValueTest, LepusValueMap) {
     ASSERT_TRUE(p4->ref_count == 3);
     int64_t num = (int64_t)INT32_MAX + 3;
     LEPUSValue val_int64 = LEPUS_NewInt64(quick_ctx_.context(), num);
-    lepus::Value id3(quick_ctx_.context(), val_int64);
+    lepus::Value id3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int64);
     v2.SetProperty("key4", id3);
     auto r3 = v2.GetProperty("key4");
     ASSERT_TRUE(r3.Number() == num);
@@ -468,10 +460,12 @@ TEST_F(LepusValueTest, LepusValueMap) {
   LEPUSValue val_str3 = LEPUS_NewStringLen(quick_ctx_.context(), "str2", 4);
   {
     LEPUSValue val_map = LEPUS_NewObject(quick_ctx_.context());
-    lepus::Value dict3(quick_ctx_.context(), val_map);
+    lepus::Value dict3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_map);
     LEPUSValue val_bool = LEPUS_NewBool(quick_ctx_.context(), true);
-    dict3.SetProperty("key1", lepus::Value(quick_ctx_.context(), val_str3));
-    dict3.SetProperty("key2", lepus::Value(quick_ctx_.context(), val_bool));
+    dict3.SetProperty("key1",
+                      MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str3));
+    dict3.SetProperty("key2",
+                      MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool));
     dict3.IteratorJSValue(
         [](const lepus::Value& key, const lepus::Value& element) {
           if (key.StdString() == "key1") {
@@ -641,18 +635,18 @@ TEST_F(LepusValueTest, LepusValueToBaseValue) {
     LEPUSValue val_double = LEPUS_NewFloat64(quick_ctx_.context(), 3.11f);
 
     auto dict = lepus::Dictionary::Create();
-    lepus::Value bool_temp(quick_ctx_.context(), val_bool);
-    dict->SetValue("key1", lepus::Value(quick_ctx_.context(), val_str1));
-    dict->SetValue("key2", lepus::Value(quick_ctx_.context(), val_str2));
-    dict->SetValue("key3", lepus::Value(quick_ctx_.context(), val_int64));
+    lepus::Value bool_temp = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool);
+    dict->SetValue("key1", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
+    dict->SetValue("key2", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2));
+    dict->SetValue("key3", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int64));
     dict->SetValue("key4", bool_temp);
-    dict->SetValue("key5", lepus::Value(quick_ctx_.context(), val_int));
-    dict->SetValue("key6", lepus::Value(quick_ctx_.context(), val_arr));
-    dict->SetValue("key7", lepus::Value(quick_ctx_.context(), val_obj));
-    dict->SetValue("key8", lepus::Value(quick_ctx_.context(), val_double));
+    dict->SetValue("key5", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int));
+    dict->SetValue("key6", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_arr));
+    dict->SetValue("key7", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_obj));
+    dict->SetValue("key8", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_double));
     auto arr = lepus::CArray::Create();
-    arr->push_back(lepus::Value(quick_ctx_.context(), val_str1));
-    arr->push_back(lepus::Value(quick_ctx_.context(), val_bool));
+    arr->push_back(MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
+    arr->push_back(MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool));
     dict->SetValue("key9", lepus::Value(arr));
 
     lepus::Value v1(dict);
@@ -712,17 +706,17 @@ TEST_F(LepusValueTest, LepusValueToBaseValue) {
     LEPUSValue val_double = LEPUS_NewFloat64(quick_ctx_.context(), 3.11f);
 
     auto dict = lepus::Dictionary::Create();
-    dict->SetValue("key1", lepus::Value(quick_ctx_.context(), val_str1));
-    dict->SetValue("key2", lepus::Value(quick_ctx_.context(), val_str2));
-    dict->SetValue("key3", lepus::Value(quick_ctx_.context(), val_int64));
-    dict->SetValue("key4", lepus::Value(quick_ctx_.context(), val_bool));
-    dict->SetValue("key5", lepus::Value(quick_ctx_.context(), val_int));
-    dict->SetValue("key6", lepus::Value(quick_ctx_.context(), val_arr));
-    dict->SetValue("key7", lepus::Value(quick_ctx_.context(), val_obj));
-    dict->SetValue("key8", lepus::Value(quick_ctx_.context(), val_double));
+    dict->SetValue("key1", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
+    dict->SetValue("key2", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2));
+    dict->SetValue("key3", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int64));
+    dict->SetValue("key4", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool));
+    dict->SetValue("key5", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int));
+    dict->SetValue("key6", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_arr));
+    dict->SetValue("key7", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_obj));
+    dict->SetValue("key8", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_double));
     auto arr = lepus::CArray::Create();
-    arr->push_back(lepus::Value(quick_ctx_.context(), val_str1));
-    arr->push_back(lepus::Value(quick_ctx_.context(), val_bool));
+    arr->push_back(MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
+    arr->push_back(MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_bool));
     dict->SetValue("key9", lepus::Value(arr));
 
     lepus::Value v1(dict);
@@ -777,7 +771,7 @@ TEST_F(LepusValueTest, LepusValueCloneValue) {
   auto dict_ref = lepus::Dictionary::Create();
   {
     auto dict = lepus::Dictionary::Create();
-    dict->SetValue("key1", lepus::Value(quick_ctx_.context(), val_str1));
+    dict->SetValue("key1", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1));
     dict->SetValue("key2", lepus::Value());
     lepus::Value undefined;
     undefined.SetUndefined();
@@ -799,7 +793,7 @@ TEST_F(LepusValueTest, LepusValueCloneValue) {
     LEPUSValue val_ref1 = lepus::LEPUSValueHelper::CreateLepusRef(
         quick_ctx_.context(),
         reinterpret_cast<lepus::RefCounted*>(arr_ref.get()), Value_Array);
-    dict->SetValue("key12", lepus::Value(quick_ctx_.context(), val_ref1));
+    dict->SetValue("key12", MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_ref1));
     LEPUSRefCountHeader* p_ref =
         (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_ref1);
     ASSERT_TRUE(p_ref->ref_count == 1);
@@ -807,7 +801,7 @@ TEST_F(LepusValueTest, LepusValueCloneValue) {
     LEPUSValue val_ref2 = lepus::LEPUSValueHelper::CreateLepusRef(
         quick_ctx_.context(),
         reinterpret_cast<lepus::RefCounted*>(dict_ref.get()), Value_Table);
-    lepus::Value id13(quick_ctx_.context(), val_ref2);
+    lepus::Value id13 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_ref2);
     dict->SetValue("key13", id13);
 
     lepus::Value v1(dict);
@@ -873,7 +867,7 @@ TEST_F(LepusValueTest, LepusValueCloneValue) {
 
   LEPUSValue val_str2 = LEPUS_NewStringLen(quick_ctx_.context(), "test_abc", 8);
   {
-    lepus::Value v2(quick_ctx_.context(), val_str2);
+    lepus::Value v2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str2);
     auto ret3 = lepus::Value::Clone(v2, true);
     ASSERT_TRUE(ret3.IsJSString());
     ASSERT_TRUE(ret3.IsEqual(v2));
@@ -896,7 +890,7 @@ TEST_F(LepusValueTest, LepusValueCloneValue) {
     }
     LEPUSValue val_arr =
         LEPUS_NewArrayWithValue(quick_ctx_.context(), 10, values.data());
-    lepus::Value v3(quick_ctx_.context(), val_arr);
+    lepus::Value v3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_arr);
     auto ret5 = lepus::Value::Clone(v3, true);
     ASSERT_TRUE(!ret5.IsArray());
     ASSERT_TRUE(ret5.IsEqual(v3));
@@ -935,9 +929,9 @@ TEST_F(LepusValueTest, LepusValueMarkConst) {
   LEPUSValue val_str1 =
       LEPUS_NewStringLen(quick_ctx_.context(), "test_abcd", 9);
   LEPUSValue val_int = LEPUS_NewInt32(quick_ctx_.context(), 111);
-  lepus::Value v1(quick_ctx_.context(), val_str1);
+  lepus::Value v1 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1);
   ASSERT_TRUE(!v1.MarkConst());
-  lepus::Value v2(quick_ctx_.context(), val_int);
+  lepus::Value v2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_int);
   ASSERT_TRUE(v2.MarkConst());
   lepus::Value v3(10);
   ASSERT_TRUE(v3.MarkConst());
@@ -1038,7 +1032,7 @@ TEST_F(LepusValueTest, LepusValueToJSValue) {
     bool is_lepus_obj = lepus::LEPUSValueHelper::IsLepusTable(ret2);
     ASSERT_TRUE(is_lepus_obj);
 
-    lepus::Value v2(quick_ctx_.context(), ret1);
+    lepus::Value v2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret1);
     ASSERT_TRUE(v2.GetLength() == 6);
     auto r1 = v2.GetProperty("key6");
     ASSERT_TRUE(r1.IsJSArray());
@@ -1057,7 +1051,7 @@ TEST_F(LepusValueTest, LepusValueToJSValue) {
     auto r7 = v2.GetProperty("key5");
     ASSERT_TRUE(r7.StdString() == "hello world");
 
-    lepus::Value v3(quick_ctx_.context(), ret2);
+    lepus::Value v3 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret2);
     ASSERT_TRUE(v3.GetLength() == 6);
     ASSERT_TRUE(v3.IsTable());
     auto r8 = v3.GetProperty("key5");
@@ -1091,7 +1085,7 @@ TEST_F(LepusValueTest, LepusValueToJSValue) {
     auto str = lepus::LEPUSValueHelper::LepusRefToStdString(
         quick_ctx_.context(), ret4);
     ASSERT_TRUE(str == "[101,2001,null,false,testing,undefined]");
-    lepus::Value v6(quick_ctx_.context(), ret4);
+    lepus::Value v6 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret4);
     auto ret5 = v6.ToLepusValue();
     ASSERT_TRUE(ret5.IsArray());
 
@@ -1100,13 +1094,13 @@ TEST_F(LepusValueTest, LepusValueToJSValue) {
     ASSERT_TRUE(v7.IsRefCounted());
     LEPUSValue ret6 =
         lepus::LEPUSValueHelper::ToJsValue(quick_ctx_.context(), v7, false);
-    lepus::Value v8(quick_ctx_.context(), ret6);
+    lepus::Value v8 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret6);
     auto ret7 = v8.ToLepusValue();
     ASSERT_TRUE(ret7.IsRefCounted());
 
     LEPUSValue ret8 =
         lepus::LEPUSValueHelper::ToJsValue(quick_ctx_.context(), v7, true);
-    lepus::Value v9(quick_ctx_.context(), ret8);
+    lepus::Value v9 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret8);
     auto ret9 = v9.ToLepusValue();
     ASSERT_TRUE(ret9.IsObject());
 
@@ -1132,9 +1126,9 @@ TEST_F(LepusValueTest, LepusValueLepusRefStorage) {
     array_ptr = array1.get();
     {
       lepus::Value v_dict(dict1);
-      lepus::Value v1(quick_ctx_.context(), val_str1);
+      lepus::Value v1 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_str1);
       v_dict.SetProperty("key1", std::move(v1));
-      lepus::Value v2(quick_ctx_.context(), val_map1);
+      lepus::Value v2 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), val_map1);
       dict2->SetValue("key1", lepus::Value(true));
       dict2->SetValue("key2", lepus::Value("string"));
       dict2->SetValue("key3", lepus::Value(array1));
@@ -1148,7 +1142,7 @@ TEST_F(LepusValueTest, LepusValueLepusRefStorage) {
 
       LEPUSValue ret3 =
           lepus::LEPUSValueHelper::ToJsValue(quick_ctx_.context(), v_dict);
-      lepus::Value v4(quick_ctx_.context(), ret3);
+      lepus::Value v4 = MK_JS_LEPUS_VALUE(quick_ctx_.context(), ret3);
       auto ret4 = v4.ToLepusValue();
       ASSERT_TRUE(ret4 == v_dict);
       LEPUS_FreeValue(quick_ctx_.context(), ret3);

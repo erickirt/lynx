@@ -23,6 +23,8 @@
 #include "core/runtime/bindings/napi/napi_runtime_proxy_quickjs.h"
 #include "core/runtime/bindings/napi/worklet/napi_loader_ui.h"
 #include "core/runtime/vm/lepus/bytecode_generator.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
+#include "core/runtime/vm/lepus/lepus_context_cell.h"
 #include "core/shell/testing/mock_tasm_delegate.h"
 #include "third_party/googletest/googletest/include/gtest/gtest.h"
 
@@ -148,7 +150,7 @@ TEST_F(WorkletAPITest, TestLepusGestureAPI) {
 
   // Create and convert a Lepus value (integer 1) to a Napi value
   auto js_1 = LEPUS_NewInt32(ctx_->context(), 1);
-  lepus::Value value_1(ctx_->context(), js_1);
+  lepus::Value value_1 = MK_JS_LEPUS_VALUE(ctx_->context(), js_1);
   auto napi_value_1 = worklet::ValueConverter::ConvertLepusValueToNapiValue(
       tasm_->FindEntry(tasm::DEFAULT_ENTRY_NAME)
           ->napi_environment_.get()
@@ -158,7 +160,7 @@ TEST_F(WorkletAPITest, TestLepusGestureAPI) {
 
   // Create and convert another Lepus value (integer 2) to a Napi value
   auto js_2 = LEPUS_NewInt32(ctx_->context(), 2);
-  lepus::Value value_2(ctx_->context(), js_2);
+  lepus::Value value_2 = MK_JS_LEPUS_VALUE(ctx_->context(), js_2);
   auto napi_value_2 = worklet::ValueConverter::ConvertLepusValueToNapiValue(
       tasm_->FindEntry(tasm::DEFAULT_ENTRY_NAME)
           ->napi_environment_.get()
@@ -168,7 +170,7 @@ TEST_F(WorkletAPITest, TestLepusGestureAPI) {
 
   // Create and convert yet another Lepus value (integer 3) to a Napi value
   auto js_3 = LEPUS_NewInt32(ctx_->context(), 3);
-  lepus::Value value_3(ctx_->context(), js_3);
+  lepus::Value value_3 = MK_JS_LEPUS_VALUE(ctx_->context(), js_3);
   auto napi_value_3 = worklet::ValueConverter::ConvertLepusValueToNapiValue(
       tasm_->FindEntry(tasm::DEFAULT_ENTRY_NAME)
           ->napi_environment_.get()

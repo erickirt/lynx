@@ -1944,7 +1944,7 @@ void BlockGenerate::Dump(int32_t tab_size) {
 
 Value BlockGenerate::GenerateScope(const Value& prev) {
   // for normal variables
-  Value scope = Value::CreateObject(nullptr);
+  Value scope(lepus::Dictionary::Create());
   Value childs = Value(CArray::Create());
   scope.SetProperty(Function::kLepusPrev, Value());
   scope.SetProperty(Function::kStartLine, Value(start_line_col_));

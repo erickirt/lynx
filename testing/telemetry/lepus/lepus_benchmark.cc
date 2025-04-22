@@ -37,7 +37,16 @@ __attribute__((unused)) static void PrepareArgs(LEPUSContext* ctx,
                                                 LEPUSValueConst* argv,
                                                 lepus::Value* largv, int argc) {
   for (int i = 0; i < argc; i++) {
-    new (largv + i) lepus::Value(ctx, std::move(argv[i]));
+    LEPUSValue val = argv[i];
+    if (LEPUS_IsLepusRef(val)) {
+      new (largv + i) lepus::Value(
+          lepus::LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx, val));
+    } else {
+      new (largv + i)
+          lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                       LEPUS_VALUE_GET_INT64(val),
+                       lepus::LEPUSValueHelper::CalculateTag(val));
+    }
   }
 }
 
@@ -46,9 +55,9 @@ static LEPUSValue emptyFuncNG(LEPUSContext* ctx, LEPUSValueConst this_val,
   char args_buf[sizeof(lepus::Value) * argc];
   lepus::Value* largv = reinterpret_cast<lepus::Value*>(args_buf);
   PrepareArgs(ctx, argv, largv, argc);
-  return BenchmarkRendererFunctions::emptyFunc(
-             lepus::QuickContext::GetFromJsContext(ctx), largv, argc)
-      .ToJSValue(ctx);
+  return lepus::LEPUSValueHelper::ToJsValue(
+      ctx, BenchmarkRendererFunctions::emptyFunc(
+               lepus::QuickContext::GetFromJsContext(ctx), largv, argc));
 }
 
 static void RegisterNGEmptyFunction(lepus::Context* ctx) {
@@ -171,8 +180,8 @@ static void BM_ValueMethodsIsEqual(benchmark::State& state) {
     LepusValueMethods test;
     test.SetUp();
     state.ResumeTiming();
-    lepus::Value v2(test.ctx_.context(),
-                    test.v1_.ToJSValue(test.ctx_.context()));
+    lepus::Value v2 =
+        MK_JS_LEPUS_VALUE_WITH_CONVERT(test.ctx_.context(), test.v1_, false);
     ASSERT_TRUE(test.v1_.IsEqual(v2));
   }
 }
@@ -209,11 +218,11 @@ static void BM_ValueMethodsSetGetProperty2(benchmark::State& state) {
     state.ResumeTiming();
     LEPUSContext* ctx = test.ctx_.context();
 
-    lepus::Value lepusv1(ctx, test.v1_.ToJSValue(ctx));
+    lepus::Value lepusv1 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, test.v1_, false);
 
     lepusv1.SetProperty(
-        "prop",
-        lepus::Value(ctx, lepus::LEPUSValueHelper::NewString(ctx, "world")));
+        "prop", MK_JS_LEPUS_VALUE(
+                    ctx, lepus::LEPUSValueHelper::NewString(ctx, "world")));
 
     lepus::Value v2 = lepus::Value::Clone(test.v1_);
     v2.SetProperty(base::String("prop"), lepus::Value("world"));
@@ -230,7 +239,7 @@ static void BM_ValueMethodsString(benchmark::State& state) {
     state.ResumeTiming();
     LEPUSContext* ctx = test.ctx_.context();
     LEPUSValue lepusv1 = lepus::LEPUSValueHelper::NewString(ctx, "hello world");
-    lepus::Value v2 = lepus::Value(ctx, lepusv1);
+    lepus::Value v2 = MK_JS_LEPUS_VALUE(ctx, lepusv1);
     base::String str = v2.String();
     ASSERT_TRUE(str.IsEqual(base::String("hello world")));
     LEPUS_FreeValue(ctx, lepusv1);
@@ -285,8 +294,8 @@ static void BM_ValueMethodsTestLepusJSValue(benchmark::State& state) {
 
     lepus::Value val2 = lepus::Value(lepus::Dictionary::Create());
     LEPUSContext* ctx = test.ctx_.context();
-    LEPUSValue array_jsvalue = array.ToJSValue(ctx);
-    lepus::Value array_v(ctx, array_jsvalue);
+    LEPUSValue array_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, array);
+    lepus::Value array_v = MK_JS_LEPUS_VALUE(ctx, array_jsvalue);
     val2.Table()->SetValue("array", array_v);
 
     ASSERT_TRUE(val == val2);
@@ -295,8 +304,8 @@ static void BM_ValueMethodsTestLepusJSValue(benchmark::State& state) {
     LEPUS_FreeValue(ctx, array_jsvalue);
 
     lepus::Value val3 = lepus::Value(lepus::Dictionary::Create());
-    lepus::Value array_deeptojs(test.ctx_.context(),
-                                array.ToJSValue(test.ctx_.context(), true));
+    lepus::Value array_deeptojs =
+        MK_JS_LEPUS_VALUE_WITH_CONVERT(test.ctx_.context(), array, true);
     val3.Table()->SetValue("array", array_deeptojs);
     ASSERT_TRUE(val == val3);
     state.ResumeTiming();
@@ -314,13 +323,13 @@ static void BM_ValueMethodsTestLepusValueOperatorEqual(
     state.ResumeTiming();
     lepus::Value left;
     LEPUSContext* ctx = qctx.context();
-    left = lepus::Value(ctx, qctx.SearchGlobalData("entry"));
+    left = MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("entry"));
 
     lepus::Value right;
     ASSERT_FALSE(left == right);
 
     lepus::Value right2 =
-        lepus::Value(ctx, qctx.SearchGlobalData("entry")).ToLepusValue();
+        MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("entry")).ToLepusValue();
     ASSERT_TRUE(left.ToLepusValue() == right2);
   }
 }
@@ -335,12 +344,13 @@ static void BM_ValueMethodsTestToLepusValue(benchmark::State& state) {
 
     state.ResumeTiming();
     lepus::Value obj =
-        lepus::Value(qctx.context(), qctx.SearchGlobalData("obj"))
+        MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj"))
             .ToLepusValue();
-    LEPUSValue obj_ref = obj.ToJSValue(qctx.context(), false);
+    LEPUSValue obj_ref =
+        lepus::LEPUSValueHelper::ToJsValue(qctx.context(), obj, false);
     auto obj2_wrap =
-        lepus::Value(qctx.context(), qctx.SearchGlobalData("obj2"));
-    obj2_wrap.SetProperty("test", lepus::Value(qctx.context(), obj_ref));
+        MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj2"));
+    obj2_wrap.SetProperty("test", MK_JS_LEPUS_VALUE(qctx.context(), obj_ref));
 
     // get a copy.
     lepus::Value obj_result = obj2_wrap.ToLepusValue();
@@ -358,12 +368,14 @@ static void BM_LepusWrapDestruct(benchmark::State& state) {
     state.ResumeTiming();
     lepus::QuickContext qctx;
     lepus::Value number = lepus::Value(1);
-    lepus::Value number_wrap(qctx.context(), number.ToJSValue(qctx.context()));
+    lepus::Value number_wrap =
+        MK_JS_LEPUS_VALUE_WITH_CONVERT(qctx.context(), number, false);
     lepus::Value array = lepus::Value(lepus::CArray::Create());
 
-    lepus::Value ref(qctx.context(), lepus::LEPUSValueHelper::CreateLepusRef(
-                                         qctx.context(), array.Array().get(),
-                                         lepus::Value_Array));
+    lepus::Value ref = MK_JS_LEPUS_VALUE(
+        qctx.context(),
+        lepus::LEPUSValueHelper::CreateLepusRef(
+            qctx.context(), array.Array().get(), lepus::Value_Array));
   }
 }
 
@@ -410,7 +422,8 @@ static void BM_FromLepusDeepConvert(benchmark::State& state) {
     ASSERT_TRUE(ret);
     lepus::QuickContext qctx;
     state.ResumeTiming();
-    LEPUSValue obj_ref = obj_ptr->ToJSValue(qctx.context(), true);
+    LEPUSValue obj_ref =
+        lepus::LEPUSValueHelper::ToJsValue(qctx.context(), *obj_ptr, true);
     state.PauseTiming();
     LEPUS_FreeValue(qctx.context(), obj_ref);
     state.ResumeTiming();
@@ -429,7 +442,8 @@ static void BM_FromLepusShallowConvert(benchmark::State& state) {
     ASSERT_TRUE(ret);
     lepus::QuickContext qctx;
     state.ResumeTiming();
-    LEPUSValue obj_ref = obj_ptr->ToJSValue(qctx.context());
+    LEPUSValue obj_ref =
+        lepus::LEPUSValueHelper::ToJsValue(qctx.context(), *obj_ptr);
     state.PauseTiming();
     LEPUS_FreeValue(qctx.context(), obj_ref);
     state.ResumeTiming();
@@ -443,8 +457,8 @@ static void BM_ToLepusValueDeepConvert(benchmark::State& state) {
     std::string src = lepus::readFile("./benchmark_test_files/big_object.js");
     lepus::BytecodeGenerator::GenerateBytecode(&qctx, src, "2.0");
     qctx.Execute();
-    lepus::Value obj_wrap_lepus_value(qctx.context(),
-                                      qctx.SearchGlobalData("obj"));
+    lepus::Value obj_wrap_lepus_value =
+        MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj"));
     state.ResumeTiming();
     lepus::Value obj = obj_wrap_lepus_value.ToLepusValue();
   }
@@ -459,7 +473,7 @@ static void BM_ToLepusValueShallowConvert(benchmark::State& state) {
     qctx.Execute();
     LEPUSValue obj_wrap = qctx.SearchGlobalData("obj");
     state.ResumeTiming();
-    lepus::Value obj = lepus::Value(qctx.context(), obj_wrap);
+    lepus::Value obj = MK_JS_LEPUS_VALUE(qctx.context(), obj_wrap);
     state.PauseTiming();
     LEPUS_FreeValue(qctx.context(), obj_wrap);
     state.ResumeTiming();
@@ -474,7 +488,7 @@ static void BM_ValueTestCloneBigObject(benchmark::State& state) {
     lepus::BytecodeGenerator::GenerateBytecode(&qctx, src, "2.0");
     qctx.Execute();
     lepus::Value obj =
-        lepus::Value(qctx.context(), qctx.SearchGlobalData("obj"))
+        MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj"))
             .ToLepusValue();
     state.ResumeTiming();
     lepus::Value obj_clone = lepus::Value::Clone(obj);
@@ -491,9 +505,9 @@ static void BM_TestEmptyRenderNGFunction(benchmark::State& state) {
     lepus::BytecodeGenerator::GenerateBytecode(&qctx, src, "2.0");
     qctx.Execute();
 
-    lepus::Value ret =
-        qctx.Call(kCFuncEmptyFunc,
-                  lepus::Value(qctx.context(), qctx.SearchGlobalData("obj")));
+    lepus::Value ret = qctx.Call(
+        kCFuncEmptyFunc,
+        MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj")));
     lepus::Value emp = lepus::Value(emptyFuncRetVal);
     ASSERT_TRUE(emp == ret);
   }
@@ -517,9 +531,10 @@ static void BM_TestCollectLeak(benchmark::State& state) {
       value_arr[i] = const_cast<lepus::Value*>(
           &(*obj->GetValue("ele" + std::to_string(i))));
       if (i % 1000 == 0) {
-        LEPUSValue obj_ref = value_arr[i]->ToJSValue(qctx.context());
+        LEPUSValue obj_ref =
+            lepus::LEPUSValueHelper::ToJsValue(qctx.context(), *value_arr[i]);
         state.ResumeTiming();
-        lepus::Value ref_value(qctx.context(), obj_ref);
+        lepus::Value ref_value = MK_JS_LEPUS_VALUE(qctx.context(), obj_ref);
         state.PauseTiming();
         LEPUS_FreeValue(qctx.context(), obj_ref);
       }

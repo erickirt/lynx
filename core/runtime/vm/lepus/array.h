@@ -88,25 +88,12 @@ class BASE_EXPORT_FOR_DEVTOOL CArray : public lepus::RefCounted {
     return true;
   }
 
-  bool Insert(size_t pos, size_t ins_count, LEPUSContext* ctx,
-              LEPUSValue* argv) {
-    if (IsConstLog()) {
-      return false;
-    }
-
-    auto pos_itr = (pos <= vec_.size()) ? (vec_.begin() + pos) : vec_.end();
-    for (size_t i = 0; i < ins_count; ++i) {
-      pos_itr = vec_.emplace(pos_itr, ctx, argv[i]) + 1;
-    }
-    return true;
-  }
-
   bool Insert(uint32_t idx, const lepus::Value& value) {
     if (IsConstLog()) {
       return false;
     }
 
-    if (idx >= 0 && idx <= vec_.size()) {
+    if (idx >= 0) {
       vec_.insert(vec_.begin() + idx, value);
     }
     return true;

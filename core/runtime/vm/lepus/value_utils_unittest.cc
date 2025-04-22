@@ -141,10 +141,11 @@ TEST_F(LepusValueMethods, ValuePrint) {
 }
 
 TEST_F(LepusValueMethods, IsEqual) {
-  lepus::Value v2(ctx_.context(), v1_.ToJSValue(ctx_.context(), true));
+  lepus::Value v2 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx_.context(), v1_, true);
   ASSERT_TRUE(v1_.IsEqual(v2));
 
-  LEPUSValue v1_js_val_ = v1_.ToJSValue(ctx_.context());
+  LEPUSValue v1_js_val_ =
+      lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), v1_);
 
   lepus::Value v3 =
       lepus::LEPUSValueHelper::ToLepusValue(ctx_.context(), v1_js_val_);
@@ -167,7 +168,7 @@ TEST_F(LepusValueMethods, SetGetProperty1) {
 }
 TEST_F(LepusValueMethods, SetGetProperty2RC) {
   if (LEPUS_IsGCMode(ctx_.context())) return;
-  LEPUSValue v1 = v1_.ToJSValue(ctx_.context(), true);
+  LEPUSValue v1 = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), v1_, true);
 
   lepus::LEPUSValueHelper::SetProperty(
       ctx_.context(), v1, "prop1",
@@ -176,18 +177,18 @@ TEST_F(LepusValueMethods, SetGetProperty2RC) {
   lepus::Value v2 = lepus::Value::Clone(v1_);
   v2.SetProperty(base::String("prop1"), lepus::Value("world"));
 
-  lepus::Value v3 = lepus::Value(ctx_.context(), std::move(v1));
+  lepus::Value v3 = MK_JS_LEPUS_VALUE(ctx_.context(), std::move(v1));
   ASSERT_TRUE(v2.IsEqual(v3));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue v2_ref = v2.ToJSValue(ctx);
+  LEPUSValue v2_ref = lepus::LEPUSValueHelper::ToJsValue(ctx, v2);
   lepus::Value array_prop(lepus::CArray::Create());
   array_prop.Array()->push_back(lepus::Value("byte"));
   array_prop.Array()->push_back(lepus::Value("dance"));
   v2.SetProperty("prop2", array_prop);
 
   LEPUSValue prop1 = LEPUS_GetPropertyStr(ctx, v2_ref, "prop1");
-  ASSERT_TRUE(lepus::Value(ctx, prop1) == lepus::Value("world"));
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, prop1) == lepus::Value("world"));
   LEPUSValue prop2 = LEPUS_GetPropertyStr(ctx, v2_ref, "prop2");
   ASSERT_TRUE(((LEPUSLepusRef*)(LEPUS_VALUE_GET_PTR(prop2)))->p ==
               array_prop.Array().get());
@@ -196,8 +197,9 @@ TEST_F(LepusValueMethods, SetGetProperty2RC) {
 
   ASSERT_TRUE(LEPUS_VALUE_GET_INT(prop2_length) == 2);
 
-  LEPUS_SetPropertyUint32(ctx, prop2, 2,
-                          lepus::Value("x-engines").ToJSValue(ctx));
+  LEPUS_SetPropertyUint32(
+      ctx, prop2, 2,
+      lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value("x-engines")));
   ASSERT_TRUE(array_prop.Array()->size() == 3);
 
   LEPUS_FreeValue(ctx, v2_ref);
@@ -207,7 +209,7 @@ TEST_F(LepusValueMethods, SetGetProperty2RC) {
 }
 TEST_F(LepusValueMethods, SetGetProperty2GC) {
   if (!LEPUS_IsGCMode(ctx_.context())) return;
-  LEPUSValue v1 = v1_.ToJSValue(ctx_.context(), true);
+  LEPUSValue v1 = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), v1_, true);
   HandleScope func_scope(ctx_.context(), &v1, HANDLE_TYPE_LEPUS_VALUE);
 
   lepus::LEPUSValueHelper::SetProperty(
@@ -217,11 +219,11 @@ TEST_F(LepusValueMethods, SetGetProperty2GC) {
   lepus::Value v2 = lepus::Value::Clone(v1_);
   v2.SetProperty(base::String("prop1"), lepus::Value("world"));
 
-  lepus::Value v3 = lepus::Value(ctx_.context(), std::move(v1));
+  lepus::Value v3 = MK_JS_LEPUS_VALUE(ctx_.context(), std::move(v1));
   ASSERT_TRUE(v2.IsEqual(v3));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue v2_ref = v2.ToJSValue(ctx);
+  LEPUSValue v2_ref = lepus::LEPUSValueHelper::ToJsValue(ctx, v2);
   func_scope.PushHandle(&v2_ref, HANDLE_TYPE_LEPUS_VALUE);
   lepus::Value array_prop(lepus::CArray::Create());
   array_prop.Array()->push_back(lepus::Value("byte"));
@@ -229,7 +231,7 @@ TEST_F(LepusValueMethods, SetGetProperty2GC) {
   v2.SetProperty("prop2", array_prop);
 
   LEPUSValue prop1 = LEPUS_GetPropertyStr(ctx, v2_ref, "prop1");
-  ASSERT_TRUE(lepus::Value(ctx, prop1) == lepus::Value("world"));
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, prop1) == lepus::Value("world"));
   LEPUSValue prop2 = LEPUS_GetPropertyStr(ctx, v2_ref, "prop2");
   ASSERT_TRUE(((LEPUSLepusRef*)(LEPUS_VALUE_GET_PTR(prop2)))->p ==
               array_prop.Array().get());
@@ -238,7 +240,8 @@ TEST_F(LepusValueMethods, SetGetProperty2GC) {
 
   ASSERT_TRUE(LEPUS_VALUE_GET_INT(prop2_length) == 2);
 
-  LEPUSValue x_engine = lepus::Value("x-engines").ToJSValue(ctx);
+  LEPUSValue x_engine =
+      lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value("x-engines"));
   func_scope.PushHandle(&x_engine, HANDLE_TYPE_LEPUS_VALUE);
   LEPUS_SetPropertyUint32(ctx, prop2, 2, x_engine);
   ASSERT_TRUE(array_prop.Array()->size() == 3);
@@ -247,7 +250,8 @@ TEST_F(LepusValueMethods, SetGetProperty2GC) {
 TEST_F(LepusValueMethods, String) {
   LEPUSContext* ctx = ctx_.context();
 
-  lepus::Value v2(ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
+  lepus::Value v2 = MK_JS_LEPUS_VALUE(
+      ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   base::String str = v2.String();
   ASSERT_TRUE(str.IsEqual(base::String("hello world")));
 }
@@ -318,8 +322,8 @@ TEST_F(LepusValueMethods, TestLepusJSValue) {
 
   lepus::Value val2 = lepus::Value(lepus::Dictionary::Create());
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue array_jsvalue = array.ToJSValue(ctx);
-  lepus::Value array_v(ctx, array_jsvalue);
+  LEPUSValue array_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, array);
+  lepus::Value array_v = MK_JS_LEPUS_VALUE(ctx, array_jsvalue);
   val2.Table()->SetValue("array", array_v);
 
   ASSERT_TRUE(val == val2);
@@ -333,7 +337,7 @@ TEST_F(LepusValueMethods, TestLepusValueOperatorEqual) {
   lepus::BytecodeGenerator::GenerateBytecode(&qctx, src, "2.0");
   qctx.Execute();
   LEPUSValue entry = qctx.SearchGlobalData("entry");
-  lepus::Value left(qctx.context(), entry);
+  lepus::Value left = MK_JS_LEPUS_VALUE(qctx.context(), entry);
 
   lepus::Value right;
   ASSERT_FALSE(left == right);
@@ -351,9 +355,10 @@ TEST_F(LepusValueMethods, TestToLepusValueRC) {
   qctx.Execute();
 
   lepus::Value obj =
-      lepus::Value(qctx.context(), qctx.SearchGlobalData("obj")).ToLepusValue();
+      MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj"))
+          .ToLepusValue();
 
-  LEPUSValue obj_ref = obj.ToJSValue(qctx.context());
+  LEPUSValue obj_ref = lepus::LEPUSValueHelper::ToJsValue(qctx.context(), obj);
   auto obj2_wrap = qctx.SearchGlobalData("obj2");
   lepus::LEPUSValueHelper::SetProperty(qctx.context(), obj2_wrap, "test",
                                        obj_ref);
@@ -375,9 +380,10 @@ TEST_F(LepusValueMethods, TestToLepusValueGC) {
   qctx.Execute();
 
   lepus::Value obj =
-      lepus::Value(qctx.context(), qctx.SearchGlobalData("obj")).ToLepusValue();
+      MK_JS_LEPUS_VALUE(qctx.context(), qctx.SearchGlobalData("obj"))
+          .ToLepusValue();
 
-  LEPUSValue obj_ref = obj.ToJSValue(qctx.context());
+  LEPUSValue obj_ref = lepus::LEPUSValueHelper::ToJsValue(qctx.context(), obj);
   HandleScope func_scope(qctx.context(), &obj_ref, HANDLE_TYPE_LEPUS_VALUE);
   auto obj2_wrap = qctx.SearchGlobalData("obj2");
   lepus::LEPUSValueHelper::SetProperty(qctx.context(), obj2_wrap, "test",
@@ -394,7 +400,9 @@ TEST_F(LepusValueMethods, TestToLepusValueGC) {
 TEST(LepusWrapDestructTest, LepusWrapDestruct) {
   lepus::QuickContext qctx;
   lepus::Value number = lepus::Value(1);
-  lepus::Value number_ref(qctx.context(), number.ToJSValue(qctx.context()));
+  lepus::Value number_ref = MK_JS_LEPUS_VALUE(
+      qctx.context(),
+      lepus::LEPUSValueHelper::ToJsValue(qctx.context(), number));
 
   lepus::Value array = lepus::Value(lepus::CArray::Create());
   LEPUSValue lepusref = lepus::LEPUSValueHelper::CreateLepusRef(
@@ -417,12 +425,12 @@ TEST_F(LepusValueMethods, TestValueEqual1) {
   LEPUSContext* ctx = ctx_.context();
 
   // LepusJSValue 1
-  LEPUSValue v1_jsvalue = v1.ToJSValue(ctx);
-  lepus::Value v2 = lepus::Value(ctx, v1_jsvalue);
+  LEPUSValue v1_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, v1);
+  lepus::Value v2 = MK_JS_LEPUS_VALUE(ctx, v1_jsvalue);
 
   // LepusJSValue 2
-  LEPUSValue v2_jsvalue = v2.ToJSValue(ctx);
-  lepus::Value v3 = lepus::Value(ctx, v2_jsvalue);
+  LEPUSValue v2_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, v2);
+  lepus::Value v3 = MK_JS_LEPUS_VALUE(ctx, v2_jsvalue);
 
   // LepusJSValue == LepusJSValue
   ASSERT_TRUE(v2 == v3);
@@ -440,9 +448,9 @@ TEST_F(LepusValueMethods, TestValueEqual1) {
   ASSERT_TRUE(v1 == v);
   ASSERT_TRUE(v == v1);
 
-  lepus::Value js_v1(ctx, v1.ToJSValue(ctx, true));
+  lepus::Value js_v1 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, v1, true);
 
-  lepus::Value js_v2 = lepus::Value(ctx, v.ToJSValue(ctx));
+  lepus::Value js_v2 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, v, false);
 
   ASSERT_TRUE(js_v1 == js_v2);
   ASSERT_TRUE(js_v2 == js_v1);
@@ -467,7 +475,8 @@ TEST_F(LepusValueMethods, TestPropertyRC) {
 
   lepus_object.SetProperty("prop", array_prop);
 
-  ctx_.RegisterGlobalProperty("lepus_object", lepus_object.ToJSValue(ctx));
+  ctx_.RegisterGlobalProperty(
+      "lepus_object", lepus::LEPUSValueHelper::ToJsValue(ctx, lepus_object));
   std::string js_source =
       "let array = lepus_object.prop;  array[1] = "
       "'my lynx'; ";
@@ -483,7 +492,7 @@ TEST_F(LepusValueMethods, TestPropertyRC) {
   ctx_.Execute();
 
   ASSERT_TRUE(
-      lepus::Value(ctx_.context(), ctx_.SearchGlobalData("array_prop3")) ==
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("array_prop3")) ==
       array_prop.Array()->get(2));
 }
 TEST_F(LepusValueMethods, TestPropertyGC) {
@@ -495,7 +504,7 @@ TEST_F(LepusValueMethods, TestPropertyGC) {
 
   lepus_object.SetProperty("prop", array_prop);
 
-  LEPUSValue lepus_obj = lepus_object.ToJSValue(ctx);
+  LEPUSValue lepus_obj = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus_object);
   HandleScope func_scope(ctx, &lepus_obj, HANDLE_TYPE_LEPUS_VALUE);
 
   ctx_.RegisterGlobalProperty("lepus_object", lepus_obj);
@@ -514,7 +523,7 @@ TEST_F(LepusValueMethods, TestPropertyGC) {
   ctx_.Execute();
 
   ASSERT_TRUE(
-      lepus::Value(ctx_.context(), ctx_.SearchGlobalData("array_prop3")) ==
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("array_prop3")) ==
       array_prop.Array()->get(2));
 }
 #pragma clang diagnostic push
@@ -540,9 +549,9 @@ TEST_F(LepusValueMethods, TestLepusRefConstructRC) {
   LEPUSContext* ctx = ctx_.context();
 
   {
-    LEPUSValue v1_jsvalue_ = v1_.ToJSValue(ctx);
+    LEPUSValue v1_jsvalue_ = lepus::LEPUSValueHelper::ToJsValue(ctx, v1_);
 
-    lepus::Value t1(ctx, v1_jsvalue_);
+    lepus::Value t1 = MK_JS_LEPUS_VALUE(ctx, v1_jsvalue_);
 
     ASSERT_TRUE(t1.Table().get() == v1_.Table().get());
 
@@ -557,7 +566,7 @@ TEST_F(LepusValueMethods, TestLepusRefConstructRC) {
   ASSERT_TRUE(v1_ptr->HasOneRef());
 
   {
-    lepus::Value t1(ctx, v1_.ToJSValue(ctx));
+    lepus::Value t1 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, v1_, false);
 
     ASSERT_TRUE(t1.Table().get() == v1_.Table().get());
   }
@@ -568,9 +577,9 @@ TEST_F(LepusValueMethods, TestLepusRefConstructGC) {
   LEPUSContext* ctx = ctx_.context();
 
   {
-    LEPUSValue v1_jsvalue_ = v1_.ToJSValue(ctx);
+    LEPUSValue v1_jsvalue_ = lepus::LEPUSValueHelper::ToJsValue(ctx, v1_);
 
-    lepus::Value t1(ctx, v1_jsvalue_);
+    lepus::Value t1 = MK_JS_LEPUS_VALUE(ctx, v1_jsvalue_);
 
     ASSERT_TRUE(t1.Table().get() == v1_.Table().get());
 
@@ -580,7 +589,7 @@ TEST_F(LepusValueMethods, TestLepusRefConstructGC) {
   // ASSERT_TRUE(v1_ptr->HasOneRef()); gc will decref during finalizer
 
   {
-    lepus::Value t1(ctx, v1_.ToJSValue(ctx));
+    lepus::Value t1 = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, v1_, false);
 
     ASSERT_TRUE(t1.Table().get() == v1_.Table().get());
   }
@@ -596,7 +605,7 @@ TEST_F(LepusValueMethods, TestIteratorJsValue) {
   lepus::BytecodeGenerator::GenerateBytecode(&ctx_, js_source, "");
   ctx_.Execute();
 
-  lepus::Value js_object(ctx, ctx_.SearchGlobalData("obj"));
+  lepus::Value js_object = MK_JS_LEPUS_VALUE(ctx, ctx_.SearchGlobalData("obj"));
   lepus::Value lepus_object = js_object.ToLepusValue();
   ASSERT_TRUE(js_object == lepus_object);
 
@@ -610,27 +619,30 @@ TEST_F(LepusValueMethods, TestIteratorJsValue) {
   ASSERT_TRUE(js_object.GetProperty("prop1").GetProperty(4).GetProperty(1) ==
               lepus_object.GetProperty("prop1").GetProperty(4).GetProperty(1));
 
-  ASSERT_TRUE(lepus::Value(ctx, lepus_object.ToJSValue(ctx, true)) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, lepus_object, true) ==
               js_object);
-  ASSERT_TRUE(lepus::Value(ctx, lepus_object.ToJSValue(ctx)) == js_object);
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, lepus_object, false) ==
+              js_object);
 
   lepus::Value lepus_nested_jsobject(lepus::Dictionary::Create());
   lepus_nested_jsobject.SetProperty("jsvalue", js_object);
 
-  lepus::Value js_nested_jsobject(lepus::Value::CreateObject(&ctx_));
+  lepus::Value js_nested_jsobject(lepus::LEPUSValueHelper::CreateObject(&ctx_));
 
   js_nested_jsobject.SetProperty("jsvalue", js_object);
 
   ASSERT_TRUE(lepus_nested_jsobject == js_nested_jsobject);
 
-  LEPUSValue lepusref = v1_.ToJSValue(ctx);
+  LEPUSValue lepusref = lepus::LEPUSValueHelper::ToJsValue(ctx, v1_);
   if (LEPUS_IsGCMode(ctx_.context())) {
     HandleScope func_scope(ctx, &lepusref, HANDLE_TYPE_LEPUS_VALUE);
-    lepus::LEPUSValueHelper::SetProperty(ctx, js_nested_jsobject.WrapJSValue(),
-                                         "lepusref", lepusref);
+    lepus::LEPUSValueHelper::SetProperty(
+        ctx, WRAP_AS_JS_VALUE(js_nested_jsobject.value()), "lepusref",
+        lepusref);
   } else {
-    lepus::LEPUSValueHelper::SetProperty(ctx, js_nested_jsobject.WrapJSValue(),
-                                         "lepusref", lepusref);
+    lepus::LEPUSValueHelper::SetProperty(
+        ctx, WRAP_AS_JS_VALUE(js_nested_jsobject.value()), "lepusref",
+        lepusref);
   }
 
   lepus_nested_jsobject.SetProperty("lepusref", v1_);
@@ -653,20 +665,21 @@ TEST_F(LepusValueMethods, TestIteratorJsValue) {
       });
 
   ASSERT_TRUE(target == js_nested_jsobject);
-  ASSERT_TRUE(lepus::Value(ctx, target.ToJSValue(ctx, true)) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, target, true) ==
               js_nested_jsobject);
-  ASSERT_TRUE(lepus::Value(ctx, target.ToJSValue(ctx, true)) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, target, true) ==
               js_nested_jsobject.ToLepusValue());
-  ASSERT_TRUE(lepus::Value(ctx, target.ToJSValue(ctx, false)) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, target, false) ==
               js_nested_jsobject);
-  ASSERT_FALSE(lepus::Value(ctx, target.ToJSValue(ctx, true)) !=
+  ASSERT_FALSE(MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, target, true) !=
                js_nested_jsobject);
 }
 
 TEST_F(LepusValueMethods, CreateJsObject) {
-  lepus::Value jsobject = lepus::Value::CreateObject(&ctx_);
+  lepus::Value jsobject = lepus::LEPUSValueHelper::CreateObject(&ctx_);
 
-  jsobject.SetProperty("child_object", lepus::Value::CreateObject(&ctx_));
+  jsobject.SetProperty("child_object",
+                       lepus::LEPUSValueHelper::CreateObject(&ctx_));
 
   ASSERT_TRUE(jsobject.IsObject());
 }
@@ -675,7 +688,7 @@ TEST_F(LepusValueMethods, GetArrayPropertyRC) {
   lepus::Value lepus_array(lepus::CArray::Create());
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue js_array = lepus_array.ToJSValue(ctx);
+  LEPUSValue js_array = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus_array);
 
   LEPUSValue prop_0 = LEPUS_GetPropertyUint32(ctx, js_array, 0);
   ASSERT_TRUE(LEPUS_IsUndefined(prop_0));
@@ -697,7 +710,7 @@ TEST_F(LepusValueMethods, GetArrayPropertyGC) {
   lepus::Value lepus_array(lepus::CArray::Create());
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue js_array = lepus_array.ToJSValue(ctx);
+  LEPUSValue js_array = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus_array);
   HandleScope func_scope(ctx, &js_array, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSValue prop_0 = LEPUS_GetPropertyUint32(ctx, js_array, 0);
@@ -720,7 +733,7 @@ TEST_F(LepusValueMethods, SetArrayProperty) {
   array.Array()->push_back(lepus::Value("hello"));
   array.Array()->push_back(lepus::Value("world"));
 
-  LEPUSValue arr = array.ToJSValue(ctx_.context());
+  LEPUSValue arr = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), array);
   if (LEPUS_IsGCMode(ctx_.context())) {
     HandleScope func_scope(ctx_.context(), &arr, HANDLE_TYPE_LEPUS_VALUE);
     ctx_.RegisterGlobalProperty("arr", arr);
@@ -737,15 +750,17 @@ TEST_F(LepusValueMethods, SetArrayProperty) {
   lepus::BytecodeGenerator::GenerateBytecode(&ctx_, js_source, "");
   ctx_.Execute();
 
-  lepus::Value arr_element2(ctx_.context(), ctx_.SearchGlobalData("ele2"));
+  lepus::Value arr_element2 =
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("ele2"));
 
   ASSERT_TRUE(arr_element2.IsUndefined());
 
-  lepus::Value js_array_length1(ctx_.context(),
-                                ctx_.SearchGlobalData("array_length"));
-  lepus::Value js_array_length2(ctx_.context(),
-                                ctx_.SearchGlobalData("array_length2"));
-  lepus::Value js_array_idx4(ctx_.context(), ctx_.SearchGlobalData("arr_idx4"));
+  lepus::Value js_array_length1 =
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("array_length"));
+  lepus::Value js_array_length2 =
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("array_length2"));
+  lepus::Value js_array_idx4 =
+      MK_JS_LEPUS_VALUE(ctx_.context(), ctx_.SearchGlobalData("arr_idx4"));
 
   ASSERT_TRUE(js_array_idx4 == lepus::Value("lynx"));
 
@@ -795,12 +810,13 @@ TEST_F(LepusValueMethods, PrintJsvalueRC) {
                           LEPUS_NewString(ctx, "array_prop1"));
 
   LEPUS_SetPropertyUint32(ctx, prop2_jsvalue_child_prop1, 1,
-                          v1_.ToJSValue(ctx));
+                          lepus::LEPUSValueHelper::ToJsValue(ctx, v1_));
 
   LEPUS_SetPropertyStr(ctx, prop2_jsvalue, "child_prop1",
                        prop2_jsvalue_child_prop1);
 
-  src.Table()->SetValue("prop2", lepus::Value(ctx_.context(), prop2_jsvalue));
+  src.Table()->SetValue("prop2",
+                        MK_JS_LEPUS_VALUE(ctx_.context(), prop2_jsvalue));
   std::ostringstream ss_;
   lepus::LEPUSValueHelper::PrintValue(ss_, ctx, prop2_jsvalue);
   std::cout << ss_.str() << std::endl;
@@ -836,12 +852,13 @@ TEST_F(LepusValueMethods, PrintJsvalueGC) {
                           LEPUS_NewString(ctx, "array_prop1"));
 
   LEPUS_SetPropertyUint32(ctx, prop2_jsvalue_child_prop1, 1,
-                          v1_.ToJSValue(ctx));
+                          lepus::LEPUSValueHelper::ToJsValue(ctx, v1_));
 
   LEPUS_SetPropertyStr(ctx, prop2_jsvalue, "child_prop1",
                        prop2_jsvalue_child_prop1);
 
-  src.Table()->SetValue("prop2", lepus::Value(ctx_.context(), prop2_jsvalue));
+  src.Table()->SetValue("prop2",
+                        MK_JS_LEPUS_VALUE(ctx_.context(), prop2_jsvalue));
   std::ostringstream ss_;
   lepus::LEPUSValueHelper::PrintValue(ss_, ctx, prop2_jsvalue);
   std::cout << ss_.str() << std::endl;
@@ -857,16 +874,17 @@ TEST_F(LepusValueMethods, ToJSONString) {
   lepus::Value obj;
   bool ret = vctx.GetTopLevelVariableByName("obj", &obj);
   ASSERT_TRUE(ret);
-  lepus::Value jsobj(ctx_.context(), obj.ToJSValue(ctx_.context(), true));
+  auto* ctx = ctx_.context();
+  lepus::Value js_obj = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, obj, true);
 
   std::stringstream s1, s2, s3, s4;
   lepus::lepusValueToJSONString(s1, obj, false);
-  lepus::lepusValueToJSONString(s2, jsobj, false);
+  lepus::lepusValueToJSONString(s2, js_obj, false);
 
   ASSERT_TRUE(s1.str().length() == s2.str().length());
 
   lepus::lepusValueToJSONString(s3, obj, true);
-  lepus::lepusValueToJSONString(s4, jsobj, true);
+  lepus::lepusValueToJSONString(s4, js_obj, true);
 
   ASSERT_FALSE(s3.str().compare(s4.str()));
   ASSERT_TRUE(s2.str().compare(s4.str()));
@@ -877,16 +895,17 @@ TEST_F(LepusValueMethods, SetConstValuePropertyRC) {
 
   obj.SetProperty("prop1", lepus::Value("helloworld"));
 
-  LEPUSValue objjs = obj.ToJSValue(ctx_.context());
+  LEPUSValue obj_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), obj);
 
-  ctx_.RegisterGlobalProperty("obj", objjs);
+  ctx_.RegisterGlobalProperty("obj", obj_js);
 
   obj.Table()->MarkConst();
 
   lepus::Value arr(lepus::CArray::Create());
   arr.Array()->push_back(lepus::Value(2));
-  LEPUSValue arrjs = arr.ToJSValue(ctx_.context());
-  ctx_.RegisterGlobalProperty("arr", arrjs);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), arr);
+  ;
+  ctx_.RegisterGlobalProperty("arr", arr_js);
 
   std::string src = R"(console.log(obj.prop2); obj.prop2 = "changed";)";
 
@@ -901,18 +920,20 @@ TEST_F(LepusValueMethods, SetConstValuePropertyGC) {
 
   obj.SetProperty("prop1", lepus::Value("helloworld"));
 
-  LEPUSValue objjs = obj.ToJSValue(ctx_.context());
-  HandleScope func_scope(ctx_.context(), &objjs, HANDLE_TYPE_LEPUS_VALUE);
+  LEPUSValue obj_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), obj);
+  ;
+  HandleScope func_scope(ctx_.context(), &obj_js, HANDLE_TYPE_LEPUS_VALUE);
 
-  ctx_.RegisterGlobalProperty("obj", objjs);
+  ctx_.RegisterGlobalProperty("obj", obj_js);
 
   obj.Table()->MarkConst();
 
   lepus::Value arr(lepus::CArray::Create());
   arr.Array()->push_back(lepus::Value(2));
-  LEPUSValue arrjs = arr.ToJSValue(ctx_.context());
-  func_scope.PushHandle(&arrjs, HANDLE_TYPE_LEPUS_VALUE);
-  ctx_.RegisterGlobalProperty("arr", arrjs);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), arr);
+  ;
+  func_scope.PushHandle(&arr_js, HANDLE_TYPE_LEPUS_VALUE);
+  ctx_.RegisterGlobalProperty("arr", arr_js);
 
   std::string src = R"(console.log(obj.prop2); obj.prop2 = "changed";)";
 
@@ -1027,7 +1048,7 @@ static void TraverseCArray(lepus::CArray* array, LeakVisitor& visitor) {
 TEST_F(LepusValueMethods, TestTraverseTable) {
   LEPUSContext* lctx = ctx_.context();
   lepus::Value tableA(lepus::Dictionary::Create());
-  lepus::Value refTableA(
+  lepus::Value refTableA = MK_JS_LEPUS_VALUE(
       lctx, lepus::LEPUSValueHelper::CreateLepusRef(lctx, tableA.Table().get(),
                                                     lepus::Value_Table));
   lepus::Value arrayA(lepus::CArray::Create());
@@ -1056,9 +1077,9 @@ TEST_F(LepusValueMethods, TestTraverseCArray) {
   lepus::Value array2(lepus::CArray::Create());
   lepus::Value table1(lepus::Dictionary::Create());
   table1.SetProperty("name", lepus::Value("table_1"));
-  lepus::Value refArray2(lctx,
-                         lepus::LEPUSValueHelper::CreateLepusRef(
-                             lctx, (array2.Array().get()), lepus::Value_Array));
+  lepus::Value refArray2 = MK_JS_LEPUS_VALUE(
+      lctx, lepus::LEPUSValueHelper::CreateLepusRef(
+                lctx, (array2.Array().get()), lepus::Value_Array));
   array1.SetProperty(3, refArray2);
   array2.SetProperty(0, table1);
   lepus::Value table2(lepus::Dictionary::Create());
@@ -1070,7 +1091,7 @@ TEST_F(LepusValueMethods, TestTraverseCArray) {
   table1.SetProperty("table1_table3", table3);
   table3.SetProperty("table3_table1", table1);
   table3.SetProperty("table3_table2", table2);
-  lepus::Value refTable1(
+  lepus::Value refTable1 = MK_JS_LEPUS_VALUE(
       lctx, lepus::LEPUSValueHelper::CreateLepusRef(lctx, table1.Table().get(),
                                                     lepus::Value_Table));
 
@@ -1089,7 +1110,7 @@ TEST_F(LepusValueMethods, ToLepusValueNested) {
   LEPUS_SetPropertyStr(ctx, obj1, "prop1", LEPUS_NewString(ctx, "hello world"));
 
   lepus::Value lepus_table(lepus::Dictionary::Create());
-  lepus_table.SetProperty("js_prop1", lepus::Value(ctx, std::move(obj1)));
+  lepus_table.SetProperty("js_prop1", MK_JS_LEPUS_VALUE(ctx, std::move(obj1)));
 
   lepus::Value tolepusvalue = lepus_table.ToLepusValue();
 
@@ -1103,7 +1124,7 @@ TEST_F(LepusValueMethods, ToLepusValueNested) {
 
   LEPUSValue js_func = ctx_.SearchGlobalData("ftest");
 
-  lepus_table.SetProperty("js_func_prop", lepus::Value(ctx, js_func));
+  lepus_table.SetProperty("js_func_prop", MK_JS_LEPUS_VALUE(ctx, js_func));
 
   tolepusvalue = lepus_table.ToLepusValue();
 
@@ -1139,7 +1160,8 @@ TEST_F(LepusValueMethods, DictioanryHasPropertyTestRC) {
   dictionary.SetProperty("prop", lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue dic_js = dictionary.ToJSValue(ctx_.context());
+  LEPUSValue dic_js =
+      lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), dictionary);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
   int32_t idx = -1;
@@ -1160,7 +1182,8 @@ TEST_F(LepusValueMethods, DictioanryHasPropertyTestGC) {
   dictionary.SetProperty("prop", lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue dic_js = dictionary.ToJSValue(ctx_.context());
+  LEPUSValue dic_js =
+      lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), dictionary);
   HandleScope func_scope(ctx, &dic_js, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
@@ -1180,7 +1203,7 @@ TEST_F(LepusValueMethods, ArrayHasPropertyTestRC) {
   array.Array()->push_back(lepus::Value("world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = array.ToJSValue(ctx_.context());
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), array);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
   int32_t idx = -1;
@@ -1217,7 +1240,7 @@ TEST_F(LepusValueMethods, ArrayHasPropertyTestGC) {
   array.Array()->push_back(lepus::Value("world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = array.ToJSValue(ctx_.context());
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), array);
   HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
@@ -1248,7 +1271,7 @@ TEST_F(LepusValueMethods, DeleteDictionaryPropertyRC) {
   dictionary.SetProperty("prop", lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue dic_js = dictionary.ToJSValue(ctx);
+  LEPUSValue dic_js = lepus::LEPUSValueHelper::ToJsValue(ctx, dictionary);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
   int32_t idx = -1;
@@ -1286,7 +1309,7 @@ TEST_F(LepusValueMethods, DeleteDictionaryPropertyGC) {
   dictionary.SetProperty("prop", lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue dic_js = dictionary.ToJSValue(ctx);
+  LEPUSValue dic_js = lepus::LEPUSValueHelper::ToJsValue(ctx, dictionary);
   HandleScope func_scope(ctx, &dic_js, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
@@ -1321,7 +1344,7 @@ TEST_F(LepusValueMethods, DeleteArrayPropertyRC) {
   arr.Array()->push_back(lepus::Value("world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
   int32_t idx = -1;
@@ -1398,7 +1421,7 @@ TEST_F(LepusValueMethods, DeleteArrayPropertyGC) {
   arr.Array()->push_back(lepus::Value("world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
@@ -1472,7 +1495,7 @@ TEST_F(LepusValueMethods, DictionaryGetOwnPropertyNamesRC) {
 
   lepus::Value dic(lepus::Dictionary::Create());
 
-  LEPUSValue dic_js = dic.ToJSValue(ctx);
+  LEPUSValue dic_js = lepus::LEPUSValueHelper::ToJsValue(ctx, dic);
   uint32_t prop_count = 0;
   LEPUSPropertyEnum* props = nullptr;
 
@@ -1500,7 +1523,7 @@ TEST_F(LepusValueMethods, DictionaryGetOwnPropertyNamesGC) {
 
   lepus::Value dic(lepus::Dictionary::Create());
 
-  LEPUSValue dic_js = dic.ToJSValue(ctx);
+  LEPUSValue dic_js = lepus::LEPUSValueHelper::ToJsValue(ctx, dic);
   HandleScope func_scope(ctx, &dic_js, HANDLE_TYPE_LEPUS_VALUE);
   uint32_t prop_count = 0;
   LEPUSPropertyEnum* props = nullptr;
@@ -1529,7 +1552,7 @@ TEST_F(LepusValueMethods, ArrayGetOwnPropertyNamesRC) {
   arr.Array()->push_back(lepus::Value("string"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   uint32_t prop_count = 0;
   LEPUSPropertyEnum* ptab = nullptr;
@@ -1576,7 +1599,7 @@ TEST_F(LepusValueMethods, ArrayGetOwnPropertyNamesGC) {
   arr.Array()->push_back(lepus::Value("string"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
 
   uint32_t prop_count = 0;
@@ -1615,7 +1638,7 @@ TEST_F(LepusValueMethods, ArrayPushAndPopRC) {
   arr.Array()->push_back(lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   std::vector<LEPUSValue> args;
 
@@ -1671,7 +1694,7 @@ TEST_F(LepusValueMethods, ArrayPushAndPopGC) {
   arr.Array()->push_back(lepus::Value("hello world"));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSValue args[5];
@@ -1720,7 +1743,7 @@ TEST_F(LepusValueMethods, ArrayFindRC) {
   if (LEPUS_IsGCMode(ctx_.context())) return;
   lepus::Value arr(lepus::CArray::Create());
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   arr.Array()->push_back(lepus::Value("hello world"));
 
   arr.Array()->push_back(lepus::Value("lepus_string"));
@@ -1728,7 +1751,7 @@ TEST_F(LepusValueMethods, ArrayFindRC) {
   arr.Array()->push_back(lepus::Value("lepus_string"));
 
   LEPUSValue op;
-  op = lepus::Value("lepus_string").ToJSValue(ctx);
+  op = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value("lepus_string"));
   ASSERT_EQ(lepus ::LEPUSRefArrayFindCallBack(ctx, arr_js, op, 0, 1), 1);
 
   ASSERT_EQ(lepus ::LEPUSRefArrayFindCallBack(ctx, arr_js, op, 0, -1), -1);
@@ -1755,7 +1778,7 @@ TEST_F(LepusValueMethods, ArrayFindRC) {
 
   arr.SetProperty(2, lepus::Value(double(+0.0)));
 
-  op = lepus::Value(double(+0.0)).ToJSValue(ctx);
+  op = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value(double(+0.0)));
   ASSERT_EQ(lepus ::LEPUSRefArrayFindCallBack(ctx, arr_js, op, 0, 1), 2);
   LEPUS_FreeValue(ctx, op);
 
@@ -1771,7 +1794,7 @@ TEST_F(LepusValueMethods, ArrayFindGC) {
   if (!LEPUS_IsGCMode(ctx_.context())) return;
   lepus::Value arr(lepus::CArray::Create());
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
   arr.Array()->push_back(lepus::Value("hello world"));
 
@@ -1780,7 +1803,7 @@ TEST_F(LepusValueMethods, ArrayFindGC) {
   arr.Array()->push_back(lepus::Value("lepus_string"));
 
   LEPUSValue op;
-  op = lepus::Value("lepus_string").ToJSValue(ctx);
+  op = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value("lepus_string"));
   func_scope.PushHandle(&op, HANDLE_TYPE_LEPUS_VALUE);
   ASSERT_EQ(lepus ::LEPUSRefArrayFindCallBack(ctx, arr_js, op, 0, 1), 1);
 
@@ -1804,7 +1827,7 @@ TEST_F(LepusValueMethods, ArrayFindGC) {
 
   arr.SetProperty(2, lepus::Value(double(+0.0)));
 
-  op = lepus::Value(double(+0.0)).ToJSValue(ctx);
+  op = lepus::LEPUSValueHelper::ToJsValue(ctx, lepus::Value(double(+0.0)));
   ASSERT_EQ(lepus ::LEPUSRefArrayFindCallBack(ctx, arr_js, op, 0, 1), 2);
 
   lepus::Value table(lepus::Dictionary::Create());
@@ -1822,12 +1845,14 @@ TEST_F(LepusValueMethods, ArrayReverse) {
   }
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue arr_js = arr.ToJSValue(ctx);
+  LEPUSValue arr_js = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   if (LEPUS_IsGCMode(ctx_.context())) {
     HandleScope func_scope(ctx, &arr_js, HANDLE_TYPE_LEPUS_VALUE);
-    ASSERT_EQ(lepus::Value(ctx, lepus::LEPUSRefArrayReverse(ctx, arr_js)), arr);
+    ASSERT_EQ(MK_JS_LEPUS_VALUE(ctx, lepus::LEPUSRefArrayReverse(ctx, arr_js)),
+              arr);
   } else {
-    ASSERT_EQ(lepus::Value(ctx, lepus::LEPUSRefArrayReverse(ctx, arr_js)), arr);
+    ASSERT_EQ(MK_JS_LEPUS_VALUE(ctx, lepus::LEPUSRefArrayReverse(ctx, arr_js)),
+              arr);
   }
   for (uint32_t i = 0; i < 5; ++i) {
     ASSERT_TRUE(arr.Array()->get(i) == lepus::Value(4 - i));
@@ -2074,6 +2099,7 @@ TEST_F(LepusValueMethods,
   ASSERT_TRUE(
       ctx.CheckTableShadowUpdatedWithTopLevelVariable(lepus::Value(table)));
 }
+
 TEST_F(LepusValueMethods, Array_EraseRC) {
   if (LEPUS_IsGCMode(ctx_.context())) return;
   lepus::Value arr(lepus::CArray::Create());
@@ -2124,19 +2150,29 @@ TEST_F(LepusValueMethods, Array_EraseRC) {
 
   LEPUSValue args[] = {LEPUS_NewString(ctx, "1"), LEPUS_NewString(ctx, "2"),
                        LEPUS_NewString(ctx, "3")};
-
-  arr.Array()->Insert(0, sizeof(args) / sizeof(args[0]), ctx, args);
+  size_t count = sizeof(args) / sizeof(args[0]);
+  lynx_api_env env = lepus::Context::GetContextCellFromCtx(ctx)->env_;
+  for (size_t i = 0; i < count; ++i) {
+    LEPUSValue val = args[i];
+    lepus::Value v(env, LEPUS_VALUE_GET_INT64(val),
+                   lepus::LEPUSValueHelper::CalculateTag(val));
+    arr.Array()->Insert(i, v);
+  }
 
   ASSERT_TRUE(arr.Array()->size() == 9);
-
-  for (size_t i = 0; i < sizeof(args) / sizeof(args[0]); ++i) {
+  for (size_t i = 0; i < count; ++i) {
     ASSERT_TRUE(arr.Array()->get(i).IsJSValue());
     ASSERT_TRUE(arr.Array()->get(i).ToString() == std::to_string(i + 1));
   }
 
-  arr.Array()->Erase(0, sizeof(args) / sizeof(args[0]));
+  arr.Array()->Erase(0, count);
 
-  arr.Array()->Insert(5, sizeof(args) / sizeof(args[0]), ctx, args);
+  for (size_t i = 5; i < count + 5; ++i) {
+    LEPUSValue val = args[i - 5];
+    lepus::Value v(env, LEPUS_VALUE_GET_INT64(val),
+                   lepus::LEPUSValueHelper::CalculateTag(val));
+    arr.Array()->Insert(i, v);
+  }
   ASSERT_TRUE(arr.Array()->size() == 9);
 
   ASSERT_TRUE(arr.Array()->get(5).IsJSValue());
@@ -2144,7 +2180,13 @@ TEST_F(LepusValueMethods, Array_EraseRC) {
 
   ASSERT_TRUE(!arr.Array()->get(8).IsJSValue());
 
-  arr.Array()->Insert(9, sizeof(args) / sizeof(args[0]), ctx, args);
+  for (size_t i = 9; i < count + 9; ++i) {
+    LEPUSValue val = args[i - 9];
+    arr.Array()->Insert(
+        i, lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                        LEPUS_VALUE_GET_INT64(val),
+                        lepus::LEPUSValueHelper::CalculateTag(val)));
+  }
 
   ASSERT_TRUE(arr.Array()->size() == 12);
   ASSERT_TRUE(arr.Array()->get(10) == lepus::Value("2"));
@@ -2208,18 +2250,31 @@ TEST_F(LepusValueMethods, Array_EraseGC) {
     args[i] = LEPUS_NewString(ctx, std::to_string(i + 1).c_str());
   }
 
-  arr.Array()->Insert(0, sizeof(args) / sizeof(args[0]), ctx, args);
+  size_t count = sizeof(args) / sizeof(args[0]);
+  for (size_t i = 0; i < count; ++i) {
+    LEPUSValue val = args[i];
+    arr.Array()->Insert(
+        i, lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                        LEPUS_VALUE_GET_INT64(val),
+                        lepus::LEPUSValueHelper::CalculateTag(val)));
+  }
 
   ASSERT_TRUE(arr.Array()->size() == 9);
 
-  for (size_t i = 0; i < sizeof(args) / sizeof(args[0]); ++i) {
+  for (size_t i = 0; i < count; ++i) {
     ASSERT_TRUE(arr.Array()->get(i).IsJSValue());
     ASSERT_TRUE(arr.Array()->get(i).ToString() == std::to_string(i + 1));
   }
 
-  arr.Array()->Erase(0, sizeof(args) / sizeof(args[0]));
+  arr.Array()->Erase(0, count);
 
-  arr.Array()->Insert(5, sizeof(args) / sizeof(args[0]), ctx, args);
+  for (size_t i = 5; i < count + 5; ++i) {
+    LEPUSValue val = args[i - 5];
+    arr.Array()->Insert(
+        i, lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                        LEPUS_VALUE_GET_INT64(val),
+                        lepus::LEPUSValueHelper::CalculateTag(val)));
+  }
 
   ASSERT_TRUE(arr.Array()->size() == 9);
 
@@ -2228,7 +2283,15 @@ TEST_F(LepusValueMethods, Array_EraseGC) {
 
   ASSERT_TRUE(!arr.Array()->get(8).IsJSValue());
 
-  arr.Array()->Insert(9, sizeof(args) / sizeof(args[0]), ctx, args);
+  arr.Array()->Erase(0, count);
+
+  for (size_t i = 9; i < count + 9; ++i) {
+    LEPUSValue val = args[i - 9];
+    arr.Array()->Insert(
+        i, lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                        LEPUS_VALUE_GET_INT64(val),
+                        lepus::LEPUSValueHelper::CalculateTag(val)));
+  }
 
   ASSERT_TRUE(arr.Array()->size() == 12);
   ASSERT_TRUE(arr.Array()->get(10) == lepus::Value("2"));
@@ -2246,21 +2309,22 @@ TEST_F(LepusValueMethods, ArrayPrototypeSliceRC) {
   arr.Array()->push_back(lepus::Value(5));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue ref = arr.ToJSValue(ctx);
+  LEPUSValue ref = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   auto ret = lepus::LEPUSRefArraySlice(ctx, ref, 0, 6, 0, nullptr, 0);
 
   ASSERT_TRUE(LEPUS_IsArray(ctx, ret));
   ASSERT_TRUE(LEPUS_GetLength(ctx, ret) == 6);
 
-  ASSERT_TRUE(lepus::Value(ctx, ret) == arr);
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret) == arr);
 
   LEPUS_FreeValue(ctx, ret);
 
   ret = lepus::LEPUSRefArraySlice(ctx, ref, 1, 5, 0, nullptr, 0);
   ASSERT_TRUE(LEPUS_GetLength(ctx, ret) == 5);
   for (int32_t i = 0; i < 5; ++i) {
-    ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(i) == lepus::Value(1 + i));
+    ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(i) ==
+                lepus::Value(1 + i));
   }
   LEPUS_FreeValue(ctx, ret);
   LEPUS_FreeValue(ctx, ref);
@@ -2277,7 +2341,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSliceGC) {
   arr.Array()->push_back(lepus::Value(5));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue ref = arr.ToJSValue(ctx);
+  LEPUSValue ref = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &ref, HANDLE_TYPE_LEPUS_VALUE);
 
   auto ret = lepus::LEPUSRefArraySlice(ctx, ref, 0, 6, 0, nullptr, 0);
@@ -2286,12 +2350,13 @@ TEST_F(LepusValueMethods, ArrayPrototypeSliceGC) {
   ASSERT_TRUE(LEPUS_IsArray(ctx, ret));
   ASSERT_TRUE(LEPUS_GetLength(ctx, ret) == 6);
 
-  ASSERT_TRUE(lepus::Value(ctx, ret) == arr);
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret) == arr);
 
   ret = lepus::LEPUSRefArraySlice(ctx, ref, 1, 5, 0, nullptr, 0);
   ASSERT_TRUE(LEPUS_GetLength(ctx, ret) == 5);
   for (int32_t i = 0; i < 5; ++i) {
-    ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(i) == lepus::Value(1 + i));
+    ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(i) ==
+                lepus::Value(1 + i));
   }
 }
 TEST_F(LepusValueMethods, ArrayPrototypeSpliceRC) {
@@ -2306,7 +2371,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceRC) {
   arr.Array()->push_back(lepus::Value(5));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue ref = arr.ToJSValue(ctx);
+  LEPUSValue ref = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   LEPUSValue args[] = {LEPUS_NewString(ctx, "1"), LEPUS_NewString(ctx, "2"),
                        LEPUS_NewString(ctx, "3")};
@@ -2363,7 +2428,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceRC) {
     ASSERT_TRUE(arr.Array()->get(i++) == itr);
   }
 
-  ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(0) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(0) ==
               lepus::Value("mandarin"));
 
   LEPUS_FreeValue(ctx, ret);
@@ -2377,7 +2442,8 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceRC) {
   for (auto& itr : expected) {
     ASSERT_TRUE(arr.Array()->get(i++) == itr);
   }
-  ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(0) == lepus::Value("drum"));
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(0) ==
+              lepus::Value("drum"));
   LEPUS_FreeValue(ctx, ret);
   LEPUS_FreeValue(ctx, args[0]);
   LEPUS_FreeValue(ctx, ref);
@@ -2394,7 +2460,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceGC) {
   arr.Array()->push_back(lepus::Value(5));
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue ref = arr.ToJSValue(ctx);
+  LEPUSValue ref = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &ref, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSValue args[3];
@@ -2449,7 +2515,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceGC) {
     ASSERT_TRUE(arr.Array()->get(i++) == itr);
   }
 
-  ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(0) ==
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(0) ==
               lepus::Value("mandarin"));
 
   args[0] = LEPUS_NewString(ctx, "trumpet");
@@ -2461,7 +2527,8 @@ TEST_F(LepusValueMethods, ArrayPrototypeSpliceGC) {
   for (auto& itr : expected) {
     ASSERT_TRUE(arr.Array()->get(i++) == itr);
   }
-  ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(0) == lepus::Value("drum"));
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(0) ==
+              lepus::Value("drum"));
 }
 TEST_F(LepusValueMethods, ArrayPrototypeSplice2RC) {
   if (LEPUS_IsGCMode(ctx_.context())) return;
@@ -2473,7 +2540,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSplice2RC) {
   }
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue this_val = arr.ToJSValue(ctx);
+  LEPUSValue this_val = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
 
   std::vector<LEPUSValue> args = {LEPUS_NewString(ctx, "parrot"),
                                   LEPUS_NewString(ctx, "anemone"),
@@ -2499,7 +2566,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSplice2RC) {
   i = 0;
 
   for (auto& itr : ret_expected) {
-    ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(i++) == itr);
+    ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(i++) == itr);
   }
 
   for (auto& itr : args) {
@@ -2519,7 +2586,7 @@ TEST_F(LepusValueMethods, ArrayPrototypeSplice2GC) {
   }
 
   LEPUSContext* ctx = ctx_.context();
-  LEPUSValue this_val = arr.ToJSValue(ctx);
+  LEPUSValue this_val = lepus::LEPUSValueHelper::ToJsValue(ctx, arr);
   HandleScope func_scope(ctx, &this_val, HANDLE_TYPE_LEPUS_VALUE);
 
   LEPUSValue args[3];
@@ -2548,13 +2615,13 @@ TEST_F(LepusValueMethods, ArrayPrototypeSplice2GC) {
   i = 0;
 
   for (auto& itr : ret_expected) {
-    ASSERT_TRUE(lepus::Value(ctx, ret).GetProperty(i++) == itr);
+    ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, ret).GetProperty(i++) == itr);
   }
 }
 
 TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSString) {
   LEPUSContext* ctx = ctx_.context();
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   lepus::Value res = tasm::ConvertJSValueToLepusValue(js_string_val);
   lepus::Value expected_val("hello world");
@@ -2563,7 +2630,8 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSString) {
 
 TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSNumber) {
   LEPUSContext* ctx = ctx_.context();
-  lepus::Value js_number_val(ctx, LEPUS_NewFloat64(ctx, 2023.3));
+  lepus::Value js_number_val =
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_NewFloat64(ctx, 2023.3));
   lepus::Value res = tasm::ConvertJSValueToLepusValue(js_number_val);
   lepus::Value expected_val(2023.3);
   ASSERT_TRUE(res == expected_val);
@@ -2571,7 +2639,8 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSNumber) {
 
 TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSInt) {
   LEPUSContext* ctx = ctx_.context();
-  lepus::Value js_number_val(ctx, LEPUS_NewInt64(ctx, 2023));
+  lepus::Value js_number_val =
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_NewInt64(ctx, 2023));
   lepus::Value res = tasm::ConvertJSValueToLepusValue(js_number_val);
   lepus::Value expected_val(2023);
   ASSERT_TRUE(res == expected_val);
@@ -2580,7 +2649,8 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSInt) {
 TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSBool) {
   LEPUSContext* ctx = ctx_.context();
   lepus::Value expected_val(true);
-  lepus::Value js_bool_val(ctx, expected_val.ToJSValue(ctx));
+  lepus::Value js_bool_val =
+      MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, expected_val, false);
   lepus::Value res = tasm::ConvertJSValueToLepusValue(js_bool_val);
   ASSERT_TRUE(res == expected_val);
 }
@@ -2589,7 +2659,7 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueArray) {
   LEPUSContext* ctx = ctx_.context();
   lepus::Value array(lepus::CArray::Create());
 
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   array.Array()->push_back(js_string_val);
   array.Array()->push_back(lepus::Value("hello world"));
@@ -2610,7 +2680,7 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueTable) {
   LEPUSContext* ctx = ctx_.context();
 
   lepus::Value table(lepus::Dictionary::Create());
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   table.Table()->SetValue("key1", js_string_val);
   table.Table()->SetValue("key2", lepus::Value("hello world"));
@@ -2631,12 +2701,12 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValuJSArray) {
   LEPUSContext* ctx = ctx_.context();
   lepus::Value array(lepus::CArray::Create());
 
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   array.Array()->push_back(js_string_val);
   array.Array()->push_back(lepus::Value("hello world"));
 
-  lepus::Value js_array(ctx, array.ToJSValue(ctx));
+  lepus::Value js_array = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, array, false);
 
   lepus::Value res = tasm::ConvertJSValueToLepusValue(js_array);
 
@@ -2654,12 +2724,12 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueJSTable) {
   LEPUSContext* ctx = ctx_.context();
 
   lepus::Value table(lepus::Dictionary::Create());
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   table.Table()->SetValue("key1", js_string_val);
   table.Table()->SetValue("key2", lepus::Value("hello world"));
 
-  lepus::Value js_table(ctx, table.ToJSValue(ctx));
+  lepus::Value js_table = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, table, false);
 
   lepus::Value res = tasm::ConvertJSValueToLepusValue(table);
 
@@ -2677,7 +2747,7 @@ TEST_F(LepusValueMethods, ConvertJSValueToLepusValueArrayWithSubArray) {
   LEPUSContext* ctx = ctx_.context();
   lepus::Value array(lepus::CArray::Create());
 
-  lepus::Value js_string_val(
+  lepus::Value js_string_val = MK_JS_LEPUS_VALUE(
       ctx, lepus::LEPUSValueHelper::NewString(ctx, "hello world"));
   array.Array()->push_back(js_string_val);
   lepus::Value sub_array(lepus::CArray::Create());
@@ -2782,10 +2852,11 @@ TEST_F(LepusValueMethods, UpdateValueByPath) {
   LEPUSContext* ctx = ctx_.context();
 
   // convert target and updates to JSValue
-  lepus::Value js_target(ctx, target.ToJSValue(ctx, true));
+  lepus::Value js_target = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, target, true);
   std::vector<lepus::Value> js_values;
   for (int i : range) {
-    js_values.emplace_back(lepus::Value(ctx, values[i].ToJSValue(ctx, true)));
+    js_values.emplace_back(
+        MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, values[i], true));
   }
 
   // check JSValue
@@ -2814,7 +2885,7 @@ TEST_F(LepusValueMethods, PrintErrorObject) {
   ASSERT_TRUE(LEPUS_IsError(ctx_.context(), err_ret));
 
   std::stringstream print_res;
-  lepus::Value(ctx_.context(), std::move(err_ret)).PrintValue(print_res);
+  MK_JS_LEPUS_VALUE(ctx_.context(), std::move(err_ret)).PrintValue(print_res);
   ASSERT_TRUE(print_res.str().find("eval") != std::string::npos);
 }
 
@@ -2823,7 +2894,8 @@ TEST_F(LepusValueMethods, TestRefCountedValueConvertToJSValue) {
   auto value = lepus::Value(TestRefCountedClass::Create());
   auto array = lepus::Value(lepus::CArray::Create());
   array.SetProperty(0, value);
-  ctx_.RegisterGlobalProperty("array", array.ToJSValue(ctx));
+  ctx_.RegisterGlobalProperty("array",
+                              lepus::LEPUSValueHelper::ToJsValue(ctx, array));
 
   static auto lepus_func = [&](lepus::Context* ctx, lepus::Value* argv,
                                int32_t argc) {
@@ -2839,11 +2911,20 @@ TEST_F(LepusValueMethods, TestRefCountedValueConvertToJSValue) {
     char args_buf[sizeof(lepus::Value) * argc];
     auto* largv = reinterpret_cast<lepus::Value*>(args_buf);
     for (int i = 0; i < argc; ++i) {
-      new (largv + i) lepus::Value(ctx, argv[i]);
+      LEPUSValue val = argv[i];
+      if (LEPUS_IsLepusRef(val)) {
+        new (largv + i) lepus::Value(
+            lepus::LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx, val));
+      } else {
+        new (largv + i)
+            lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                         LEPUS_VALUE_GET_INT64(val),
+                         lepus::LEPUSValueHelper::CalculateTag(val));
+      }
     }
-    auto ret =
-        lepus_func(lepus::QuickContext::GetFromJsContext(ctx), largv, argc)
-            .ToJSValue(ctx);
+    auto ret = lepus::LEPUSValueHelper::ToJsValue(
+        ctx,
+        lepus_func(lepus::QuickContext::GetFromJsContext(ctx), largv, argc));
     for (int i = 0; i < argc; ++i) {
       largv[i].FreeValue();
     }
@@ -2869,9 +2950,9 @@ TEST_F(LepusValueMethods, TestRefCountedConstruct) {
   auto* ctx = ctx_.context();
 
   auto value = lepus::Value(TestRefCountedClass::Create());
-  auto jsvalue = value.ToJSValue(ctx);
+  auto jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, value);
 
-  auto lepus_value = lepus::Value(ctx, jsvalue);
+  auto lepus_value = MK_JS_LEPUS_VALUE(ctx, jsvalue);
 
   ASSERT_TRUE(lepus_value == value);
 
@@ -2881,7 +2962,7 @@ TEST_F(LepusValueMethods, TestRefCountedConstruct) {
 TEST_F(LepusValueMethods, TestRefCountedMoveConstruct) {
   auto* ctx = ctx_.context();
   auto value = lepus::Value(TestRefCountedClass::Create());
-  auto lepus_value = lepus::Value(ctx, value.ToJSValue(ctx));
+  auto lepus_value = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, value, false);
 
   ASSERT_TRUE(lepus_value == value);
   value.SetUndefined();
@@ -2904,10 +2985,10 @@ TEST_F(LepusValueMethods, TestTableCheckAndGetProperty) {
 
 TEST_F(LepusValueMethods, CheckValueIsNumber) {
   auto* ctx = ctx_.context();
-  auto v1 = lepus::Value(ctx, LEPUS_NewInt32(ctx, INT32_MAX));
-  auto v2 = lepus::Value(ctx, LEPUS_NewBigUint64(ctx, UINT64_MAX));
-  auto v3 = lepus::Value(ctx, LEPUS_NewInt64(ctx, std::pow(2, 53) - 1));
-  auto v4 = lepus::Value(ctx, LEPUS_NewFloat64(ctx, 0.0001));
+  auto v1 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewInt32(ctx, INT32_MAX));
+  auto v2 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewBigUint64(ctx, UINT64_MAX));
+  auto v3 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewInt64(ctx, std::pow(2, 53) - 1));
+  auto v4 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewFloat64(ctx, 0.0001));
 
   ASSERT_TRUE(v1.IsNumber());
   ASSERT_TRUE(v2.IsNumber());
@@ -2940,18 +3021,20 @@ TEST_F(LepusValueMethods, ValueToString) {
   auto* ctx = ctx_.context();
   constexpr const char* case1 = "hello world";
   constexpr const char* case2 = "\u4f60\u597d\u4e16\u754c";
-  lepus::Value str1 = lepus::Value(ctx, LEPUS_NewString(ctx, case1));
+  lepus::Value str1 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewString(ctx, case1));
   auto str1_ret = str1.ToString();
   ASSERT_EQ(str1_ret, case1);
-  lepus::Value str2 = lepus::Value(ctx, LEPUS_NewString(ctx, case2));
+  lepus::Value str2 = MK_JS_LEPUS_VALUE(ctx, LEPUS_NewString(ctx, case2));
   ASSERT_EQ(str2.ToString(), case2);
-  lepus::Value str3 = lepus::Value(ctx, LEPUS_UNDEFINED);
+  lepus::Value str3 = MK_JS_LEPUS_VALUE(ctx, LEPUS_UNDEFINED);
   ASSERT_EQ(str3.ToString(), "");
 
-  ASSERT_EQ(lepus::LEPUSValueHelper::ToStdString(ctx, str1.WrapJSValue()),
-            case1);
-  ASSERT_EQ(lepus::LEPUSValueHelper::ToStdString(ctx, str2.WrapJSValue()),
-            case2);
+  ASSERT_EQ(
+      lepus::LEPUSValueHelper::ToStdString(ctx, WRAP_AS_JS_VALUE(str1.value())),
+      case1);
+  ASSERT_EQ(
+      lepus::LEPUSValueHelper::ToStdString(ctx, WRAP_AS_JS_VALUE(str2.value())),
+      case2);
 
   ASSERT_EQ(str1.ToLepusValue(), lepus::Value(case1));
   ASSERT_EQ(str2.ToLepusValue(), lepus::Value(case2));
@@ -2962,7 +3045,7 @@ TEST_F(LepusValueMethods, TableToJSObject) {
   dic.SetProperty("prop", lepus::Value(lepus::Dictionary::Create()));
   dic.SetProperty("prop2", lepus::Value(lepus::CArray::Create()));
   auto* ctx = ctx_.context();
-  lepus::Value dic_jsvalue = lepus::Value(ctx, dic.ToJSValue(ctx, true));
+  lepus::Value dic_jsvalue = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, dic, true);
   ASSERT_TRUE(dic_jsvalue.IsObject());
   ASSERT_FALSE(dic_jsvalue.GetProperty("prop").Ptr() ==
                dic.GetProperty("prop").Ptr());
@@ -2974,7 +3057,7 @@ TEST_F(LepusValueMethods, ArrayToJSArray) {
   auto* ctx = ctx_.context();
   arr.Array()->push_back(lepus::Value(lepus::Dictionary::Create()));
   arr.Array()->push_back(lepus::Value(lepus::CArray::Create()));
-  lepus::Value arr_js(ctx, arr.ToJSValue(ctx, true));
+  lepus::Value arr_js = MK_JS_LEPUS_VALUE_WITH_CONVERT(ctx, arr, true);
   ASSERT_TRUE(arr_js == arr);
   ASSERT_TRUE(arr_js.IsJSArray());
   ASSERT_TRUE(arr_js.GetJSLength() == 2);
@@ -2984,7 +3067,7 @@ TEST_F(LepusValueMethods, DeleteObjectProperty) {
   auto* ctx = ctx_.context();
   lepus::Value table(lepus::Dictionary::Create());
   table.SetProperty("prop", lepus::Value("prop"));
-  auto jsvalue = table.ToJSValue(ctx);
+  auto jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, table);
   LEPUSAtom prop = LEPUS_NewAtom(ctx, "prop");
   // deleted successfully
   int32_t idx = 0;
@@ -3125,10 +3208,10 @@ TEST(ReportFatalError, QuickContextTest) {
   auto report_fatal_error = [](LEPUSContext* ctx, LEPUSValue this_obj,
                                int32_t argc, LEPUSValue* argv) {
     if (!LEPUS_IsString(argv[0])) {
-      return lepus::QuickContext::GetFromJsContext(ctx)
-          ->ReportFatalError("args is not string", false,
-                             error::E_MTS_RENDERER_FUNCTION_FATAL)
-          .ToJSValue(ctx);
+      return lepus::LEPUSValueHelper::ToJsValue(
+          ctx, lepus::QuickContext::GetFromJsContext(ctx)->ReportFatalError(
+                   "args is not string", false,
+                   error::E_MTS_RENDERER_FUNCTION_FATAL));
     }
     return LEPUS_DupValue(ctx, argv[0]);
   };
@@ -3181,10 +3264,10 @@ TEST(ReportFatalError, QuickContextTest) {
   lepus::BytecodeGenerator::GenerateBytecode(&qctx, src, "");
   lepus::Value ret;
   ASSERT_TRUE(qctx.Execute(&ret));
-  ASSERT_FALSE(LEPUS_IsException(ret.WrapJSValue()));
+  ASSERT_FALSE(LEPUS_IsException(WRAP_AS_JS_VALUE(ret.value())));
   auto* ctx = qctx.context();
-  auto error = lepus::Value(ctx, qctx.SearchGlobalData("error"));
-  auto result = lepus::Value(ctx, qctx.SearchGlobalData("result"));
+  auto error = MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("error"));
+  auto result = MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("result"));
   ASSERT_TRUE(error.ToString().find("args is not string") != std::string::npos);
   ret = qctx.Call("reportTest");
   ASSERT_TRUE(ret.IsUndefined());
@@ -3192,9 +3275,9 @@ TEST(ReportFatalError, QuickContextTest) {
   ASSERT_EQ(result, lepus::Value("end"));
   qctx.SetGlobalData("enable_catch", lepus::Value(false));
   qctx.Execute(&ret);
-  ASSERT_TRUE(LEPUS_IsException(ret.WrapJSValue()));
-  error = lepus::Value(ctx, qctx.SearchGlobalData("erro"));
-  result = lepus::Value(ctx, qctx.SearchGlobalData("result"));
+  ASSERT_TRUE(LEPUS_IsException(WRAP_AS_JS_VALUE(ret.value())));
+  error = MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("erro"));
+  result = MK_JS_LEPUS_VALUE(ctx, qctx.SearchGlobalData("result"));
   ASSERT_TRUE(error.IsJSUndefined());
   ASSERT_EQ(result, lepus::Value(false));
 }
@@ -3203,10 +3286,10 @@ TEST(ReportFatalError, SetErrorCode) {
   auto report_fatal_error = [](LEPUSContext* ctx, LEPUSValue, int32_t,
                                LEPUSValue* argv) {
     if (!LEPUS_IsString(argv[0])) {
-      return lepus::QuickContext::GetFromJsContext(ctx)
-          ->ReportFatalError("arg is not string", false,
-                             error::E_MTS_RENDERER_FUNCTION_FATAL)
-          .ToJSValue(ctx);
+      return lepus::LEPUSValueHelper::ToJsValue(
+          ctx, lepus::QuickContext::GetFromJsContext(ctx)->ReportFatalError(
+                   "arg is not string", false,
+                   error::E_MTS_RENDERER_FUNCTION_FATAL));
     }
     return LEPUS_DupValue(ctx, argv[0]);
   };
@@ -3265,7 +3348,7 @@ TEST_F(LepusValueMethods, ToJSValueConvert) {
   lepus::Value dic{lepus::Dictionary::Create()};
   dic.SetProperty("prop", lepus::Value(lepus::CArray::Create()));
   auto* ctx = ctx_.context();
-  auto jsvalue = dic.ToJSValue(ctx, true);
+  auto jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, dic, true);
   auto js_prop = LEPUS_GetPropertyStr(ctx, jsvalue, "prop");
   ASSERT_TRUE(LEPUS_IsObject(js_prop));
   LEPUS_FreeValue(ctx, js_prop);
@@ -3275,23 +3358,23 @@ TEST_F(LepusValueMethods, ToJSValueConvert) {
 TEST_F(LepusValueMethods, ArrayToJSValueDeepConvert) {
   lepus::Value arr(lepus::CArray::Create());
   auto* ctx = ctx_.context();
-  auto arr_jsvalue = arr.ToJSValue(ctx, true);
-  ASSERT_EQ(lepus::Value(ctx, arr_jsvalue), arr);
+  auto arr_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, arr, true);
+  ASSERT_EQ(MK_JS_LEPUS_VALUE(ctx, arr_jsvalue), arr);
   ASSERT_TRUE(LEPUS_IsArray(ctx, arr_jsvalue));
   ASSERT_TRUE(LEPUS_GetLength(ctx, arr_jsvalue) == 0);
   ASSERT_TRUE(
-      lepus::Value(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
           .Number() == 0);
 
   LEPUS_SetPropertyInt64(ctx, arr_jsvalue, 0, LEPUS_NewString(ctx, "ele0"));
   ASSERT_TRUE(LEPUS_GetLength(ctx, arr_jsvalue) == 1);
   ASSERT_TRUE(
-      lepus::Value(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
           .Number() == 1);
   LEPUS_SetPropertyInt64(ctx, arr_jsvalue, 99, LEPUS_NewString(ctx, "ele1"));
   ASSERT_TRUE(LEPUS_GetLength(ctx, arr_jsvalue) == 100);
   ASSERT_TRUE(
-      lepus::Value(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
           .Number() == 100);
   LEPUS_FreeValue(ctx, arr_jsvalue);
 
@@ -3299,14 +3382,15 @@ TEST_F(LepusValueMethods, ArrayToJSValueDeepConvert) {
   arr.Array()->push_back(lepus::Value(lepus::CArray::Create()));
   arr.Array()->push_back(lepus::Value("hello"));
 
-  arr_jsvalue = arr.ToJSValue(ctx, true);
-  ASSERT_TRUE(lepus::Value(ctx, arr_jsvalue) == arr);
+  arr_jsvalue = lepus::LEPUSValueHelper::ToJsValue(ctx, arr, true);
+  ASSERT_TRUE(MK_JS_LEPUS_VALUE(ctx, arr_jsvalue) == arr);
   ASSERT_EQ(LEPUS_GetLength(ctx, arr_jsvalue), 3);
   ASSERT_TRUE(
-      lepus::Value(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_GetPropertyStr(ctx, arr_jsvalue, "length"))
           .Number() == 3);
-  ASSERT_EQ(lepus::Value(ctx, LEPUS_GetPropertyUint32(ctx, arr_jsvalue, 2)),
-            lepus::Value("hello"));
+  ASSERT_EQ(
+      MK_JS_LEPUS_VALUE(ctx, LEPUS_GetPropertyUint32(ctx, arr_jsvalue, 2)),
+      lepus::Value("hello"));
 
   LEPUS_FreeValue(ctx, arr_jsvalue);
 }
@@ -3380,11 +3464,14 @@ TEST_F(LepusValueMethods, WeakMapLepusValue) {
   auto element = lepus::Value(TestRefCountedClass::Create());
   auto queriedElement = element;
   auto anotherQueriedElement = lepus::Value(TestRefCountedClass::Create());
-  ctx_.RegisterGlobalProperty("element", element.ToJSValue(ctx_.context()));
-  ctx_.RegisterGlobalProperty("queriedElement",
-                              queriedElement.ToJSValue(ctx_.context()));
+  ctx_.RegisterGlobalProperty(
+      "element", lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), element));
+  ctx_.RegisterGlobalProperty(
+      "queriedElement",
+      lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), queriedElement));
   ctx_.RegisterGlobalProperty("anotherQueriedElement",
-                              anotherQueriedElement.ToJSValue(ctx_.context()));
+                              lepus::LEPUSValueHelper::ToJsValue(
+                                  ctx_.context(), anotherQueriedElement));
   lepus::BytecodeGenerator::GenerateBytecode(&ctx_, src, "");
   ctx_.Execute();
 }
@@ -3412,7 +3499,8 @@ TEST_F(LepusValueMethods, DISABLED_LepusValueJsObjectCacheConsistent) {
   lepus::Value rawData = lepus::Value(lepus::Dictionary::Create());
   lepus::Value ad_data = lepus::Value(lepus::Dictionary::Create());
   rawData.SetProperty("ad_data", ad_data);
-  ctx_.RegisterGlobalProperty("rawData", rawData.ToJSValue(ctx_.context()));
+  ctx_.RegisterGlobalProperty(
+      "rawData", lepus::LEPUSValueHelper::ToJsValue(ctx_.context(), rawData));
   lepus::BytecodeGenerator::GenerateBytecode(&ctx_, src, "");
   ctx_.Execute();
 }
@@ -3420,9 +3508,11 @@ TEST_F(LepusValueMethods, DISABLED_LepusValueJsObjectCacheConsistent) {
 TEST_F(LepusValueMethods, RefCountedWeakMap) {
   auto element_value = lepus::Value(TestRefCountedClass::Create());
   LEPUSContext* ctx = ctx_.context();
-  ctx_.RegisterGlobalProperty("rc_obj", element_value.ToJSValue(ctx, false));
+  ctx_.RegisterGlobalProperty(
+      "rc_obj", lepus::LEPUSValueHelper::ToJsValue(ctx, element_value, false));
 
-  ctx_.RegisterGlobalProperty("rc_obj2", element_value.ToJSValue(ctx));
+  ctx_.RegisterGlobalProperty(
+      "rc_obj2", lepus::LEPUSValueHelper::ToJsValue(ctx, element_value));
   std::string src = R"(
    {
     let weakMap = new WeakMap();
@@ -3448,7 +3538,7 @@ TEST_F(LepusValueMethods, RefCountedWeakMap) {
   ctx_.Execute();
   ASSERT_TRUE(element_value.RefCounted()->js_object_cache.has_value());
   ASSERT_TRUE(LEPUS_VALUE_IS_OBJECT(
-      element_value.RefCounted()->js_object_cache->WrapJSValue()));
+      WRAP_AS_JS_VALUE(element_value.RefCounted()->js_object_cache->value())));
 
   element_value = lepus::Value();
   src = R"(
@@ -3490,9 +3580,11 @@ TEST_F(LepusValueMethods, RefCountedWeakMap) {
 TEST_F(LepusValueMethods, RefCountedWeakSet) {
   auto element_value = lepus::Value(TestRefCountedClass::Create());
   LEPUSContext* ctx = ctx_.context();
-  ctx_.RegisterGlobalProperty("rc_obj", element_value.ToJSValue(ctx, false));
+  ctx_.RegisterGlobalProperty(
+      "rc_obj", lepus::LEPUSValueHelper::ToJsValue(ctx, element_value, false));
 
-  ctx_.RegisterGlobalProperty("rc_obj2", element_value.ToJSValue(ctx));
+  ctx_.RegisterGlobalProperty(
+      "rc_obj2", lepus::LEPUSValueHelper::ToJsValue(ctx, element_value));
 
   std::string src = R"(
     let weakset = new WeakSet();
@@ -3524,10 +3616,10 @@ TEST_F(LepusValueMethods, MarkConstJSValue) {
   auto table = lepus::Dictionary::Create();
   auto* ctx = ctx_.context();
   std::unordered_map<std::string, lepus::Value> tests = {
-      {"number", lepus::Value(ctx, LEPUS_NewInt32(ctx, 100))},
-      {"bool", lepus::Value(ctx, LEPUS_TRUE)},
-      {"null", lepus::Value(ctx, LEPUS_NULL)},
-      {"undef", lepus::Value(ctx, LEPUS_UNDEFINED)},
+      {"number", MK_JS_LEPUS_VALUE(ctx, LEPUS_NewInt32(ctx, 100))},
+      {"bool", MK_JS_LEPUS_VALUE(ctx, LEPUS_TRUE)},
+      {"null", MK_JS_LEPUS_VALUE(ctx, LEPUS_NULL)},
+      {"undef", MK_JS_LEPUS_VALUE(ctx, LEPUS_UNDEFINED)},
   };
 
   for (const auto& [key, val] : tests) {
@@ -3543,8 +3635,8 @@ TEST_F(LepusValueMethods, MarkConstJSValue) {
 }
 
 TEST_F(LepusValueMethods, CallNotFunction) {
-  ASSERT_TRUE(
-      LEPUS_IsException(ctx_.Call("notfunction").ToJSValue(ctx_.context())));
+  ASSERT_TRUE(LEPUS_IsException(lepus::LEPUSValueHelper::ToJsValue(
+      ctx_.context(), ctx_.Call("not_function"))));
 }
 
 }  // namespace checkUpdateTopLevelVariable

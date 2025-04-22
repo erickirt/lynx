@@ -318,20 +318,20 @@ const char* TestLepus::input = "";
   static LEPUSValue name(LEPUSContext* ctx, LEPUSValueConst this_val, \
                          int argc, LEPUSValueConst* argv, int magic,  \
                          LEPUSValue* func_data)
-#define CONVERT_ARG(name, index)               \
-  lepus::Value __##name##__(ctx, argv[index]); \
+#define CONVERT_ARG(name, index)                                   \
+  lepus::Value __##name##__ = MK_JS_LEPUS_VALUE(ctx, argv[index]); \
   lepus::Value* name = &__##name##__;
-#define CONVERT_ARG_AND_CHECK(name, index, Type, FunName) \
-  lepus::Value __##name##__(ctx, argv[index]);            \
-  lepus::Value* name = &__##name##__;                     \
-  RenderFatal(name->Is##Type(),                           \
+#define CONVERT_ARG_AND_CHECK(name, index, Type, FunName)          \
+  lepus::Value __##name##__ = MK_JS_LEPUS_VALUE(ctx, argv[index]); \
+  lepus::Value* name = &__##name##__;                              \
+  RenderFatal(name->Is##Type(),                                    \
               #FunName " params " #index " type should use " #Type)
 #define CHECK_ARGC_EQ(name, count) \
   RenderFatal(argc == count, #name " params size should == " #count);
 #define CHECK_ARGC_GE(name, count) \
   RenderFatal(argc >= count, #name " params size should == " #count);
 #define UNDEFINED LEPUS_UNDEFINED
-#define RETURN(v) return (v).ToJSValue(ctx)
+#define RETURN(v) return lepus::LEPUSValueHelper::ToJsValue(ctx, v)
 #define RETURN_UNDEFINED() return LEPUS_UNDEFINED
 #define ARGC() (argc)
 #define LEPUS_CONTEXT() (lepus::QuickContext::GetFromJsContext(ctx))
@@ -343,13 +343,13 @@ const char* TestLepus::input = "";
   }
 
 RENDERER_FUNCTION(Console_Log) {
-  lepus::Value value(ctx, argv[0]);
+  lepus::Value value = MK_JS_LEPUS_VALUE(ctx, argv[0]);
   std::cout << value.ToString() << std::endl;
   return LEPUS_UNDEFINED;
 }
 
 RENDERER_FUNCTION(Test_val) {
-  lepus::Value v(ctx, argv[0]);
+  lepus::Value v = MK_JS_LEPUS_VALUE(ctx, argv[0]);
   if (v.IsInt64()) {
     std::cout << v.Int64() << std::endl;
   } else if (v.IsString()) {
@@ -362,21 +362,21 @@ RENDERER_FUNCTION(Test_val) {
 }
 
 RENDERER_FUNCTION(Test_eq) {
-  lepus::Value left(ctx, argv[0]);
-  lepus::Value right(ctx, argv[1]);
+  lepus::Value left = MK_JS_LEPUS_VALUE(ctx, argv[0]);
+  lepus::Value right = MK_JS_LEPUS_VALUE(ctx, argv[1]);
 
   std::cout << left.IsEqual(right) << std::endl;
 }
 
 RENDERER_FUNCTION(Test_valueEq) {
-  lepus::Value v(ctx, argv[0]);
+  lepus::Value v = MK_JS_LEPUS_VALUE(ctx, argv[0]);
   std::cout << v.IsEqual(v.ToLepusValue()) << std::endl;
 }
 
 RENDERER_FUNCTION(Test_set) {
-  lepus::Value obj(ctx, argv[0]);
-  lepus::Value key(ctx, argv[1]);
-  lepus::Value val(ctx, argv[2]);
+  lepus::Value obj = MK_JS_LEPUS_VALUE(ctx, argv[0]);
+  lepus::Value key = MK_JS_LEPUS_VALUE(ctx, argv[1]);
+  lepus::Value val = MK_JS_LEPUS_VALUE(ctx, argv[2]);
 
   if (key.IsString()) {
     obj.SetProperty(key.String(), val);
@@ -386,8 +386,8 @@ RENDERER_FUNCTION(Test_set) {
 }
 
 RENDERER_FUNCTION(Test_Contains) {
-  lepus::Value obj(ctx, argv[0]);
-  lepus::Value key(ctx, argv[1]);
+  lepus::Value obj = MK_JS_LEPUS_VALUE(ctx, argv[0]);
+  lepus::Value key = MK_JS_LEPUS_VALUE(ctx, argv[1]);
 
   base::String s_key = key.String();
   std::cout << "contains " << s_key.c_str() << " : " << obj.Contains(s_key)
@@ -410,12 +410,12 @@ RENDERER_FUNCTION(UpdateComponentInfo) {
 RENDERER_FUNCTION(TestArgcNG) {
   CONVERT_ARG(arg1, 0);
   if (!arg1->IsString()) {
-    return lepus::QuickContext::GetFromJsContext(ctx)
-        ->ReportFatalError("arg is not string", false,
-                           error::E_MTS_RENDERER_FUNCTION_FATAL)
-        .ToJSValue(ctx);
+    return lepus::LEPUSValueHelper::ToJsValue(
+        ctx,
+        lepus::QuickContext::GetFromJsContext(ctx)->ReportFatalError(
+            "arg is not string", false, error::E_MTS_RENDERER_FUNCTION_FATAL));
   }
-  return arg1->ToJSValue(ctx);
+  return lepus::LEPUSValueHelper::ToJsValue(ctx, *arg1);
 }
 
 void RegisterQuickCFun(lepus::QuickContext* ctx, LEPUSValue obj,

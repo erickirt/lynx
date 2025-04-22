@@ -13,6 +13,7 @@
 #include "core/renderer/dom/element_manager.h"
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/utils/value_utils.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
 
 namespace lynx {
 namespace tasm {
@@ -32,10 +33,10 @@ void AirComponentElement::DeriveFromMould(ComponentMould *mould) {
     data_ = mould->data();
   }
   if (!data_.IsObject()) {
-    data_ = lepus::Value::CreateObject(context_);
+    data_ = lepus::LEPUSValueHelper::CreateObject(context_);
   }
   if (!properties_.IsObject()) {
-    properties_ = lepus::Value::CreateObject(context_);
+    properties_ = lepus::LEPUSValueHelper::CreateObject(context_);
   }
 }
 

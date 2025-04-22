@@ -204,14 +204,14 @@ TEST_F(LynxValueLepusNGTest, LynxValueMemory) {
   ASSERT_TRUE(p->ref_count == 3);
 
   {
-    auto lepus_value = lepus::Value(ctx_, val_str);
+    auto lepus_value = MK_JS_LEPUS_VALUE(ctx_, val_str);
     p = (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str);
     ASSERT_TRUE(p->ref_count == 4);
   }
   p = (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str);
   ASSERT_TRUE(p->ref_count == 3);
   {
-    auto lepus_arr = lepus::Value(ctx_, val_arr);
+    auto lepus_arr = MK_JS_LEPUS_VALUE(ctx_, val_arr);
     auto ret = lepus_arr.GetProperty(0);
     p = (LEPUSRefCountHeader*)LEPUS_VALUE_GET_PTR(val_str);
     ASSERT_TRUE(p->ref_count == 4);

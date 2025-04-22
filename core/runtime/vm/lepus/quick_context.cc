@@ -39,7 +39,7 @@ static std::string GetPrintStr(LEPUSContext* ctx, int32_t argc,
                                LEPUSValueConst* argv) {
   std::ostringstream ss;
   for (int32_t i = 0; i < argc; i++) {
-    lepus::Value(ctx, argv[i]).PrintValue(ss);
+    MK_JS_LEPUS_VALUE(ctx, argv[i]).PrintValue(ss);
     if (i < argc - 1) {
       ss << " ";
     }
@@ -64,7 +64,7 @@ RENDERER_FUNCTION(Console_Profile) {
   }
   std::ostringstream ss;
   ss << "Lepus::";
-  lepus::Value(ctx, argv[0]).PrintValue(ss);
+  MK_JS_LEPUS_VALUE(ctx, argv[0]).PrintValue(ss);
 
   TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, nullptr,
                     [&](lynx::perfetto::EventContext ctx) {
@@ -189,13 +189,13 @@ RENDERER_FUNCTION(Console_Table) {
 void RegisterQuickCFun(QuickContext* ctx, LEPUSValue& obj, const char* name,
                        int argc, LEPUSCFunction* func) {
   LEPUSValue cf = LEPUS_NewCFunction(ctx->context(), func, name, argc);
-  auto holder = lepus::Value(ctx->context(), cf);
+  auto holder = MK_JS_LEPUS_VALUE(ctx->context(), cf);
   LEPUSValueHelper::SetProperty(ctx->context(), obj, name, cf);
 }
 
 void RegisterConsole(QuickContext* ctx) {
   LEPUSValue obj = LEPUS_NewObject(ctx->context());
-  auto holder = lepus::Value(ctx->context(), obj);
+  auto holder = MK_JS_LEPUS_VALUE(ctx->context(), obj);
   RegisterQuickCFun(ctx, obj, "profile", 1, Console_Profile);
   RegisterQuickCFun(ctx, obj, "profileEnd", 0, Console_ProfileEnd);
   RegisterQuickCFun(ctx, obj, "log", 1, Console_Log);
@@ -437,7 +437,7 @@ bool QuickContext::Execute(Value* ret_val) {
 
   if (!gc_flag_) LEPUS_FreeValue(context(), global);
   if (ret_val) {
-    *ret_val = Value(lepus_context_, ret);
+    *ret_val = MK_JS_LEPUS_VALUE(lepus_context_, ret);
   } else if (!gc_flag_) {
     LEPUS_FreeValue(context(), ret);
   }
@@ -485,9 +485,10 @@ Value QuickContext::CallArgs(const base::String& name, const Value* args[],
   func_scope.PushLEPUSValueArrayHandle(quick_args,
                                        static_cast<int>(args_count));
   for (size_t i = 0; i < args_count; ++i) {
-    quick_args[i] = args[i]->ToJSValue(lepus_context_);
+    quick_args[i] = LEPUSValueHelper::ToJsValue(lepus_context_, *(args[i]));
   }
-  Value ret(lepus_context_, GetAndCall(name.str(), quick_args, args_count));
+  Value ret = MK_JS_LEPUS_VALUE(lepus_context_,
+                                GetAndCall(name.str(), quick_args, args_count));
   if (!gc_flag_) {
     for (auto it : quick_args) {
       LEPUS_FreeValue(lepus_context_, it);
@@ -498,7 +499,8 @@ Value QuickContext::CallArgs(const base::String& name, const Value* args[],
 
 Value QuickContext::CallClosureArgs(const Value& closure, const Value* args[],
                                     size_t args_count) {
-  LEPUSValue lepus_closure = closure.ToJSValue(lepus_context_);
+  LEPUSValue lepus_closure =
+      LEPUSValueHelper::ToJsValue(lepus_context_, closure);
   HandleScope func_scope(lepus_context_, &lepus_closure,
                          HANDLE_TYPE_LEPUS_VALUE);
   DCHECK(LEPUSValueHelper::IsJsFunction(lepus_context_, lepus_closure));
@@ -506,10 +508,10 @@ Value QuickContext::CallClosureArgs(const Value& closure, const Value* args[],
   func_scope.PushLEPUSValueArrayHandle(quick_args,
                                        static_cast<int>(args_count));
   for (size_t i = 0; i < args_count; ++i) {
-    quick_args[i] = args[i]->ToJSValue(lepus_context_);
+    quick_args[i] = LEPUSValueHelper::ToJsValue(lepus_context_, *(args[i]));
   }
-  Value ret(lepus_context_,
-            InternalCall(lepus_closure, quick_args, args_count));
+  Value ret = MK_JS_LEPUS_VALUE(
+      lepus_context_, InternalCall(lepus_closure, quick_args, args_count));
   if (!LEPUS_IsGCModeRT(runtime_)) {
     for (auto it : quick_args) {
       LEPUS_FreeValue(context(), it);
@@ -558,7 +560,8 @@ bool QuickContext::CheckTableShadowUpdatedWithTopLevelVariable(
     }
     auto front_value = result.begin();
     LEPUSAtom atom = LEPUS_NewAtom(context(), front_value->c_str());
-    Value value(lepus_context_, LEPUS_GetGlobalVar(context(), atom, false));
+    Value value = MK_JS_LEPUS_VALUE(lepus_context_,
+                                    LEPUS_GetGlobalVar(context(), atom, false));
     if (!gc_flag_) LEPUS_FreeAtom(context(), atom);
     result.erase(front_value);
     for (auto it = result.begin(); it != result.end(); ++it) {
@@ -607,7 +610,7 @@ bool QuickContext::UpdateTopLevelVariableByPath(base::Vector<std::string>& path,
       HandleScope block_scope(context());
       LEPUSAtom atom = LEPUS_NewAtom(context(), path.begin()->c_str());
       block_scope.PushLEPUSAtom(atom);
-      LEPUSValue lepus_val = val.ToJSValue(lepus_context_);
+      LEPUSValue lepus_val = LEPUSValueHelper::ToJsValue(lepus_context_, val);
       block_scope.PushHandle(&lepus_val, HANDLE_TYPE_LEPUS_VALUE);
       int ret = LEPUS_SetGlobalVar(context(), atom, lepus_val, 2);
       if (!gc_flag_) LEPUS_FreeAtom(context(), atom);
@@ -617,14 +620,16 @@ bool QuickContext::UpdateTopLevelVariableByPath(base::Vector<std::string>& path,
     auto front_value = path.begin();
     LEPUSAtom atom = LEPUS_NewAtom(context(), front_value->c_str());
     block_scope.PushLEPUSAtom(atom);
-    Value value(lepus_context_, LEPUS_GetGlobalVar(context(), atom, false));
+    Value value = MK_JS_LEPUS_VALUE(lepus_context_,
+                                    LEPUS_GetGlobalVar(context(), atom, false));
     if (value.IsUndefined() || value.IsJSUndefined() || value.IsNil()) {
       if (!gc_flag_) LEPUS_FreeAtom(context(), atom);
       return false;
     }
     path.erase(front_value);
     lepus::Value::UpdateValueByPath(value, val, path);
-    LEPUSValue lepus_val_new = value.ToJSValue(lepus_context_);
+    LEPUSValue lepus_val_new =
+        LEPUSValueHelper::ToJsValue(lepus_context_, value);
     block_scope.PushHandle(&lepus_val_new, HANDLE_TYPE_LEPUS_VALUE);
     int ret = LEPUS_SetGlobalVar(context(), atom, lepus_val_new, 2);
     if (!gc_flag_) LEPUS_FreeAtom(context(), atom);
@@ -662,7 +667,8 @@ bool QuickContext::GetTopLevelVariableByName(const base::String& name,
   HandleScope func_scope(context());
   LEPUSAtom atom = LEPUS_NewAtom(context(), name.c_str());
   func_scope.PushLEPUSAtom(atom);
-  Value variable(context(), LEPUS_GetGlobalVar(context(), atom, false));
+  Value variable =
+      MK_JS_LEPUS_VALUE(context(), LEPUS_GetGlobalVar(context(), atom, false));
   if (!gc_flag_) LEPUS_FreeAtom(context(), atom);
   if (variable.IsEmpty()) {
     return false;
@@ -672,7 +678,7 @@ bool QuickContext::GetTopLevelVariableByName(const base::String& name,
 }
 
 void QuickContext::SetGlobalData(const base::String& name, Value value) {
-  LEPUSValue v = value.ToJSValue(context());
+  LEPUSValue v = LEPUSValueHelper::ToJsValue(context(), value);
   if (gc_flag_) {
     HandleScope block_scope(context(), &v, HANDLE_TYPE_LEPUS_VALUE);
     RegisterGlobalProperty(name.c_str(), v);
@@ -682,7 +688,7 @@ void QuickContext::SetGlobalData(const base::String& name, Value value) {
 }
 
 lepus::Value QuickContext::GetGlobalData(const base::String& name) {
-  return lepus::Value(context(), SearchGlobalData(name.str()));
+  return MK_JS_LEPUS_VALUE(context(), SearchGlobalData(name.str()));
 }
 
 void QuickContext::SetGCThreshold(int64_t threshold) {
@@ -784,11 +790,23 @@ LEPUSValue QuickContext::NewBindingFunction(RenderBindingFunc func) {
         char args_buf[sizeof(lepus::Value) * argc];
         lepus::Value* largv = reinterpret_cast<lepus::Value*>(args_buf);
         for (int32_t i = 0; i < argc; ++i) {
-          new (largv + i) lepus::Value(ctx, argv[i]);
+          // High frequency call
+          LEPUSValue val = argv[i];
+          if (LEPUS_IsLepusRef(val)) {
+            new (largv + i) lepus::Value(
+                lepus::LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx,
+                                                                      val));
+          } else {
+            new (largv + i)
+                lepus::Value(lepus::Context::GetContextCellFromCtx(ctx)->env_,
+                             LEPUS_VALUE_GET_INT64(val),
+                             lepus::LEPUSValueHelper::CalculateTag(val));
+          }
         }
         qctx->set_current_this(this_obj);
         // 2. call function
-        LEPUSValue ret = func(qctx, largv, argc).ToJSValue(ctx);
+        LEPUSValue ret =
+            LEPUSValueHelper::ToJsValue(ctx, func(qctx, largv, argc));
 
         // 3. free args.
         for (int32_t i = 0; i < argc; ++i) {
@@ -818,8 +836,8 @@ void QuickContext::RegisterObjectFunction(lepus::Value& obj,
     auto& func = funcs[i];
     auto c_func = NewBindingFunction(func.function);
     HandleScope block_scope{lepus_context_, &c_func, HANDLE_TYPE_LEPUS_VALUE};
-    LEPUSValueHelper::SetProperty(lepus_context_, obj.WrapJSValue(), func.name,
-                                  c_func);
+    LEPUSValueHelper::SetProperty(lepus_context_, WRAP_AS_JS_VALUE(obj.value()),
+                                  func.name, c_func);
   }
   return;
 }
@@ -935,7 +953,7 @@ LEPUSValue QuickContext::ReportSetConstValueError(const LEPUSValue& val,
       error_msg + "\nThe property name is :" + (prop_name ? prop_name : "");
   ReportErrorWithMsg(error_msg, error::E_MTS_RUNTIME_ERROR);
   LOGE(error_msg << ", the object content is "
-                 << lepus::Value(lepus_context_, val));
+                 << MK_JS_LEPUS_VALUE(lepus_context_, val));
   if (!gc_flag_) LEPUS_FreeCString(lepus_context_, prop_name);
   if (lynx::tasm::LynxEnv::GetInstance().IsDevToolComponentAttach()) {
     return LEPUS_ThrowTypeError(lepus_context_, "%s", error_msg.c_str());
@@ -990,11 +1008,11 @@ lepus::Value QuickContext::ReportFatalError(const std::string& error_message,
         LEPUS_PROP_CONFIGURABLE | LEPUS_PROP_ENUMERABLE);
   }
 
-  return lepus::Value(lepus_context_, LEPUS_Throw(lepus_context_, err));
+  return MK_JS_LEPUS_VALUE(lepus_context_, LEPUS_Throw(lepus_context_, err));
 }
 
 lepus::Value QuickContext::GetCurrentThis(lepus::Value* argv, int32_t offset) {
-  return lepus::Value(context(), current_this_);
+  return MK_JS_LEPUS_VALUE(context(), current_this_);
 }
 
 void QuickContext::EnableRuntimeLeakCheck(bool enable) {

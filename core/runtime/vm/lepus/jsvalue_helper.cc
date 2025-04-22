@@ -5,6 +5,7 @@
 #include "core/runtime/vm/lepus/jsvalue_helper.h"
 
 #include <functional>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "core/runtime/vm/lepus/quick_context.h"
 #include "core/runtime/vm/lepus/ref_counted_class.h"
 #include "core/runtime/vm/lepus/table.h"
+
 namespace lynx {
 namespace lepus {
 
@@ -50,12 +52,6 @@ LEPUSValue LEPUSValueHelper::ArrayToJsValue(LEPUSContext* ctx,
 LEPUSValue LEPUSValueHelper::RefCountedToJSValue(
     LEPUSContext* ctx, const RefCounted& ref_counted) {
   return LEPUS_NewObject(ctx);
-}
-
-LEPUSValue LEPUSValueHelper::ToJsValue(LEPUSContext* ctx,
-                                       const lepus::Value& val,
-                                       bool deep_convert) {
-  return ToJsValue(ctx, val.value(), deep_convert);
 }
 
 LEPUSValue LEPUSValueHelper::ToJsValue(LEPUSContext* ctx, const lynx_value& val,
@@ -248,11 +244,11 @@ lepus::Value LEPUSValueHelper::ToLepusValue(LEPUSContext* ctx,
       return Value(ToLepusString(ctx, val));
     case LEPUS_TAG_LEPUS_REF: {
       if (likely(flag == 0)) {
-        return lepus::Value(ctx, val);
+        return MK_JS_LEPUS_VALUE(ctx, val);
       } else if (flag == 1) {
-        return Value::Clone(lepus::Value(ctx, val));
+        return Value::Clone(MK_JS_LEPUS_VALUE(ctx, val));
       } else {
-        Value ret(ctx, val);
+        Value ret = MK_JS_LEPUS_VALUE(ctx, val);
         if (!ret.MarkConst()) {
           ret = Value::Clone(ret);
         }
@@ -264,7 +260,7 @@ lepus::Value LEPUSValueHelper::ToLepusValue(LEPUSContext* ctx,
         return ToLepusArray(ctx, val, flag);
       } else if (IsJsFunction(ctx, val)) {
         if (flag == 0) {
-          return lepus::Value(ctx, val);
+          return MK_JS_LEPUS_VALUE(ctx, val);
         }
         return empty_value;
       } else {
@@ -361,7 +357,7 @@ void LEPUSValueHelper::PrintValue(std::ostream& s, LEPUSContext* ctx,
   }
 
   if (LEPUS_IsError(ctx, val)) {
-    auto error = lepus::Value(ctx, val);
+    auto error = MK_JS_LEPUS_VALUE(ctx, val);
     BASE_STATIC_STRING_DECL(kStack, "stack");
     s << error.ToString() << "\n" << error.GetProperty(kStack).ToString();
     return;
@@ -449,6 +445,75 @@ lynx_value LEPUSValueHelper::ConstructLepusRefToLynxValue(
   return {.val_ptr = reinterpret_cast<lynx_value_ptr>(ptr),
           .type = type,
           .tag = tag};
+}
+
+Value LEPUSValueHelper::CreateObject(Context* ctx) {
+  if (ctx && ctx->IsLepusNGContext()) {
+    LEPUSContext* lctx = ctx->context();
+    return MK_JS_LEPUS_VALUE(lctx, LEPUS_NewObject(lctx));
+  }
+  return Value(lepus::Dictionary::Create());
+}
+
+Value LEPUSValueHelper::CreateArray(Context* ctx) {
+  if (ctx && ctx->IsLepusNGContext()) {
+    LEPUSContext* lctx = ctx->context();
+    return MK_JS_LEPUS_VALUE(lctx, LEPUS_NewArray(lctx));
+  }
+  return Value(lepus::CArray::Create());
+}
+
+lepus::Value LepusValueFactory::Create(const LEPUSValue& val) {
+  if (LEPUS_IsLepusRef(val)) {
+    return lepus::Value(
+        LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx_, val));
+  }
+  return lepus::Value(Context::GetContextCellFromCtx(ctx_)->env_,
+                      LEPUS_VALUE_GET_INT64(val),
+                      LEPUSValueHelper::CalculateTag(val));
+}
+
+lepus::Value LepusValueFactory::Create(LEPUSValue&& val) {
+  if (LEPUS_IsLepusRef(val)) {
+    lynx_value value =
+        LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx_, val);
+    if (!LEPUS_IsGCMode(ctx_)) LEPUS_FreeValue(ctx_, val);
+    val = LEPUS_UNDEFINED;
+    return lepus::Value(std::move(value));
+  }
+  int32_t tag = LEPUSValueHelper::CalculateTag(val);
+  return lepus::Value(Context::GetContextCellFromCtx(ctx_)->env_,
+                      MAKE_LYNX_VALUE(val, tag));
+}
+
+lepus::Value LepusValueFactory::Create(const lepus::Value& value,
+                                       bool deep_convert) {
+  // TODO(frendy): fast path of lepus value to lepus value
+  LEPUSValue val = LEPUSValueHelper::ToJsValue(ctx_, value, deep_convert);
+  if (LEPUS_IsLepusRef(val)) {
+    lynx_value value =
+        LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx_, val);
+    if (!LEPUS_IsGCMode(ctx_)) LEPUS_FreeValue(ctx_, val);
+    val = LEPUS_UNDEFINED;
+    return lepus::Value(std::move(value));
+  }
+  int32_t tag = LEPUSValueHelper::CalculateTag(val);
+  return lepus::Value(Context::GetContextCellFromCtx(ctx_)->env_,
+                      MAKE_LYNX_VALUE(val, tag));
+}
+
+std::unique_ptr<lepus::Value> LepusValueFactory::CreatePtr(LEPUSValue&& val) {
+  if (LEPUS_IsLepusRef(val)) {
+    lynx_value value =
+        LEPUSValueHelper::ConstructLepusRefToLynxValue(ctx_, val);
+    if (!LEPUS_IsGCMode(ctx_)) LEPUS_FreeValue(ctx_, val);
+    val = LEPUS_UNDEFINED;
+    return std::make_unique<lepus::Value>(std::move(value));
+  }
+  int32_t tag = LEPUSValueHelper::CalculateTag(val);
+  return std::make_unique<lepus::Value>(
+      Context::GetContextCellFromCtx(ctx_)->env_,
+      lynx_value(MAKE_LYNX_VALUE(val, tag)));
 }
 
 }  // namespace lepus

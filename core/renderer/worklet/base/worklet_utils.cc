@@ -6,6 +6,7 @@
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/bindings/napi/worklet/napi_loader_ui.h"
 #include "core/runtime/vm/lepus/array.h"
+#include "core/runtime/vm/lepus/jsvalue_helper.h"
 #include "core/runtime/vm/lepus/table.h"
 
 #ifdef USE_PRIMJS_NAPI
@@ -112,8 +113,8 @@ lepus::Value ValueConverter::ConvertNapiValueToLepusValue(
     return lepus::Value();
   }
 
-  return lepus::Value(ctx->context(), *reinterpret_cast<LEPUSValue*>(
-                                          static_cast<napi_value>(value)))
+  return MK_JS_LEPUS_VALUE(ctx->context(), *reinterpret_cast<LEPUSValue*>(
+                                               static_cast<napi_value>(value)))
       .ToLepusValue();
 }
 
