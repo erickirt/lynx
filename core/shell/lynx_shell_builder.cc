@@ -10,6 +10,7 @@
 
 #include "core/services/event_report/event_tracker_platform_impl.h"
 #include "core/shared_data/lynx_white_board.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 namespace lynx {
 namespace shell {
@@ -171,7 +172,7 @@ LynxShellBuilder& LynxShellBuilder::SetForceLayoutOnBackgroundThread(
 }
 
 LynxShell* LynxShellBuilder::build() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxShell::Create");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LYNX_SHELL_BUILDER_BUILD);
 
   // for auto concurrency, force using MULTI_THREADS by default.
   if (this->shell_option_.enable_auto_concurrency_) {
@@ -236,7 +237,7 @@ LynxShell* LynxShellBuilder::build() {
       shell->runners_.GetLayoutTaskRunner(), shell->instance_id_);
 
   TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                    "LynxShell::Create::CreateEngineActor");
+                    LYNX_SHELL_BUILDER_CREATE_ENGINE_ACTOR);
   // create engine actor
   auto vsync_monitor = base::VSyncMonitor::Create();
   auto tasm_mediator = std::make_unique<TasmMediator>(

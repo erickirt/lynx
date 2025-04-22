@@ -8,10 +8,9 @@
 
 #include "base/include/debug/lynx_assert.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 namespace lynx {
 namespace shell {
@@ -52,7 +51,7 @@ void LynxUIOperationQueue::ConsumeOperations(
       tasm::timing::kTaskNameLynxUIOperationQueueConsumeOperations);
   for (auto& operation : high_priority_operations) {
     TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                "LynxUIOperationQueue::ExecuteHighPriorityOperation");
+                UI_OPERATION_QUEUE_EXECUTE_HIGH_PRIORITY_OPERATION);
     operation();
   }
 

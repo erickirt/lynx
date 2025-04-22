@@ -5,6 +5,7 @@ import("//lynx/devtool/lynx_devtool/devtool.gni")
 
 devtool_source_set("tracing") {
   sources = [
+    "devtool_trace_event_def.h",
     "frame_trace_service.cc",
     "frame_trace_service.h",
     "instance_counter_trace_impl.cc",

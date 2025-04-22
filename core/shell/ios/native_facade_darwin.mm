@@ -20,45 +20,45 @@
 #include "core/runtime/vm/lepus/table.h"
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/utils/darwin/event_converter_darwin.h"
 #include "core/runtime/bindings/common/event/message_event.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 namespace lynx {
 namespace shell {
 
 void NativeFacadeDarwin::OnDataUpdated() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnDataUpdated");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_DATA_UPDATED);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onDataUpdated];
 }
 
 void NativeFacadeDarwin::OnPageChanged(bool is_first_screen) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnPageChanged");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_PAGE_CHANGED);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onPageChanged:is_first_screen];
 }
 
 void NativeFacadeDarwin::OnTasmFinishByNative() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnTasmFinishByNative");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_TASM_FINISH_BY_NATIVE);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onTasmFinishByNative];
 }
 
 void NativeFacadeDarwin::OnTemplateLoaded(const std::string& url) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnTemplateLoaded", "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_TEMPLATE_LOADED, "url", url);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onTemplateLoaded:[NSString stringWithUTF8String:url.c_str()]];
 }
 
 void NativeFacadeDarwin::OnSSRHydrateFinished(const std::string& url) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnSSRHydrateFinished", "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_SSR_HYDRATE_FINISHED, "url", url);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onSSRHydrateFinished:[NSString stringWithUTF8String:url.c_str()]];
 }
 
 void NativeFacadeDarwin::OnRuntimeReady() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "NativeFacadeDarwin::OnRuntimeReady");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, NATIVE_FACADE_DARWIN_ON_RUNTIME_READY);
   __strong id<TemplateRenderCallbackProtocol> render = _render;
   [render onRuntimeReady];
 }
@@ -157,7 +157,7 @@ void NativeFacadeDarwin::InvokeUIMethod(const tasm::LynxGetUIResult& ui_result,
 }
 
 void NativeFacadeDarwin::FlushJSBTiming(piper::NativeModuleInfo timing) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "JSBTiming::FlushJSBTiming",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FLUSH_JSB_TIMING,
               [&timing](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("module_name", timing.module_name_);
                 ctx.event()->add_debug_annotations("method_name", timing.method_name_);

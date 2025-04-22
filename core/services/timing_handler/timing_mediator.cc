@@ -15,6 +15,7 @@
 #include "core/services/event_report/event_tracker_platform_impl.h"
 #include "core/services/timing_handler/timing_constants.h"
 #include "core/services/timing_handler/timing_constants_deprecated.h"
+#include "core/services/trace/service_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -86,7 +87,7 @@ void TimingMediator::OnPerformanceEvent(
   if (facade_reporter_actor_) {
     facade_reporter_actor_->ActAsync([entry = lepus_entry](auto& facade) {
       TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                  "TimingMediator::TriggerPerformanceClientCallback");
+                  TIMING_MEDIATOR_TRIGGER_PERFORMANCE_CLIENT_CALLBACK);
       facade->OnPerformanceEvent(entry);
     });
   }
@@ -94,7 +95,7 @@ void TimingMediator::OnPerformanceEvent(
   if (runtime_actor_ && enable_js_runtime_) {
     runtime_actor_->ActAsync([entry = std::move(lepus_entry)](auto& runtime) {
       TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                  "TimingMediator::TriggerPerformanceRuntimeCallback");
+                  TIMING_MEDIATOR_TRIGGER_PERFORMANCE_RUNTIME_CALLBACK);
       auto args = lepus::CArray::Create();
       args->emplace_back(BASE_STATIC_STRING(kPerformanceRuntimeCallback));
       args->emplace_back((lepus_value::ShallowCopy(entry)));
@@ -108,7 +109,7 @@ void TimingMediator::OnPerformanceEvent(
     engine_actor_->ActAsync(
         [entry = std::move(lepus_entry)](auto& engine) mutable {
           TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                      "TimingMediator::TriggerPerformanceEngineCallback");
+                      TIMING_MEDIATOR_TRIGGER_PERFORMANCE_ENGINE_CALLBACK);
           auto arguments = lepus::CArray::Create();
           arguments->emplace_back(std::move(entry));
           engine->TriggerEventBus(kSetupRuntimeCallback,
@@ -131,7 +132,7 @@ void TimingMediator::TriggerSetupClientCallback(
       //  TimingHandler ctor, covert lepus to platform data structure
       //  in timing thread.
       TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                  "TimingMediator::TriggerSetupClientCallback");
+                  TIMING_MEDIATOR_TRIGGER_SETUP_CLIENT_CALLBACK);
       facade->OnTimingSetup(timing);
     });
   }
@@ -147,7 +148,7 @@ void TimingMediator::TriggerSetupRuntimeCallback(
   if (runtime_actor_ && enable_js_runtime_) {
     runtime_actor_->ActAsync([timing = std::move(lepus_timing)](auto& runtime) {
       TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                  "TimingMediator::TriggerSetupRuntimeCallback");
+                  TIMING_MEDIATOR_TRIGGER_SETUP_RUNTIME_CALLBACK);
       auto args = lepus::CArray::Create();
       args->emplace_back(BASE_STATIC_STRING(kSetupRuntimeCallback));
       args->emplace_back((lepus_value::ShallowCopy(timing)));
@@ -161,7 +162,7 @@ void TimingMediator::TriggerSetupRuntimeCallback(
     engine_actor_->ActAsync(
         [timing = std::move(lepus_timing)](auto& engine) mutable {
           TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                      "TimingMediator::TriggerSetupEngineCallback");
+                      TIMING_MEDIATOR_TRIGGER_SETUP_ENGINE_CALLBACK);
           auto arguments = lepus::CArray::Create();
           arguments->emplace_back(std::move(timing));
           engine->TriggerEventBus(kSetupRuntimeCallback,
@@ -171,7 +172,7 @@ void TimingMediator::TriggerSetupRuntimeCallback(
 }
 
 void TimingMediator::ReportSetupEvent(const TimingInfo& timing_info) const {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TimingMediator::ReportSetupEvent");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TIMING_MEDIATOR_REPORT_SETUP_EVENT);
   tasm::report::MoveOnlyEvent event;
   event.SetName(kLynxSDKSetupTiming);
   auto timing = timing_info.GetAllTimingInfoAsMicrosecond();
@@ -324,7 +325,7 @@ void TimingMediator::TriggerUpdateClientCallback(
       //  TimingHandler ctor, covert lepus to platform data structure
       //  in timing thread.
       TRACE_EVENT(
-          LYNX_TRACE_CATEGORY, "TimingMediator::TriggerUpdateClientCallback",
+          LYNX_TRACE_CATEGORY, TIMING_MEDIATOR_REPORT_UPDATE_CLIENT_CALLBACK,
           [&update_flag](lynx::perfetto::EventContext ctx) {
             ctx.event()->add_debug_annotations("timing_flag", update_flag);
           });
@@ -352,7 +353,7 @@ void TimingMediator::TriggerUpdateRuntimeCallback(
     runtime_actor_->ActAsync([timing = std::move(all_lepus_timing),
                               update_flag](auto& runtime) {
       TRACE_EVENT(
-          LYNX_TRACE_CATEGORY, "TimingMediator::TriggerUpdateRuntimeCallback",
+          LYNX_TRACE_CATEGORY, TIMING_MEDIATOR_TRIGGER_UPDATE_RUNTIME_CALLBACK,
           [&update_flag](lynx::perfetto::EventContext ctx) {
             ctx.event()->add_debug_annotations("timing_flag", update_flag);
           });
@@ -369,7 +370,7 @@ void TimingMediator::TriggerUpdateRuntimeCallback(
     engine_actor_->ActAsync([timing = std::move(all_lepus_timing),
                              update_flag](auto& engine) {
       TRACE_EVENT(
-          LYNX_TRACE_CATEGORY, "TimingMediator::TriggerUpdateEngineCallback",
+          LYNX_TRACE_CATEGORY, TIMING_MEDIATOR_TRIGGER_UPDATE_ENGINE_CALLBACK,
           [&update_flag](lynx::perfetto::EventContext ctx) {
             ctx.event()->add_debug_annotations("timing_flag", update_flag);
           });
@@ -383,7 +384,7 @@ void TimingMediator::TriggerUpdateRuntimeCallback(
 
 void TimingMediator::ReportUpdateEvent(const TimingInfo& timing_info,
                                        const std::string& update_flag) const {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TimingMediator::ReportUpdateEvent",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TIMING_MEDIATOR_REPORT_UPDATE_EVENT,
               [&update_flag](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("timing_flag", update_flag);
               });

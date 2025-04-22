@@ -5,8 +5,8 @@
 #include "core/shell/thread_mode_auto_switch.h"
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 namespace lynx {
 namespace shell {

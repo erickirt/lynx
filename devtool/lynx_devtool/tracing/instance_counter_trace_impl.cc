@@ -10,6 +10,7 @@
 #include "base/trace/native/trace_event.h"
 #include "core/base/lynx_trace_categories.h"
 #include "devtool/lynx_devtool/agent/inspector_util.h"
+#include "devtool/lynx_devtool/tracing/devtool_trace_event_def.h"
 
 namespace lynx {
 namespace trace {
@@ -25,7 +26,8 @@ void InstanceCounterTraceImpl::JsHeapMemoryUsedTraceImpl(
     const uint64_t jsHeapMemory) {
 #if ENABLE_TRACE_PERFETTO
   thread_.GetTaskRunner()->PostTask([jsHeapMemory] {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE, "UpdateCounters",
+    TRACE_EVENT(LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE,
+                INSTANCE_COUNTER_TRACE_UPDATE_COUNTERS,
                 [=](lynx::perfetto::EventContext ctx) {
                   auto* legacy_event = ctx.event()->set_legacy_event();
                   legacy_event->set_phase('I');

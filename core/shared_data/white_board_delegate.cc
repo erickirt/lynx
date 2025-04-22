@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/events/closure_event_listener.h"
 #include "core/runtime/bindings/common/event/context_proxy.h"
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/shared_data/lynx_white_board.h"
+#include "core/shared_data/shared_data_trace_event_def.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 
 namespace lynx {
@@ -54,7 +54,8 @@ void WhiteBoardDelegate::AddEventListeners(
 
 void WhiteBoardDelegate::SetSessionStorageItem(const std::string& key,
                                                const lepus::Value& value) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SetSessionStorageItem",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_SET_SESSION_STORAGE_ITEM,
               [&key, &value](lynx::perfetto::EventContext ctx) {
                 std::stringstream ss;
                 value.PrintValue(ss);
@@ -68,7 +69,8 @@ void WhiteBoardDelegate::SetSessionStorageItem(const std::string& key,
 }
 
 lepus::Value WhiteBoardDelegate::GetSessionStorageItem(const std::string& key) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "GetSessionStorageItem",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_GET_SESSION_STORAGE_ITEM,
               [&key](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("key", key);
               });
@@ -85,7 +87,8 @@ lepus::Value WhiteBoardDelegate::GetSessionStorageItem(const std::string& key) {
 void WhiteBoardDelegate::SubscribeJSSessionStorage(
     const std::string& key, double listener_id,
     const piper::ApiCallBack& callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SubscribeJSSessionStorage",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_SUBSCRIBE_JS_SESSION_STORAGE,
               [&key, &listener_id](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("key", key);
                 ctx.event()->add_debug_annotations("listener_id",
@@ -118,7 +121,8 @@ void WhiteBoardDelegate::SubscribeJSSessionStorage(
 
 void WhiteBoardDelegate::UnsubscribeJSSessionStorage(const std::string& key,
                                                      double listener_id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "UnsubscribeJSSessionStorage",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_UNSUBSCRIBE_JS_SESSION_STORAGE,
               [&key, &listener_id](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("key", key);
                 ctx.event()->add_debug_annotations("listener_id",
@@ -133,7 +137,8 @@ void WhiteBoardDelegate::UnsubscribeJSSessionStorage(const std::string& key,
 void WhiteBoardDelegate::SubScribeClientSessionStorage(
     const std::string& key,
     const std::shared_ptr<lynx::shell::PlatformCallBackHolder>& callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "SubScribeClientSessionStorage",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_SUBSCRIBE_CLIENT_SESSION_STORAGE,
               [&key, &callback](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("key", key);
                 ctx.event()->add_debug_annotations(
@@ -165,7 +170,8 @@ void WhiteBoardDelegate::SubScribeClientSessionStorage(
 
 void WhiteBoardDelegate::UnsubscribeClientSessionStorage(const std::string& key,
                                                          double callback_id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "UnsubscribeClientSessionStorage",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              WHITE_BOARD_DELEGATE_UNSUBSCRIBE_CLIENT_SESSION_STORAGE,
               [&key, &callback_id](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("key", key);
                 ctx.event()->add_debug_annotations("callback_id",

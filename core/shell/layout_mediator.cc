@@ -8,12 +8,12 @@
 
 #include "base/include/fml/make_copyable.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/dom/element.h"
 #include "core/renderer/tasm/config.h"
 #include "core/runtime/piper/js/lynx_runtime.h"
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #if ENABLE_AIR
 #include "core/renderer/dom/air/air_element/air_element.h"
 #endif
@@ -83,7 +83,7 @@ void LayoutMediator::OnLayoutUpdate(
 void LayoutMediator::OnLayoutAfter(
     const tasm::PipelineOptions &options,
     std::unique_ptr<tasm::PlatformExtraBundleHolder> holder, bool has_layout) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LayoutMediator.OnLayoutAfter");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_MEDIATOR_ON_LAYOUT_AFTER);
   bool is_first_layout = false;
   if (!has_first_layout_ && has_layout) {
     has_first_layout_ = true;
@@ -95,8 +95,7 @@ void LayoutMediator::OnLayoutAfter(
   if (catalyzer_ != nullptr &&
       (options.is_first_screen || options.is_reload_template ||
        options.need_timestamps)) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                "OnLayoutAfter.EnqueueOperation.AppendOptionsForTiming",
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_AFTER_APPEND_OPTIONS_FOR_TIMING,
                 [&options](lynx::perfetto::EventContext ctx) {
                   options.UpdateTraceDebugInfo(ctx.event());
                 });
@@ -104,7 +103,7 @@ void LayoutMediator::OnLayoutAfter(
         [catalyzer = catalyzer_, options = options]() {
           if (catalyzer != nullptr) {
             TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                        "PaintingContext.AppendOptionsForTiming",
+                        PAINTING_CONTEXT_APPEND_OPTIONS_FOR_TIMING,
                         [&options](lynx::perfetto::EventContext ctx) {
                           options.UpdateTraceDebugInfo(ctx.event());
                         });
@@ -239,7 +238,7 @@ void LayoutMediator::HandlePendingLayoutTask(
     TASMOperationQueue *queue, tasm::Catalyzer *catalyzer,
     tasm::PipelineOptions options,
     const std::vector<TASMOperationQueue::TASMOperationWrapper> *operations) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LayoutMediator.HandlePendingLayoutTask");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_MEDIATOR_HANDLE_PENDING_LAYOUT_TASK);
   if (catalyzer == nullptr) {
     return;
   }
@@ -281,7 +280,7 @@ void LayoutMediator::HandlePendingLayoutTask(
 void LayoutMediator::HandleListOrComponentUpdated(
     tasm::NodeManager *node_manager, const tasm::PipelineOptions &options) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "LayoutMediator.HandleListOrComponentUpdated");
+              LAYOUT_MEDIATOR_HANDLE_LIST_OR_COMPONENT_UPDATED);
   if (node_manager) {
     static bool enable_native_list_nested =
         tasm::LynxEnv::GetInstance().EnableNativeListNested();
@@ -289,7 +288,7 @@ void LayoutMediator::HandleListOrComponentUpdated(
         (enable_native_list_nested ||
          (!enable_native_list_nested && options.list_id_ == 0 &&
           options.operation_id == 0 && options.list_comp_id_ == 0))) {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "OnLayoutAfter.OnListElementUpdated",
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_AFTER_ON_LIST_ELEMENT_UPDATED,
                   [&options](lynx::perfetto::EventContext ctx) {
                     options.UpdateTraceDebugInfo(ctx.event());
                   });
@@ -302,7 +301,7 @@ void LayoutMediator::HandleListOrComponentUpdated(
     }
     if (options.list_id_ != 0 && options.operation_id != 0 &&
         options.list_comp_id_ != 0) {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "OnLayoutAfter.OnComponentFinished",
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_AFTER_ON_COMPONENT_FINISHED,
                   [&options](lynx::perfetto::EventContext ctx) {
                     options.UpdateTraceDebugInfo(ctx.event());
                   });
@@ -314,7 +313,7 @@ void LayoutMediator::HandleListOrComponentUpdated(
     } else if (options.list_id_ != 0 && !options.operation_ids_.empty() &&
                !options.list_item_ids_.empty() &&
                options.operation_ids_.size() == options.list_item_ids_.size()) {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "OnLayoutAfter.OnListItemBatchFinished",
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_AFTER_ON_LIST_ITEM_BATCH_FINISHED,
                   [&options](lynx::perfetto::EventContext ctx) {
                     options.UpdateTraceDebugInfo(ctx.event());
                   });
@@ -331,7 +330,7 @@ void LayoutMediator::HandleListOrComponentUpdated(
 // notifying safepoint.
 void LayoutMediator::HandleLayoutVoluntarily(TASMOperationQueue *queue,
                                              tasm::Catalyzer *catalyzer) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LayoutMediator.HandleLayoutVoluntarily",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LAYOUT_MEDIATOR_HANDLE_LAYOUT_VOLUNTARILY,
               "has_first_screen_", queue->has_first_screen_.load());
   // when part on layout, usually, layout is faster than create ui.
   // even if layout slower, at most a few ms.

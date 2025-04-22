@@ -17,6 +17,7 @@
 #include "core/renderer/utils/android/event_converter_android.h"
 #include "core/renderer/utils/android/value_converter_android.h"
 #include "core/services/ssr/client/ssr_event_utils.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_shell.h"
 
 using lynx::base::AtomicLifecycle;
@@ -243,7 +244,7 @@ void NativeFacadeAndroid::InvokeUIMethod(
 
 void NativeFacadeAndroid::FlushJSBTiming(piper::NativeModuleInfo timing) {
   TRACE_EVENT(
-      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::FlushJSBTiming",
+      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FLUSH_JSB_TIMING,
       [&timing](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("module_name_", timing.module_name_);
         ctx.event()->add_debug_annotations("method_name_", timing.method_name_);

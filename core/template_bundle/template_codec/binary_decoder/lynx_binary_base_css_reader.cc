@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -68,7 +68,7 @@ bool LynxBinaryBaseCSSReader::DecodeCSSRoute(CSSRoute& css_route) {
 
 bool LynxBinaryBaseCSSReader::DecodeCSSFragment(SharedCSSFragment* fragment,
                                                 size_t descriptor_end) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCSSFragment");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_BASE_CSS_READER_DECODE_CSS_FRAGMENT);
   // Id
   DECODE_COMPACT_U32(id);
   fragment->id_ = id;
@@ -116,7 +116,8 @@ bool LynxBinaryBaseCSSReader::DecodeCSSFragment(SharedCSSFragment* fragment,
   }
 
   // When enable the css selector, the `css_size` will be zero
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "DecodeCSSParseToken");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
+                    BINARY_BASE_CSS_READER_DECODE_CSS_PARSE_TOKEN);
   DECODE_COMPACT_U32(size);
   uint32_t css_size = size << 16 >> 16;
   uint32_t keyframes_size = size >> 16;
@@ -134,7 +135,8 @@ bool LynxBinaryBaseCSSReader::DecodeCSSFragment(SharedCSSFragment* fragment,
   }
   TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
 
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "DecodeCSSKeyframesToken");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
+                    BINARY_BASE_CSS_READER_DECODE_CSS_KEYFRAMES_TOKEN);
   for (size_t i = 0; i < keyframes_size; ++i) {
     DECODE_STDSTR(name);
     CSSKeyframesToken* token = new CSSKeyframesToken(parser_config);
@@ -144,7 +146,8 @@ bool LynxBinaryBaseCSSReader::DecodeCSSFragment(SharedCSSFragment* fragment,
   TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
 
   // for other types
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY, "DecodeCSSFontFaceToken");
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
+                    BINARY_BASE_CSS_READER_DECODE_CSS_FONT_FACE_TOKEN);
   while (CheckSize(5, static_cast<uint32_t>(descriptor_end))) {
     DECODE_U8(type);
     DECODE_COMPACT_U32(typed_size);

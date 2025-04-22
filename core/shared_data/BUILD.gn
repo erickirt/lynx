@@ -16,6 +16,7 @@ lynx_core_source_set("white_board") {
 
 lynx_core_source_set("shared_data") {
   sources = [
+    "shared_data_trace_event_def.h",
     "white_board_delegate.cc",
     "white_board_delegate.h",
     "white_board_runtime_delegate.cc",

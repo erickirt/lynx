@@ -7,10 +7,10 @@
 #import <Foundation/Foundation.h>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 std::vector<uint8_t> ConvertNSBinary(NSData* binary) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ConvertNSBinary");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, CONVERT_NS_BINARY);
 
   std::vector<uint8_t> result;
   auto len = binary.length;

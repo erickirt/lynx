@@ -21,5 +21,8 @@ if (is_android) {
 
 lynx_core_source_set("feature_count") {
   sources = feature_count_shared_sources
-  deps = [ "//lynx/base/src:base_log_headers" ]
+  deps = [
+    "//lynx/base/src:base_log_headers",
+    "//lynx/core/services/trace:service_trace",
+  ]
 }

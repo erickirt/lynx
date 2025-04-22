@@ -12,7 +12,6 @@
 #include "core/base/android/java_only_array.h"
 #include "core/base/android/java_only_map.h"
 #include "core/base/android/jni_helper.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/build/gen/JSProxy_jni.h"
 #include "core/build/gen/lynx_sub_error_code.h"
@@ -21,6 +20,7 @@
 #include "core/resource/lazy_bundle/lazy_bundle_utils.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/shell/android/lynx_runtime_wrapper_android.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_shell.h"
 #include "lynx/core/shell/android/runtime_lifecycle_listener_delegate_android.h"
 
@@ -173,7 +173,7 @@ void JSProxyAndroid::CallJSFunction(std::string module_id,
         return;
       }
       TRACE_EVENT(
-          LYNX_TRACE_CATEGORY, "CallJSFunction",
+          LYNX_TRACE_CATEGORY, RUNTIME_ACTOR_CALL_JS_FUNCTION,
           [&](lynx::perfetto::EventContext ctx) {
             ctx.event()->add_debug_annotations("module_name", module_id);
             ctx.event()->add_debug_annotations("method_name", method_id);
@@ -192,7 +192,7 @@ void JSProxyAndroid::CallJSFunction(std::string module_id,
             }
           });
       TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                        "CallJSFunction:JavaOnlyArrayToJSArray");
+                        CALL_JS_FUNCTION_JAVA_ONLY_ARRAY_TO_JS_ARRAY);
       auto params = jsArrayFromJavaOnlyArray(AttachCurrentThread(), args.Get(),
                                              js_runtime.get());
       if (!params) {
@@ -202,7 +202,7 @@ void JSProxyAndroid::CallJSFunction(std::string module_id,
         return;
       }
       TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSFunction:Fire");
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, CALL_JS_FUNCTION_FIRE);
       runtime->CallFunction(module_id, method_id, *params);
     };
 

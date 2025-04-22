@@ -6,10 +6,9 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
+#include "core/shell/common/shell_trace_event_def.h"
 namespace lynx {
 
 namespace shell {
@@ -36,8 +35,7 @@ void LynxUIOperationAsyncQueue::Flush() {
 }
 
 void LynxUIOperationAsyncQueue::FlushOnUIThread() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "LynxUIOperationAsyncQueue::FlushOnUIThread.");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, UI_OPERATION_ASYNC_QUEUE_FLUSH_ON_UI_THREAD);
   if (!enable_flush_) {
     return;
   }
@@ -46,7 +44,7 @@ void LynxUIOperationAsyncQueue::FlushOnUIThread() {
   // will no longer appears.
   if (!destroyed_ && status_ != UIOperationStatus::ALL_FINISH) {
     TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                      "UIOperationQueueAsyncRender::flush.waitTASM");
+                      UI_OPERATION_ASYNC_RENDER_FLUSH_WAIN_TASM);
     {
       std::unique_lock<std::mutex> tasm_lock(tasm_mutex_);
       bool wait_for_tasm =
@@ -60,7 +58,7 @@ void LynxUIOperationAsyncQueue::FlushOnUIThread() {
 
     FlushInterval();
     TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                      "UIOperationQueueAsyncRender::flush.waitLayout");
+                      UI_OPERATION_ASYNC_RENDER_FLUSH_WAIN_LAYOUT);
     {
       std::unique_lock<std::mutex> layout_lock(layout_mutex_);
       bool wait_for_layout =
@@ -85,7 +83,7 @@ bool LynxUIOperationAsyncQueue::FlushPendingOperations() {
 
 void LynxUIOperationAsyncQueue::FlushOnTASMThread() {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "LynxUIOperationAsyncQueue::FlushOnTASMThread.");
+              UI_OPERATION_ASYNC_QUEUE_FLUSH_ON_TASM_THREAD);
   if (FlushPendingOperations()) {
     return;
   }

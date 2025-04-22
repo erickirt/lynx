@@ -28,6 +28,7 @@
 #include "core/renderer/dom/fiber/wrapper_element.h"
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/utils/base/element_template_info.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 #include "core/template_bundle/template_codec/template_binary.h"
 
 namespace lynx {
@@ -75,7 +76,8 @@ ElementBinaryReader::ElementBinaryReader(
 // These are the APIs used for decoding data and return fiber elements:
 fml::RefPtr<FiberElement> ElementBinaryReader::DecodeSingleTemplate(
     ElementManager* manager, TemplateAssembler* tasm) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ElementBinaryReader::DecodeSingleTemplate");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              ELEMENT_BINARY_READER_DECODE_SINGLE_TEMPLATE);
   // 1. Decode Element
   fml::RefPtr<FiberElement> element;
   // Because DecodeSingleTemplate always starts decoding from the page node, and
@@ -220,7 +222,7 @@ bool ElementBinaryReader::DecodeElementRecursively(
 bool ElementBinaryReader::DecodeBuiltinAttributesSection(
     fml::RefPtr<FiberElement>& element) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeBuiltinAttributesSection");
+              ELEMENT_BINARY_READER_DECODE_BUILTIN_ATTR_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_COMPACT_U32(key);
@@ -234,7 +236,7 @@ bool ElementBinaryReader::DecodeBuiltinAttributesSection(
 bool ElementBinaryReader::DecodeIDSelectorSection(
     fml::RefPtr<FiberElement>& element) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeIDSelectorSection");
+              ELEMENT_BINARY_READER_DECODE_ID_SELECTOR_SECTION);
   DECODE_STR(id_selector);
   element->SetIdSelector(std::move(id_selector));
   return true;
@@ -243,7 +245,7 @@ bool ElementBinaryReader::DecodeIDSelectorSection(
 bool ElementBinaryReader::DecodeInlineStylesSection(
     fml::RefPtr<FiberElement>& element) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeInlineStylesSection");
+              ELEMENT_BINARY_READER_DECODE_INLINE_STYLES_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_COMPACT_U32(key);
@@ -255,7 +257,8 @@ bool ElementBinaryReader::DecodeInlineStylesSection(
 
 bool ElementBinaryReader::DecodeClassesSection(
     fml::RefPtr<FiberElement>& element) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ElementBinaryReader::DecodeClassesSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              ELEMENT_BINARY_READER_DECODE_CLASSES_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_STR(cls);
@@ -266,7 +269,7 @@ bool ElementBinaryReader::DecodeClassesSection(
 
 bool ElementBinaryReader::DecodeEventsSection(
     fml::RefPtr<FiberElement>& element) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ElementBinaryReader::DecodeEventsSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_BINARY_READER_DECODE_EVENTS_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_U8(type);
@@ -285,7 +288,7 @@ bool ElementBinaryReader::DecodeEventsSection(
 bool ElementBinaryReader::DecodePiperEventsSection(
     fml::RefPtr<FiberElement>& element) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodePiperEventsSection");
+              ELEMENT_BINARY_READER_DECODE_PIPER_EVENTS_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_U8(type);
@@ -320,8 +323,7 @@ bool ElementBinaryReader::DecodePiperEventsSection(
 
 bool ElementBinaryReader::DecodeAttributesSection(
     fml::RefPtr<FiberElement>& element) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeAttributesSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_BINARY_READER_DECODE_ATTR_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_STR(key);
@@ -333,7 +335,8 @@ bool ElementBinaryReader::DecodeAttributesSection(
 
 bool ElementBinaryReader::DecodeDatasetSection(
     fml::RefPtr<FiberElement>& element) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ElementBinaryReader::DecodeDatasetSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              ELEMENT_BINARY_READER_DECODE_DATASET_SECTION);
   DECODE_COMPACT_U32(size);
   for (uint32_t i = 0; i < size; ++i) {
     DECODE_STR(key);
@@ -373,7 +376,7 @@ bool ElementBinaryReader::ConstructElement(ElementSectionEnum section_type,
                                            ElementManager* manager,
                                            TemplateAssembler* tasm,
                                            int64_t parent_component_id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ElementBinaryReader::ConstructElement");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_BINARY_READER_CONSTRUCT_ELEMENT);
   if (section_type == ElementSectionEnum::ELEMENT_TAG_ENUM) {
     DECODE_U8(tag_enum);
     ElementBuiltInTagEnum tag = static_cast<ElementBuiltInTagEnum>(tag_enum);
@@ -712,7 +715,7 @@ bool ElementBinaryReader::DecodeParsedStylesSectionInternal(
 
 bool ElementBinaryReader::DecodeStringKeyRouter(StringKeyRouter& router) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeStringKeyRouter");
+              ELEMENT_BINARY_READER_DECODE_STRING_KEY_ROUTER);
   DECODE_COMPACT_U32(size);
   router.start_offsets_.reserve(size);
   for (size_t i = 0; i < size; ++i) {
@@ -728,7 +731,7 @@ bool ElementBinaryReader::DecodeStringKeyRouter(StringKeyRouter& router) {
 bool ElementBinaryReader::DecodeOrderedStringKeyRouter(
     OrderedStringKeyRouter& router) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              "ElementBinaryReader::DecodeOrderedStringKeyRouter");
+              ELEMENT_BINARY_READER_DECODE_ORDERED_STRING_KEY_ROUTER);
   DECODE_COMPACT_U32(size);
   router.start_offsets_.reserve(size);
   for (size_t i = 0; i < size; ++i) {

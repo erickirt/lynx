@@ -25,5 +25,8 @@ if (is_android) {
 
 lynx_core_source_set("long_task_timing") {
   sources = long_task_timing_shared_sources
-  deps = [ "//lynx/base/src:base_log_headers" ]
+  deps = [
+    "//lynx/base/src:base_log_headers",
+    "//lynx/core/services/trace:service_trace",
+  ]
 }

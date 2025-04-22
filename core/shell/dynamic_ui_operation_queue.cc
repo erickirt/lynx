@@ -6,7 +6,7 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_ui_operation_async_queue.h"
 
 namespace lynx {
@@ -23,7 +23,7 @@ DynamicUIOperationQueue::DynamicUIOperationQueue(
 
 void DynamicUIOperationQueue::Transfer(
     base::ThreadStrategyForRendering strategy) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DynamicUIOperationQueue::Transfer");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_UI_OPERATION_QUEUE_TRANSFER);
   // ensure on ui thread.
   DCHECK(ui_runner_->RunsTasksOnCurrentThread());
 

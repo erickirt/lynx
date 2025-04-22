@@ -9,11 +9,11 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/thread/thread_utils.h"
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/services/event_report/event_tracker.h"
 #include "core/services/event_report/event_tracker_platform_impl.h"
+#include "core/services/trace/service_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -67,7 +67,7 @@ void LongTaskMonitor::DidProcessTask() {
   if (duration_threshold_ms_ <= timing.duration_ms_) {
     // to report
     TRACE_EVENT(
-        LYNX_TRACE_CATEGORY, "LongTaskTiming::ReportLongTask",
+        LYNX_TRACE_CATEGORY, LONG_TASK_TIMING_REPORT_LONG_TASK,
         [&timing](lynx::perfetto::EventContext ctx) {
           ctx.event()->add_debug_annotations("thread_name",
                                              timing.thread_name_);

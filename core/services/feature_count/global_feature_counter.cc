@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/services/event_report/event_tracker.h"
 #include "core/services/event_report/event_tracker_platform_impl.h"
+#include "core/services/trace/service_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -127,7 +127,7 @@ void GlobalFeatureCounter::StartTimerIfNeed() {
       // Avoid multiple calls under multi-threading.
       return;
     }
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "FeatureCountReporter::StartTimer");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, FEATURE_COUNT_REPORTER_START_TIMER);
     Instance().timer_ = std::make_unique<base::TimedTaskManager>();
     Instance().timer_->SetInterval(
         []() { TimerFired(); }, LYNX_FEATURE_COUNT_MILLISECONDS_TIMER_INTERVAL);

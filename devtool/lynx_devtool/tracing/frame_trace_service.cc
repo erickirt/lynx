@@ -8,6 +8,7 @@
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/lynx_trace_categories.h"
+#include "devtool/lynx_devtool/tracing/devtool_trace_event_def.h"
 
 namespace lynx {
 namespace trace {
@@ -17,7 +18,8 @@ FrameTraceService::FrameTraceService() : thread_("CrBrowserMain") {}
 void FrameTraceService::Initialize() {
   thread_.GetTaskRunner()->PostTask([] {
     TRACE_EVENT(
-        LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE, "TracingStartedInBrowser",
+        LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE,
+        FRAME_TRACE_SERVICE_STARTED_IN_BROWSER,
         [](lynx::perfetto::EventContext ctx) {
           auto* legacy_event = ctx.event()->set_legacy_event();
           legacy_event->set_phase('I');
@@ -31,7 +33,8 @@ void FrameTraceService::Initialize() {
           data += R"(,"url":""}],"persistentIds":true})";
           debug->set_legacy_json_value(data);
         });
-    TRACE_EVENT(LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE, "SetLayerTreeId",
+    TRACE_EVENT(LYNX_TRACE_CATEGORY_DEVTOOL_TIMELINE,
+                FRAME_TRACE_SERVICE_SET_LAYER_TREE_ID,
                 [](lynx::perfetto::EventContext ctx) {
                   auto* legacy_event = ctx.event()->set_legacy_event();
                   legacy_event->set_phase('I');
@@ -50,7 +53,7 @@ void FrameTraceService::SendScreenshots(const std::string& snapshot) {
 }
 
 void FrameTraceService::Screenshots(const std::string& snapshot) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_SCREENSHOTS, "Screenshot",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_SCREENSHOTS, FRAME_TRACE_SERVICE_SCREENSHOT,
               [&snapshot](lynx::perfetto::EventContext ctx) {
                 auto* legacy_event = ctx.event()->set_legacy_event();
                 legacy_event->set_phase('O');
@@ -71,7 +74,8 @@ void FrameTraceService::SendFPSData(const uint64_t& startTime,
 
 void FrameTraceService::FPSTrace(const uint64_t& startTime,
                                  const uint64_t& endTime) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, "NeedsBeginFrameChanged", startTime,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS,
+              FRAME_TRACE_SERVICE_NEEDS_BEGIN_FRAME_CHANGED, startTime,
               [](lynx::perfetto::EventContext ctx) {
                 auto* legacy_event = ctx.event()->set_legacy_event();
                 legacy_event->set_phase('I');
@@ -84,8 +88,8 @@ void FrameTraceService::FPSTrace(const uint64_t& startTime,
                 idDebug->set_name("layerTreeId");
                 idDebug->set_int_value(1);
               });
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, "BeginFrame", startTime,
-              [](lynx::perfetto::EventContext ctx) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, FRAME_TRACE_SERVICE_BEGIN_FRAME,
+              startTime, [](lynx::perfetto::EventContext ctx) {
                 auto* legacy_event = ctx.event()->set_legacy_event();
                 legacy_event->set_phase('I');
                 legacy_event->set_unscoped_id(1);
@@ -93,7 +97,7 @@ void FrameTraceService::FPSTrace(const uint64_t& startTime,
                 idDebug->set_name("layerTreeId");
                 idDebug->set_int_value(1);
               });
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, "DrawFrame", endTime,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, FRAME_TRACE_SERVICE_DRAW_FRAME, endTime,
               [endTime](lynx::perfetto::EventContext ctx) {
                 auto* legacy_event = ctx.event()->set_legacy_event();
                 legacy_event->set_phase('b');
@@ -105,7 +109,7 @@ void FrameTraceService::FPSTrace(const uint64_t& startTime,
                 idDebug->set_name("layerTreeId");
                 idDebug->set_int_value(1);
               });
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, "DrawFrame", endTime,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_FPS, FRAME_TRACE_SERVICE_DRAW_FRAME, endTime,
               [](lynx::perfetto::EventContext ctx) {
                 auto* legacy_event = ctx.event()->set_legacy_event();
                 legacy_event->set_phase('e');

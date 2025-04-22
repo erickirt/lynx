@@ -7,7 +7,7 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 namespace lynx {
 namespace shell {
@@ -31,7 +31,7 @@ void TASMOperationQueueAsync::AppendPendingTask() {
 // @note: run on tasm thread
 // para type bool: can reduce hood lock
 bool TASMOperationQueueAsync::Flush() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "TASMOperationQueueAsync::Flush");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TASM_OPERATION_QUEUE_ASYNC_FLUSH);
 
   bool result = false;
 

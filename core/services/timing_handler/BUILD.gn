@@ -45,12 +45,16 @@ lynx_core_source_set("timing_handler_platform") {
   deps = [
     ":timing_handler",
     "//lynx/base/src:base_log_headers",
+    "//lynx/core/services/trace:service_trace",
   ]
 }
 
 lynx_core_source_set("timing_handler") {
   sources = timing_handler_shared_sources
-  deps = [ "//lynx/base/src:base_log_headers" ]
+  deps = [
+    "//lynx/base/src:base_log_headers",
+    "//lynx/core/services/trace:service_trace",
+  ]
 }
 
 lynx_core_source_set("timing_handler_delegate") {

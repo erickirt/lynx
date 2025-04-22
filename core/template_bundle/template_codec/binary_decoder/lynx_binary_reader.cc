@@ -10,6 +10,7 @@
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/vm/lepus/context.h"
 #include "core/runtime/vm/lepus/quick_context_pool.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 #include "core/template_bundle/template_codec/template_binary.h"
 
 namespace lynx {
@@ -55,7 +56,7 @@ bool LynxBinaryReader::DidDecodeAppType() {
 }
 
 bool LynxBinaryReader::DidDecodeTemplate() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DidDecodeTemplate");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DID_DECODE_TEMPLATE);
 
   if (IsCardType() && !page_configs_) {
     error_message_ = "DecodeAppError: page config is null";
@@ -78,7 +79,7 @@ bool LynxBinaryReader::DidDecodeTemplate() {
 Themed& LynxBinaryReader::Themed() { return template_bundle().themed_; }
 
 bool LynxBinaryReader::DecodeCSSDescriptor() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCSSDescriptor");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DECODE_CSS_DESCRIPTOR);
   // decode route
   ERROR_UNLESS(DecodeCSSDescriptorRoute());
 
@@ -124,7 +125,7 @@ bool LynxBinaryReader::GreedyDecodeCSSDescriptor(
 
 bool LynxBinaryReader::DecodeLepusChunk() {
   // TODO(luochangan.adrian): Evaluation of the necessity of lazy decoding
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeLepusChunk");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DECODE_LEPUS_CHUNK);
   ERROR_UNLESS(DecodeLepusChunkRoute());
   ERROR_UNLESS(GreedyDecodeLepusChunk(
       template_bundle().lepus_chunk_manager_->lepus_chunk_map_));
@@ -168,7 +169,7 @@ bool LynxBinaryReader::DecodeLepusChunkRoute() {
 }
 
 bool LynxBinaryReader::DecodeContext() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeContext");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DECODE_CONTEXT);
   auto& tb = template_bundle();
   tb.context_bundle_ = lepus::ContextBundle::Create(is_lepusng_binary_);
 
@@ -178,7 +179,7 @@ bool LynxBinaryReader::DecodeContext() {
 }
 
 bool LynxBinaryReader::DecodeParsedStylesSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeParsedStylesSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DECODE_PARSED_STYLES_SECTION);
   ERROR_UNLESS(DecodeParsedStylesRouter());
   ERROR_UNLESS(GreedyDecodeParsedStylesSection());
   return true;
@@ -193,7 +194,8 @@ bool LynxBinaryReader::GreedyDecodeParsedStylesSection() {
 }
 
 bool LynxBinaryReader::DecodeElementTemplateSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeElementTemplateSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_READER_DECODE_ELEMENT_TEMPLATE_SECTION);
   ERROR_UNLESS(DecodeElementTemplatesRouter());
   ERROR_UNLESS(GreedyDecodeElementTemplateSection());
   ERROR_UNLESS(GreedyConstructElements());
@@ -201,7 +203,7 @@ bool LynxBinaryReader::DecodeElementTemplateSection() {
 }
 
 bool LynxBinaryReader::DecodeCustomSectionsSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCustomSections");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_READER_DECODE_CUSTOM_SECTIONS);
   DECODE_U32(size);
 
   CustomSectionRoute route;

@@ -8,7 +8,6 @@
 
 #include "base/include/no_destructor.h"
 #include "core/base/threading/thread_merger.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/public/jsb/native_module_factory.h"
 #include "core/renderer/dom/lynx_get_ui_result.h"
 #include "core/renderer/dom/vdom/radon/node_select_options.h"
@@ -22,6 +21,7 @@
 #include "core/services/feature_count/global_feature_counter.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "core/services/timing_handler/timing_constants_deprecated.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_runtime_actor_holder.h"
 #include "core/shell/runtime_mediator.h"
 #include "core/shell/runtime_standalone_helper.h"
@@ -195,7 +195,7 @@ void LynxShell::InitRuntime(
     std::vector<std::string> preload_js_paths, bool force_reload_js_core,
     bool force_use_light_weight_js_engine, bool pending_js_task,
     bool enable_user_code_cache, const std::string& code_cache_source_url) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxShell::InitRuntime");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LYNX_SHELL_INIT_RUNTIME);
 #if ENABLE_TESTBENCH_RECORDER
   int64_t record_id = reinterpret_cast<int64_t>(this);
   engine_actor_->Act(
@@ -294,7 +294,7 @@ void LynxShell::AttachRuntime(
 
 void LynxShell::StartJsRuntime() {
   if (!is_destroyed_ && start_js_runtime_task_ != nullptr) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxShell::StartJsRuntime");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, LYNX_SHELL_START_JS_RUNTIME);
     runtime_actor_->ActAsync(std::move(start_js_runtime_task_));
   }
 }
@@ -629,7 +629,7 @@ void LynxShell::UpdateViewport(float width, int32_t width_mode, float height,
       tasm::Config::pixelRatio(), reinterpret_cast<int64_t>(this));
 #endif
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, "LynxShell.UpdateViewport",
+      LYNX_TRACE_CATEGORY, LYNX_SHELL_UPDATE_VIEWPORT,
       [&](lynx::perfetto::EventContext ctx) {
         std::string view_port_info_str =
             base::FormatString("size: %.1f, %.1f; mode: %d, %d", width, height,
@@ -1078,7 +1078,7 @@ void LynxShell::EnsureTemplateDataThreadSafe(
 lepus::Value LynxShell::EnsureGlobalPropsThreadSafe(
     const lepus::Value& global_props) {
   // need clone global props if consumed by tasm thread
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LynxShell::EnsureGlobalPropsThreadSafe");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, LYNX_SHELL_ENSURE_GLOBAL_PROPS_THREAD_SAFE);
   if (!(engine_actor_->CanRunNow())) {
     LOGI("EnsureGlobalPropsThreadSafe CloneValue." << this);
     return lynx::lepus::Value::Clone(global_props);

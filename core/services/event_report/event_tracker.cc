@@ -7,9 +7,8 @@
 #include <map>
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/services/event_report/event_tracker_platform_impl.h"
+#include "core/services/trace/service_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {

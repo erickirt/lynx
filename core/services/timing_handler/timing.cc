@@ -5,7 +5,7 @@
 #include "core/services/timing_handler/timing.h"
 
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
+#include "core/services/trace/service_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -23,9 +23,8 @@ void TimingCollector::Mark(const TimingKey& key, uint64_t timestamp) {
   Timing& top_timings = timing_stack_.top();
   timestamp = timestamp > 0 ? timestamp : base::CurrentSystemTimeMicroseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, nullptr,
+      LYNX_TRACE_CATEGORY, TIMING_MARK + key,
       [&top_timings, &key, timestamp](lynx::perfetto::EventContext ctx) {
-        ctx.event()->set_name("Timing::Mark." + key);
         ctx.event()->add_debug_annotations("timing_key", key);
         ctx.event()->add_debug_annotations("pipeline_id",
                                            top_timings.pipeline_id_);
@@ -44,9 +43,8 @@ void TimingCollector::MarkFrameworkTiming(const lynx::tasm::TimingKey& key,
   Timing& top_timings = timing_stack_.top();
   timestamp = timestamp > 0 ? timestamp : base::CurrentSystemTimeMicroseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, nullptr,
+      LYNX_TRACE_CATEGORY, TIMING_MARK_FRAME_WORK_TIMING + key,
       [&top_timings, &key, timestamp](lynx::perfetto::EventContext ctx) {
-        ctx.event()->set_name("Timing::MarkFrameWorkTiming." + key);
         ctx.event()->add_debug_annotations("timing_key", key);
         ctx.event()->add_debug_annotations("pipeline_id",
                                            top_timings.pipeline_id_);

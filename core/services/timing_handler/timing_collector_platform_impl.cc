@@ -4,6 +4,8 @@
 
 #include "core/services/timing_handler/timing_collector_platform_impl.h"
 
+#include "core/services/trace/service_trace_event_def.h"
+
 namespace lynx {
 namespace tasm {
 namespace timing {
@@ -18,11 +20,10 @@ void TimingCollectorPlatformImpl::SetTiming(const tasm::PipelineID& pipeline_id,
                                             uint64_t us_timestamp) const {
   if (timing_actor_) {
     TRACE_EVENT_INSTANT(
-        LYNX_TRACE_CATEGORY, nullptr,
+        LYNX_TRACE_CATEGORY, TIMING_MARK + timing_key,
         [&pipeline_id, &timing_key, us_timestamp,
          instance_id =
              timing_actor_->GetInstanceId()](lynx::perfetto::EventContext ctx) {
-          ctx.event()->set_name("Timing::Mark." + timing_key);
           ctx.event()->add_debug_annotations("timing_key", timing_key);
           ctx.event()->add_debug_annotations("pipeline_id", pipeline_id);
           ctx.event()->add_debug_annotations("timestamp",
@@ -43,7 +44,7 @@ void TimingCollectorPlatformImpl::SetNeedMarkDrawEndTiming(
   if (pipeline_id.empty()) {
     return;
   }
-  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, "Timing::SetNeedMarkDrawEndTiming",
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, TIMING_SET_NEED_MARK_DRAW_END,
                       [&pipeline_id](lynx::perfetto::EventContext ctx) {
                         ctx.event()->add_debug_annotations("pipeline_id",
                                                            pipeline_id);

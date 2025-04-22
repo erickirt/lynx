@@ -13,8 +13,8 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/services/feature_count/feature_counter.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 
 #if ENABLE_AIR
 #include "core/renderer/dom/air/lynx_air_parsed_style_store.h"
@@ -53,7 +53,8 @@ bool LynxBinaryBaseTemplateReader::Decode() {
 
 // Decode Header Section
 bool LynxBinaryBaseTemplateReader::DecodeHeader() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "DecodeHeader");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS,
+              BINARY_BASE_TEMPLATE_READER_DECODE_HEADER);
   DECODE_U32(total_size);
   if (total_size != stream_->size()) {
     std::ostringstream msg;
@@ -340,7 +341,7 @@ bool LynxBinaryBaseTemplateReader::DecodeHeaderInfoField() {
 }
 
 bool LynxBinaryBaseTemplateReader::DidDecodeAppType() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DidDecodeAppType");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, BINARY_BASE_TEMPLATE_READER_DECODE_APP_TYPE);
   if (!app_type_check_) {
     // if app_type_ is not set, skip
     return true;
@@ -366,7 +367,8 @@ bool LynxBinaryBaseTemplateReader::DidDecodeAppType() {
 
 // Decode Template body
 bool LynxBinaryBaseTemplateReader::DecodeTemplateBody() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeTemplateBody");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_TEMPLATE_BODY);
 
   if (compile_options_.enable_flexible_template_) {
     ERROR_UNLESS(DecodeFlexibleTemplateBody());
@@ -377,7 +379,8 @@ bool LynxBinaryBaseTemplateReader::DecodeTemplateBody() {
 }
 
 bool LynxBinaryBaseTemplateReader::DecodeFlexibleTemplateBody() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeFlexibleTemplateBody");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_FLEXIBLE_TEMPLATE_BODY);
 
   ERROR_UNLESS(DecodeSectionRoute());
 
@@ -415,7 +418,8 @@ bool LynxBinaryBaseTemplateReader::DecodeFlexibleTemplateBody() {
       compile_options_.enable_fiber_arch_ ? kFiberSectionOrder : kSectionOrder;
 
   for (const auto &s : order) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "FindSpecificSection");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY,
+                BINARY_BASE_TEMPLATE_READER_FIND_SPECIFIC_SECTION);
 
     auto iter = section_route_.find(s);
     if (iter == section_route_.end()) {
@@ -433,7 +437,8 @@ bool LynxBinaryBaseTemplateReader::DecodeFlexibleTemplateBody() {
 
 // For Section Route
 bool LynxBinaryBaseTemplateReader::DecodeSectionRoute() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeSectionRoute");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_SECTION_ROUTE);
 
   // section route type
   DECODE_U8(section_route_type);
@@ -456,7 +461,8 @@ bool LynxBinaryBaseTemplateReader::DecodeSectionRoute() {
 }
 
 bool LynxBinaryBaseTemplateReader::DeserializeSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DESERIALIZE_SECTION);
 
   DECODE_U8(section_count);
   for (size_t i = 0; i < section_count; i++) {
@@ -469,7 +475,8 @@ bool LynxBinaryBaseTemplateReader::DeserializeSection() {
 
 bool LynxBinaryBaseTemplateReader::DecodeSpecificSection(
     const BinarySection &section) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeSpecificSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_SPECIFIC_SECTION);
   switch (section) {
     case BinarySection::CSS: {
       ERROR_UNLESS(DecodeCSSDescriptor());
@@ -500,7 +507,8 @@ bool LynxBinaryBaseTemplateReader::DecodeSpecificSection(
       break;
     }
     case BinarySection::CONFIG: {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodePageConfig");
+      TRACE_EVENT(LYNX_TRACE_CATEGORY,
+                  BINARY_BASE_TEMPLATE_READER_DECODE_PAGE_CONFIG);
       page_config_offset_ = stream_->offset();
       DECODE_STDSTR(config_str);
       EnsurePageConfig();
@@ -587,7 +595,8 @@ bool LynxBinaryBaseTemplateReader::DecodeComponentMould(ComponentMould *mould,
 }
 
 bool LynxBinaryBaseTemplateReader::DeserializeJSSourceSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeJSSourceSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_JS_SOURCE_SECTION);
   DECODE_U32(count);
   for (size_t i = 0; i < count; i++) {
     DECODE_STDSTR(path);
@@ -599,7 +608,8 @@ bool LynxBinaryBaseTemplateReader::DeserializeJSSourceSection() {
 }
 
 bool LynxBinaryBaseTemplateReader::DeserializeJSBytecodeSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeJSBytecodeSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_JS_BYTECODE_SECTION);
   DECODE_U32(engine);
   ERROR_UNLESS(engine == static_cast<uint32_t>(piper::JSRuntimeType::quickjs));
   DECODE_U32(count);

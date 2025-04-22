@@ -2,30 +2,27 @@
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
 
+import("//${lynx_dir}/build_overrides/bindings_files.gni")
 import("//lynx/core/Lynx.gni")
 import("//lynx/testing/test.gni")
 
 # base_shared_sources
 base_shared_sources = [
-  "js_constants.h",
-
-  # TODO(suguannan.906): copy lynx_trace_categories.h content to trace/trace_event_def.h, then delete lynx_trace_categories.h
-  "lynx_trace_categories.h",
-  "thread/once_task.h",
-  "thread/thread_utils.cc",
-  "thread/thread_utils.h",
-  "threading/js_thread_config_getter.h",
-  "threading/task_runner_manufactor.cc",
-  "threading/task_runner_manufactor.h",
-  "threading/thread_merger.cc",
-  "threading/thread_merger.h",
-  "threading/vsync_monitor.cc",
-  "threading/vsync_monitor.h",
-  "trace/trace_event_def.h",
-  "utils/any.h",
-  "utils/file_utils.cc",
-  "utils/file_utils.h",
-]
+                        "js_constants.h",
+                        "thread/once_task.h",
+                        "thread/thread_utils.cc",
+                        "thread/thread_utils.h",
+                        "threading/js_thread_config_getter.h",
+                        "threading/task_runner_manufactor.cc",
+                        "threading/task_runner_manufactor.h",
+                        "threading/thread_merger.cc",
+                        "threading/thread_merger.h",
+                        "threading/vsync_monitor.cc",
+                        "threading/vsync_monitor.h",
+                        "utils/any.h",
+                        "utils/file_utils.cc",
+                        "utils/file_utils.h",
+                      ] + trace_extend_sources
 
 if (is_android) {
   base_shared_sources += [

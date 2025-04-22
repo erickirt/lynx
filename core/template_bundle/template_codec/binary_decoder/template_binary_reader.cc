@@ -12,7 +12,6 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/css/css_style_sheet_manager.h"
 #include "core/renderer/dom/vdom/radon/radon_component.h"
 #include "core/renderer/dom/vdom/radon/radon_page.h"
@@ -21,6 +20,7 @@
 #include "core/runtime/vm/lepus/function.h"
 #include "core/runtime/vm/lepus/json_parser.h"
 #include "core/runtime/vm/lepus/quick_context.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 #include "core/template_bundle/template_codec/binary_decoder/lynx_binary_lazy_reader_delegate.h"
 #include "core/template_bundle/template_codec/compile_options.h"
 #include "core/template_bundle/template_codec/template_binary.h"
@@ -39,7 +39,8 @@ TemplateBinaryReader::TemplateBinaryReader(
 }
 
 bool TemplateBinaryReader::DecodeCSSDescriptor() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCSSDescriptor");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_DECODE_CSS_DESCRIPTOR);
 
   // decode route
   ERROR_UNLESS(DecodeCSSDescriptorRoute());
@@ -62,7 +63,8 @@ bool TemplateBinaryReader::DecodeCSSDescriptor() {
   }
 
   if (enable_css_async_decode) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCSSDescriptorWithThread");
+    TRACE_EVENT(LYNX_TRACE_CATEGORY,
+                TEMPLATE_BINARY_READER_DECODE_CSS_DESCRIPTOR_WITH_THREAD);
     const int length = css_section_range_.end - css_section_range_.start;
     auto css_reader = TemplateBinaryReader::Create(stream_->cursor(), length);
     css_reader->CopyForCSSAsyncDecode(*this);
@@ -132,7 +134,8 @@ bool TemplateBinaryReader::GetCSSAsyncDecode() {
 
 bool TemplateBinaryReader::DecodeCSSFragmentAsync(
     std::shared_ptr<CSSStyleSheetManager> manager) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeCSSFragmentAsync");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_DECODE_CSS_FRAGMENT_ASYNC);
   auto& fragment_ranges = manager->route_.fragment_ranges;
   size_t descriptor_start = stream_->offset();
   for (auto it = fragment_ranges.begin(); it != fragment_ranges.end(); ++it) {
@@ -153,7 +156,8 @@ bool TemplateBinaryReader::DecodeCSSFragmentAsync(
 }
 
 bool TemplateBinaryReader::DecodeCSSFragmentByIdInRender(int32_t id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LazyDecodeCSSFragment");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_LAZY_DECODE_CSS_FRAGMENT);
   const auto& manager = template_bundle().GetCSSStyleManager();
   auto& fragment_ranges = manager->route_.fragment_ranges;
   auto it = fragment_ranges.find(id);
@@ -197,7 +201,8 @@ TemplateBinaryReader::GetParsedStylesInRender(const std::string& key) {
 }
 
 bool TemplateBinaryReader::DecodeContextBundleInRender(const std::string& key) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LazyDecodeLepusChunk");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_LAZY_DECODE_LEPUS_CHUNK);
   const auto& iter = lepus_chunk_route_.start_offsets_.find(key);
   if (iter == lepus_chunk_route_.start_offsets_.end()) {
     return false;
@@ -212,13 +217,15 @@ bool TemplateBinaryReader::DecodeContextBundleInRender(const std::string& key) {
 }
 
 bool TemplateBinaryReader::DecodeParsedStylesSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeParsedStylesSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_DECODE_PARSED_STYLES_SECTION);
   // LazyDecode, only decode route.
   return DecodeParsedStylesRouter();
 }
 
 bool TemplateBinaryReader::DecodeElementTemplateSection() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeElementTemplateSection");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_DECODE_ELEMENT_TEMPLATE_SECTION);
   // LazyDecode ElementTemplateSection, just exec DecodeElementTemplateRoute
   // when decode template.
   ERROR_UNLESS(DecodeElementTemplatesRouter());
@@ -241,7 +248,7 @@ ElementTemplateResult TemplateBinaryReader::GetElementTemplateParseResult(
 }
 
 bool TemplateBinaryReader::DecodeLepusChunk() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeLepusChunk");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_BINARY_READER_DECODE_LEPUS_CHUNK);
   ERROR_UNLESS(DecodeLepusChunkRoute());
   bool enable_lepus_chunk_async =
       compile_options_.enable_async_lepus_chunk_decode_;
@@ -271,7 +278,8 @@ bool TemplateBinaryReader::DecodeLepusChunk() {
 
 bool TemplateBinaryReader::DecodeLepusChunkAsync(
     std::shared_ptr<LepusChunkManager> manager) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DecodeLepusChunkAsync");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TEMPLATE_BINARY_READER_DECODE_LEPUS_CHUNK_ASYNC);
   size_t descriptor_start = stream_->offset();
   auto& start_offsets = lepus_chunk_route_.start_offsets_;
   for (auto it = start_offsets.begin(); it != start_offsets.end(); ++it) {
@@ -299,7 +307,7 @@ LynxTemplateBundle& TemplateBinaryReader::template_bundle() {
 
 std::unique_ptr<LynxBinaryRecyclerDelegate>
 TemplateBinaryReader::CreateRecycler() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CompleteDecode");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_BINARY_READER_COMPLETE_DECODE);
   // 0. copy the binary the template bundle
   auto recycler =
       TemplateBinaryReader::Create(stream_->begin(), stream_->size());
@@ -322,7 +330,7 @@ TemplateBinaryReader::CreateRecycler() {
 }
 
 bool TemplateBinaryReader::CompleteDecode() {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CreateTemplateBundleRecycler");
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_BINARY_READER_CREATE_RECYCLER);
 
   // 0. decode css
   auto new_css_manager = std::make_shared<CSSStyleSheetManager>(nullptr);

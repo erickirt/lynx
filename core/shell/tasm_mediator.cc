@@ -9,7 +9,6 @@
 #include "base/include/value/base_string.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/threading/vsync_monitor.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/renderer/dom/lynx_get_ui_result.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/runtime/bindings/common/event/context_proxy.h"
@@ -18,6 +17,7 @@
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/table.h"
 #include "core/runtime/vm/lepus/tasks/lepus_callback_manager.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/lynx_actor_specialization.h"
 
 namespace lynx {
@@ -128,7 +128,7 @@ void TasmMediator::BindPipelineIDWithTimingFlag(
     const tasm::PipelineID& pipeline_id,
     const tasm::timing::TimingFlag& timing_flag) {
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, "Timing::BindPipelineIDWithTimingFlag",
+      LYNX_TRACE_CATEGORY, TIMING_BIND_PIPELINE_ID_WITH_TIMING_FLAG,
       [&pipeline_id, timing_flag](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("pipeline_id", pipeline_id);
         ctx.event()->add_debug_annotations("timing_flag", timing_flag);
@@ -249,7 +249,7 @@ void TasmMediator::CallJSApiCallback(piper::ApiCallBack callback) {
   // We should use TRACE_EVENT_FLOW_BEGIN0 instead of TRACE_EVENT here, because
   // we want to trace the whole flow of the ApiCallBack, not just the begin and
   // end of the ApiCallBack.
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSApiCallback",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, TASM_MEDIATOR_CALL_JS_API_CALLBACK,
               [=](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_flow_ids(callback.trace_flow_id());
               });
@@ -263,7 +263,8 @@ void TasmMediator::CallJSApiCallback(piper::ApiCallBack callback) {
 void TasmMediator::CallJSApiCallbackWithValue(piper::ApiCallBack callback,
                                               const lepus::Value& value,
                                               bool persist) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSApiCallbackWithValue",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              TASM_MEDIATOR_CALL_JS_API_CALLBACK_WITH_VALUE,
               [=](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_terminating_flow_ids(callback.trace_flow_id());
               });

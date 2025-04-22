@@ -7,11 +7,11 @@
 #include <string>
 #include <utility>
 
-#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/resource/lazy_bundle/lazy_bundle_utils.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 
 namespace lynx {
@@ -48,7 +48,7 @@ void LynxRuntimeProxyImpl::CallJSFunction(std::string module_id,
       }
 
       TRACE_EVENT(
-          LYNX_TRACE_CATEGORY, CALL_JS_FUNCTION,
+          LYNX_TRACE_CATEGORY, RUNTIME_ACTOR_CALL_JS_FUNCTION,
           [&](lynx::perfetto::EventContext ctx) {
             ctx.event()->add_debug_annotations("module_name", module_id);
             ctx.event()->add_debug_annotations("method_name", method_id);
@@ -70,7 +70,7 @@ void LynxRuntimeProxyImpl::CallJSFunction(std::string module_id,
 
       // Convert to piper value
       TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY,
-                        "CallJSFunction:ConvertValueToPiperArray");
+                        CALL_JS_FUNCTION_CONVERT_VALUE_TO_PIPER_ARRAY);
       auto piper_data =
           pub::ValueUtils::ConvertValueToPiperValue(*js_runtime, *params.get());
       auto piper_obj = piper_data.asObject(*js_runtime);
@@ -88,7 +88,7 @@ void LynxRuntimeProxyImpl::CallJSFunction(std::string module_id,
       TRACE_EVENT_END(LYNX_TRACE_CATEGORY);
 
       // Call
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, "CallJSFunction:Fire");
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, CALL_JS_FUNCTION_FIRE);
       runtime->CallFunction(module_id, method_id, *piper_array);
     };
 

@@ -6,9 +6,7 @@
 
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
-#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/vsync_monitor.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/renderer/dom/element.h"
 #include "core/renderer/dom/element_manager.h"
 #include "core/renderer/dom/lynx_get_ui_result.h"
@@ -19,6 +17,7 @@
 #include "core/runtime/common/jsi_object_wrapper.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 #include "core/shared_data/white_board_delegate.h"
+#include "core/shell/common/shell_trace_event_def.h"
 #include "core/shell/layout_mediator.h"
 #include "core/shell/tasm_mediator.h"
 #include "third_party/rapidjson/document.h"
@@ -222,7 +221,7 @@ void LynxEngine::UpdateScreenMetrics(float width, float height, float scale) {
 void LynxEngine::UpdateViewport(float width, int32_t width_mode, float height,
                                 int32_t height_mode, bool need_layout) {
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, "LynxEngine.UpdateViewport",
+      LYNX_TRACE_CATEGORY, LYNX_ENGINE_UPDATE_VIEWPORT,
       [&](lynx::perfetto::EventContext ctx) {
         std::string view_port_info_str =
             base::FormatString("size: %.1f, %.1f; mode: %d, %d", width, height,

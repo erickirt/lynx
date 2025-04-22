@@ -27,5 +27,8 @@ if (!is_oliver_ssr && !is_oliver_node_lynx && !enable_unittests) {
 
 lynx_core_source_set("event_report") {
   sources = event_report_shared_sources
-  deps = [ "//lynx/base/src:base_log_headers" ]
+  deps = [
+    "//lynx/base/src:base_log_headers",
+    "//lynx/core/services/trace:service_trace",
+  ]
 }

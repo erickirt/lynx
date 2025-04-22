@@ -10,6 +10,7 @@
 #include "core/services/replay/replay_controller.h"
 #include "devtool/lynx_devtool/agent/global_devtool_platform_facade.h"
 #include "devtool/lynx_devtool/base/file_stream.h"
+#include "devtool/lynx_devtool/tracing/devtool_trace_event_def.h"
 #include "third_party/modp_b64/modp_b64.h"
 
 namespace lynx {
@@ -364,7 +365,7 @@ void LynxGlobalDevToolMediator::TracingStart(
               sender->SendMessage("CDP", msg);
             });
         TRACE_EVENT_INSTANT(
-            "vitals", "LynxEngineVersion", "version",
+            "vitals", LYNX_ENGINE_VERSION, "version",
             GlobalDevToolPlatformFacade::GetInstance().GetLynxVersion());
         Json::Value res;
         res["result"] = Json::Value(Json::ValueType::objectValue);

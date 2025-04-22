@@ -23,12 +23,6 @@ inline constexpr const char* const RADON_DIFF_UPDATE_COMPONENT_DARA =
 inline constexpr const char* const LYNX_UPDATE_DATA_BY_JS =
     "LynxUpdateDataByJS";
 /**
- * @trace_description: Batch update for component on Engine Thread(historically
- * known as "Tasm Thread").
- */
-inline constexpr const char* const LYNX_BATCHED_UPDATE_DATA =
-    "LynxBatchedUpdateData";
-/**
  * @trace_description: Root Component update. Updated Keys is @args{Keys}. Keys
  * represent the keys of the state that were updated in this update. defaultData
  * represents the current state keys of the root component.

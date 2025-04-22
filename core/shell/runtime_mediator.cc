@@ -6,11 +6,11 @@
 
 #include "base/include/debug/lynx_assert.h"
 #include "core/base/threading/vsync_monitor.h"
-#include "core/base/trace/trace_event_def.h"
 #include "core/renderer/dom/vdom/radon/node_select_options.h"
 #include "core/renderer/template_assembler.h"
 #include "core/services/timing_handler/timing_mediator.h"
 #include "core/shared_data/white_board_delegate.h"
+#include "core/shell/common/shell_trace_event_def.h"
 
 #if ENABLE_TESTBENCH_RECORDER
 #include "core/services/recorder/testbench_base_recorder.h"
@@ -423,7 +423,7 @@ void RuntimeMediator::BindPipelineIDWithTimingFlag(
     const tasm::PipelineID& pipeline_id,
     const tasm::timing::TimingFlag& timing_flag) {
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY, "Timing::BindPipelineIDWithTimingFlag",
+      LYNX_TRACE_CATEGORY, TIMING_BIND_PIPELINE_ID_WITH_TIMING_FLAG,
       [&pipeline_id, timing_flag](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations("pipeline_id", pipeline_id);
         ctx.event()->add_debug_annotations("timing_flag", timing_flag);
