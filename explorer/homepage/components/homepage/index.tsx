@@ -81,9 +81,9 @@ export default class HomePage extends Component<HomePageProps> {
   textColor() {
     const { currentTheme } = this.props;
     if (currentTheme !== 'Auto') {
-      return currentTheme == 'Dark' ? 'FFFFFF' : '000000';
+      return currentTheme == 'Dark' ? '#FFFFFF' : '#000000';
     }
-    return lynx.__globalProps.theme == 'Dark' ? 'FFFFFF' : '000000';
+    return lynx.__globalProps.theme == 'Dark' ? '#FFFFFF' : '#000000';
   }
 
   render() {
@@ -103,7 +103,7 @@ export default class HomePage extends Component<HomePageProps> {
           <text className={withTheme('home-title')}>Lynx Explorer</text>
           <view className="scan">
             {(() => {
-              if (lynx.__globalProps.platform == 'iOS') {
+              if (SystemInfo.platform == 'iOS') {
                 return <></>;
               }
               return (

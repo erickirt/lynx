@@ -105,8 +105,12 @@ public class LynxExplorerInput extends LynxUI<AppCompatEditText> {
     mView.setHint(value);
   }
 
+  // This property receives a ARGB or RGB hex string ("#" included) from frontend.
   @LynxProp(name = "text-color")
   public void setTextColor(String value) {
+    if (value.startsWith("#")) {
+      value = value.substring(1);
+    }
     String textColor = "#" + value;
     String hintColor = "#40" + value;
     mView.setHintTextColor(Color.parseColor(hintColor));
