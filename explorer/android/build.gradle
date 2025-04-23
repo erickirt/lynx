@@ -91,7 +91,7 @@ ext.getFlavorNamesAndBuildTypes = { Project project ->
 ext.writeGnArgs = { String gnArgs ->
     exec {
         workingDir "../../"
-        commandLine "python3", "tools/android_tools/write_gn_args.py", "--gn-args", gnArgs
+        commandLine "python3", "tools/android_tools/write_gn_args.py", "--gn-args", gnArgs.replaceAll('"', '#')
     }
 }
 

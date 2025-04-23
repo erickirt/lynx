@@ -32,7 +32,7 @@ def copy_cmake_files(main_target):
   shutil.copy(file_full_path, dest_full_path)
 
 def gen_cmake_file(main_target, platform, debug, output_path):
-  gn_path = os.path.join(ROOT_PATH, 'lynx', 'tools','gn_tools', 'gn')
+  gn_path = os.path.join(ROOT_PATH, 'lynx', 'tools','gn_tools', 'gn_wrapper.py')
   is_debug = 'true' if debug else 'false'
 
   args = 'disallow_undefined_symbol=false enable_security_protection=false use_flutter_cxx=false \
@@ -44,7 +44,7 @@ def gen_cmake_file(main_target, platform, debug, output_path):
   if len(machine) > 0:
     args += " target_cpu=\\\"%s\\\"" % (machine)
   set_cmake_target = '--cmake-target=%s' % (main_target) if main_target else ''
-  command = "{} gen {} --args=\"{}\" --ide=cmake {}".format(gn_path, output_path, args, set_cmake_target)
+  command = "python3 {} gen {} --args=\"{}\" --ide=cmake {}".format(gn_path, output_path, args, set_cmake_target)
 
   print(command)
   result = subprocess.check_call(command, shell=True)

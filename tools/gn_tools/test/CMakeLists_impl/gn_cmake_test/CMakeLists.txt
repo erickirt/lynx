@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.4.1)
 enable_language(ASM)
 
 set(action_foreach_target 
-  lynx__tools__gn_tools__test_action_foreach_test
+  l__t__g__t_action_foreach_test
   )
 
 set(${action_foreach_target}__sources
@@ -46,12 +46,12 @@ add_custom_command(OUTPUT ${${action_foreach_target}__output}
 add_custom_target(${action_foreach_target} SOURCES ${${action_foreach_target}__sources} DEPENDS ${${action_foreach_target}__output})
 
 
-add_library(lynx__tools__gn_tools__test_cmake_test OBJECT EXCLUDE_FROM_ALL
+add_library(l__t__g__t_cmake_test OBJECT EXCLUDE_FROM_ALL
   ${ROOT_PATH}/lynx/tools/gn_tools/test/gn_test_shared.cc
   ${ROOT_PATH}/lynx/tools/gn_tools/test/gn_test_shared.h
   )
 
-target_compile_definitions(lynx__tools__gn_tools__test_cmake_test PRIVATE
+target_compile_definitions(l__t__g__t_cmake_test PRIVATE
   GN_TESTING_DEFINE=1
   USE_OPENSSL=1
   _DEBUG
@@ -65,35 +65,35 @@ target_compile_definitions(lynx__tools__gn_tools__test_cmake_test PRIVATE
   __STDC_FORMAT_MACROS
   )
 
-target_include_directories(lynx__tools__gn_tools__test_cmake_test PRIVATE
+target_include_directories(l__t__g__t_cmake_test PRIVATE
   ${ROOT_PATH}/lynx/tools/gn_tools/test/
   ${ROOT_PATH}/
   ${ROOT_PATH}/lynx/
   ${ROOT_PATH}/out/gn_cmake_test/gen/
   )
 
-target_compile_options(lynx__tools__gn_tools__test_cmake_test PRIVATE
+target_compile_options(l__t__g__t_cmake_test PRIVATE
   $<$<COMPILE_LANGUAGE:ASM>: "SHELL:-fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics" >
   )
 
-target_compile_options(lynx__tools__gn_tools__test_cmake_test PRIVATE
+target_compile_options(l__t__g__t_cmake_test PRIVATE
   $<$<COMPILE_LANGUAGE:C>: "SHELL:-fvisibility=hidden -fvisibility-inlines-hidden -fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics -Wall -Wextra -Wendif-labels -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-vla-extension -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-deprecated-copy -Wno-psabi -Wno-deprecated-non-prototype -Wno-enum-constexpr-conversion -Wno-unqualified-std-cast-call -Wno-non-c-typedef-for-linkage -Wno-range-loop-construct -fvisibility=hidden -Wstring-conversion -Wnewline-eof -O0 -g2" >
   )
 
-target_compile_options(lynx__tools__gn_tools__test_cmake_test PRIVATE
+target_compile_options(l__t__g__t_cmake_test PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>: "SHELL:-fvisibility=hidden -fvisibility-inlines-hidden -fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics -Wall -Wextra -Wendif-labels -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-vla-extension -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-deprecated-copy -Wno-psabi -Wno-deprecated-non-prototype -Wno-enum-constexpr-conversion -Wno-unqualified-std-cast-call -Wno-non-c-typedef-for-linkage -Wno-range-loop-construct -fvisibility=hidden -Wstring-conversion -Wnewline-eof -O0 -g2 -fvisibility-inlines-hidden -std=c++17 -fno-rtti -stdlib=libstdc++" >
   )
 
-add_dependencies(lynx__tools__gn_tools__test_cmake_test
-  lynx__tools__gn_tools__test_action_foreach_test
-  lynx__tools__gn_tools__test_copy_test_dirs_to_dir
-  lynx__tools__gn_tools__test_copy_test_file_to_file
-  lynx__tools__gn_tools__test_copy_test_files_to_dir
-  lynx__tools__gn_tools__test_gn_test_action
+add_dependencies(l__t__g__t_cmake_test
+  l__t__g__t_action_foreach_test
+  l__t__g__t_copy_test_dirs_to_dir
+  l__t__g__t_copy_test_file_to_file
+  l__t__g__t_copy_test_files_to_dir
+  l__t__g__t_gn_test_action
   )
 
 set(copy_target 
-  lynx__tools__gn_tools__test_copy_test_dirs_to_dir
+  l__t__g__t_copy_test_dirs_to_dir
   )
 
 set(${copy_target}__sources
@@ -122,11 +122,11 @@ add_custom_command(OUTPUT ${${copy_target}__output}
 add_custom_target(${copy_target} SOURCES ${${copy_target}__sources} DEPENDS ${${copy_target}__output})
 
 add_dependencies("${copy_target}"
-  "lynx__tools__gn_tools__test_copy_test_files_to_dir")
+  "l__t__g__t_copy_test_files_to_dir")
 
 
 set(copy_target 
-  lynx__tools__gn_tools__test_copy_test_file_to_file
+  l__t__g__t_copy_test_file_to_file
   )
 
 set(${copy_target}__sources 
@@ -152,7 +152,7 @@ add_custom_target(${copy_target} SOURCES ${${copy_target}__sources} DEPENDS ${${
 
 
 set(copy_target 
-  lynx__tools__gn_tools__test_copy_test_files_to_dir
+  l__t__g__t_copy_test_files_to_dir
   )
 
 set(${copy_target}__sources
@@ -186,7 +186,7 @@ add_custom_target(${copy_target} SOURCES ${${copy_target}__sources} DEPENDS ${${
 
 
 set(action_target 
-  lynx__tools__gn_tools__test_gn_test_action
+  l__t__g__t_gn_test_action
   )
 
 set(${action_target}__sources 
@@ -209,12 +209,12 @@ add_custom_command(OUTPUT ${${action_target}__output}
 add_custom_target(${action_target} SOURCES ${${action_target}__sources} DEPENDS ${${action_target}__output})
 
 
-add_library(lynx__tools__gn_tools__test_gn_test_source OBJECT EXCLUDE_FROM_ALL
+add_library(l__t__g__t_gn_test_source OBJECT EXCLUDE_FROM_ALL
   ${ROOT_PATH}/lynx/tools/gn_tools/test/gn_test_source.cc
   ${ROOT_PATH}/lynx/tools/gn_tools/test/gn_test_source.h
   )
 
-target_compile_definitions(lynx__tools__gn_tools__test_gn_test_source PRIVATE
+target_compile_definitions(l__t__g__t_gn_test_source PRIVATE
   USE_OPENSSL=1
   _DEBUG
   _FILE_OFFSET_BITS=64
@@ -227,62 +227,68 @@ target_compile_definitions(lynx__tools__gn_tools__test_gn_test_source PRIVATE
   __STDC_FORMAT_MACROS
   )
 
-target_include_directories(lynx__tools__gn_tools__test_gn_test_source PRIVATE
+target_include_directories(l__t__g__t_gn_test_source PRIVATE
   ${ROOT_PATH}/lynx/tools/gn_tools/test/
   ${ROOT_PATH}/
   ${ROOT_PATH}/lynx/
   ${ROOT_PATH}/out/gn_cmake_test/gen/
   )
 
-target_compile_options(lynx__tools__gn_tools__test_gn_test_source PRIVATE
+target_compile_options(l__t__g__t_gn_test_source PRIVATE
   $<$<COMPILE_LANGUAGE:ASM>: "SHELL:-fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics" >
   )
 
-target_compile_options(lynx__tools__gn_tools__test_gn_test_source PRIVATE
+target_compile_options(l__t__g__t_gn_test_source PRIVATE
   $<$<COMPILE_LANGUAGE:C>: "SHELL:-fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics -Wall -Wextra -Wendif-labels -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-vla-extension -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-deprecated-copy -Wno-psabi -Wno-deprecated-non-prototype -Wno-enum-constexpr-conversion -Wno-unqualified-std-cast-call -Wno-non-c-typedef-for-linkage -Wno-range-loop-construct -fvisibility=hidden -Wstring-conversion -Wnewline-eof -O0 -g2" >
   )
 
-target_compile_options(lynx__tools__gn_tools__test_gn_test_source PRIVATE
+target_compile_options(l__t__g__t_gn_test_source PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>: "SHELL:-fno-strict-aliasing -fstack-protector --param=ssp-buffer-size=4 -m64 -march=x86-64 -fPIC -pipe -pthread -fcolor-diagnostics -Wall -Wextra -Wendif-labels -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-vla-extension -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-deprecated-copy -Wno-psabi -Wno-deprecated-non-prototype -Wno-enum-constexpr-conversion -Wno-unqualified-std-cast-call -Wno-non-c-typedef-for-linkage -Wno-range-loop-construct -fvisibility=hidden -Wstring-conversion -Wnewline-eof -O0 -g2 -fvisibility-inlines-hidden -std=c++17 -fno-rtti -stdlib=libstdc++" >
   )
 
-add_dependencies(lynx__tools__gn_tools__test_gn_test_source
-  lynx__tools__gn_tools__test_action_foreach_test
-  lynx__tools__gn_tools__test_copy_test_dirs_to_dir
-  lynx__tools__gn_tools__test_copy_test_file_to_file
-  lynx__tools__gn_tools__test_copy_test_files_to_dir
-  lynx__tools__gn_tools__test_gn_test_action
+add_dependencies(l__t__g__t_gn_test_source
+  l__t__g__t_action_foreach_test
+  l__t__g__t_copy_test_dirs_to_dir
+  l__t__g__t_copy_test_file_to_file
+  l__t__g__t_copy_test_files_to_dir
+  l__t__g__t_gn_test_action
   )
 
 
 # Main target
 add_library(gn_test SHARED
   
-  $<TARGET_OBJECTS:lynx__tools__gn_tools__test_cmake_test>
+  $<TARGET_OBJECTS:l__t__g__t_cmake_test>
   
-  $<TARGET_OBJECTS:lynx__tools__gn_tools__test_gn_test_source>
+  $<TARGET_OBJECTS:l__t__g__t_gn_test_source>
   )
 
 add_dependencies(gn_test
-  lynx__tools__gn_tools__test_action_foreach_test
-  lynx__tools__gn_tools__test_copy_test_dirs_to_dir
-  lynx__tools__gn_tools__test_copy_test_file_to_file
-  lynx__tools__gn_tools__test_copy_test_files_to_dir
-  lynx__tools__gn_tools__test_gn_test_action
+  l__t__g__t_action_foreach_test
+  l__t__g__t_copy_test_dirs_to_dir
+  l__t__g__t_copy_test_file_to_file
+  l__t__g__t_copy_test_files_to_dir
+  l__t__g__t_gn_test_action
   )
 
-set(lynx__tools__gn_tools__test_gn_test_sub_shared_search_path 
+set(l__t__g__t_gn_test_sub_shared_search_path 
   ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
   )
 
 string(REPLACE 
+"\\" 
+"/" 
+l__t__g__t_gn_test_sub_shared_search_path 
+${l__t__g__t_gn_test_sub_shared_search_path}) 
+
+string(REPLACE 
 ${ROOT_PATH}/lynx/tools/gn_tools/test 
 ${ROOT_PATH}/lynx/tools/gn_tools/test 
-lynx__tools__gn_tools__test_gn_test_sub_shared_search_path 
-${lynx__tools__gn_tools__test_gn_test_sub_shared_search_path}) 
+l__t__g__t_gn_test_sub_shared_search_path 
+${l__t__g__t_gn_test_sub_shared_search_path}) 
 
 target_link_directories(gn_test PUBLIC  
-  ${lynx__tools__gn_tools__test_gn_test_sub_shared_search_path}
+  ${l__t__g__t_gn_test_sub_shared_search_path}
   )
 
 

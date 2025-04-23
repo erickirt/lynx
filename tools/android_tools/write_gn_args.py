@@ -11,7 +11,8 @@ from generate_cmake_scripts_by_gn import ANDROID_GN_ARGS_FILE_NAME, ANDROID_GN_A
 
 def write_gn_args(args, root_dir):
   try:
-    gn_args = json.loads(args.gn_args)
+    # Avoid missing '"' in args.gn_args when running on Windows.
+    gn_args = json.loads(args.gn_args.replace('#', '"'))
   except json.JSONDecodeError as e:
     print(f"Error decoding JSON: {e}")
     return -1

@@ -96,7 +96,7 @@ def run_gn_script(args, root_dir, target_exclude_patterns:list=None):
   os.remove(gn_args_file_path)
   
   r = 0
-  gn_path = os.path.join(root_dir, 'lynx', 'tools', 'gn_tools', 'gn')
+  gn_path = os.path.join(root_dir, 'lynx', 'tools', 'gn_tools', 'gn_wrapper.py')
   gn_out_dir = os.path.join(root_dir, GN_OUT_DIR_PATH)
   for gn_args_key in gn_args_map.keys():
     gn_args = ""
@@ -116,7 +116,7 @@ def run_gn_script(args, root_dir, target_exclude_patterns:list=None):
     if os.path.exists(gn_out_path) and os.path.isdir(gn_out_path):
       clean_gn_project_json_file(gn_out_path)
     set_cmake_target = '--cmake-target=%s' % (target) if target else ''
-    cmd = '%s gen %s --args="%s" --ide="cmake" %s' % (gn_path, gn_out_path, gn_args, set_cmake_target)
+    cmd = 'python3 %s gen %s --args="%s" --ide="cmake" %s' % (gn_path, gn_out_path, gn_args, set_cmake_target)
     r |= subprocess.call(cmd, shell=True)
   return r
 

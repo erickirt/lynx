@@ -47,7 +47,12 @@ class Project:
     return path
 
   def instead_source_path_prefix(self, path):
-    return self.get_absolute_path(path).replace(self.root_path, "${ROOT_PATH}")
+    root_path = self.get_absolute_path(path).replace(self.root_path, "${ROOT_PATH}")
+    # for windows abs root fixing, remove the first char "/", eg: /C:/Users/xxx -> C:/Users/xxx
+    if sys.platform.startswith(('cygwin', 'win')):
+      return root_path.lstrip("/")
+    else:
+      return root_path
 
   def instead_source_path_prefix_list(self, paths_list):
     if len(paths_list) <= 0:
@@ -296,6 +301,12 @@ class Target:
     return ''.join([Escape(c) for c in a])
 
   def get_cmake_target_name(self):
+    def extract_initial_path(path):
+      parts = path.split('/')
+      initials = [part[0] if part else '' for part in parts]
+      initial_path = '/'.join(initials)
+      return initial_path
+
     path_separator = self.find_first_of(self.gn_name, (':', '('))
     location = None
     name = None
@@ -313,6 +324,9 @@ class Target:
         assert self.gn_name.endswith(')')
         toolchain = self.gn_name[toolchain_separator + 1:-1]
     assert location or name
+    if location:
+      # avoid path length too long on windows
+      location = extract_initial_path(location)
   
     cmake_target_name = None
     if location.endswith('/' + name):
@@ -566,6 +580,15 @@ class Writer:
       binary_target_path = project.instead_source_path_prefix(binary_target.gn_name.split(':')[0])
       search_path_name = binary_target.cmake_name + '_search_path'
       self.write_variable_list('set', search_path_name, ["${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"])
+      # CMAKE_LIBRARY_OUTPUT_DIRECTORY output on windows is different from unix
+      # eg: C:\\a\\b\\c on windows, and C/a/b/c on unix
+      # We should replace '\\' with '/' to avoid wrong library search path
+      self.out.write('string(REPLACE \n')
+      self.out.write('"\\\\" \n')
+      self.out.write('"/" \n')
+      self.out.write("%s \n" % (search_path_name))
+      self.out.write("${%s}) \n\n" % (search_path_name))
+
       self.out.write("string(REPLACE \n")
       self.out.write("%s \n" % (target_path))
       self.out.write("%s \n" % (binary_target_path))

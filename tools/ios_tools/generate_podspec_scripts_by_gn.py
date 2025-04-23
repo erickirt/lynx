@@ -41,9 +41,9 @@ def generate_compile_products(root_path, args, gn_args, target_exclude_patterns:
   gn_out_path = os.path.join(root_path, 'out', 'gn_to_podspec')
   if os.path.exists(gn_out_path) and os.path.isdir(gn_out_path):
     clean_gn_project_json_file(gn_out_path)
-  gn_path = os.path.join(root_path, 'lynx', 'tools', 'gn_tools', 'gn')
+  gn_path = os.path.join(root_path, 'lynx', 'tools', 'gn_tools', 'gn_wrapper.py')
   set_podspec_target = '--podspec-target=%s' % (target) if target else ''
-  gn_command = '%s gen %s %s --ide=podspec %s' % (gn_path, gn_out_path, args, set_podspec_target)
+  gn_command = 'python3 %s gen %s %s --ide=podspec %s' % (gn_path, gn_out_path, args, set_podspec_target)
 
   print(gn_command)
 

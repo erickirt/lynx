@@ -22,7 +22,7 @@ lynx_envsetup() {
   export LYNX_DIR="$(dirname $TOOLS_ABSOLUTE_PATH)"
   export LYNX_ROOT_DIR="$(dirname $LYNX_DIR)"
   export BUILDTOOLS_DIR="${LYNX_ROOT_DIR}/buildtools"
-  export PATH="${BUILDTOOLS_DIR}/llvm/bin:${BUILDTOOLS_DIR}/ninja:${TOOLS_ABSOLUTE_PATH}/gn_tools:$PATH"
+  export PATH="${BUILDTOOLS_DIR}/llvm/bin:${BUILDTOOLS_DIR}/gn:${BUILDTOOLS_DIR}/ninja:${TOOLS_ABSOLUTE_PATH}/gn_tools:$PATH"
   # setup node version
   export PATH=${BUILDTOOLS_DIR}/node/bin:$PATH
   # setup corepack
