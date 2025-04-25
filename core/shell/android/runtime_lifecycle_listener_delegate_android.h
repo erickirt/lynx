@@ -21,19 +21,19 @@ class RuntimeLifecycleListenerDelegateAndroid
  public:
   static void RegisterJNI(JNIEnv* env);
 
-  RuntimeLifecycleListenerDelegateAndroid(JNIEnv* env, jobject delegate,
-                                          int type);
+  RuntimeLifecycleListenerDelegateAndroid(JNIEnv* env, jobject delegate);
   ~RuntimeLifecycleListenerDelegateAndroid() override = default;
 
-  void OnRuntimeCreate(
-      std::shared_ptr<runtime::IVSyncObserver> observer) override;
-  void OnRuntimeInit(int64_t runtime_id) override;
-  void OnAppEnterForeground() override;
-  void OnAppEnterBackground() override;
   void OnRuntimeAttach(Napi::Env env) override;
   void OnRuntimeDetach() override;
 
  private:
+  void OnRuntimeCreate(
+      std::shared_ptr<runtime::IVSyncObserver> observer) override {}
+  void OnRuntimeInit(int64_t runtime_id) override {}
+  void OnAppEnterForeground() override {}
+  void OnAppEnterBackground() override {}
+
   base::android::ScopedGlobalJavaRef<jobject> impl_;
 };
 

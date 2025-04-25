@@ -22,18 +22,18 @@ class RuntimeLifecycleListenerDelegateDarwin
  public:
   RuntimeLifecycleListenerDelegateDarwin(
       id<LynxRuntimeLifecycleListener> listener,
-      RuntimeLifecycleListenerDelegate::DelegateType type,
       id<LynxErrorReceiverProtocol> error_handler)
-      : RuntimeLifecycleListenerDelegate(type),
+      : RuntimeLifecycleListenerDelegate(
+            runtime::RuntimeLifecycleListenerDelegate::DelegateType::PART),
         _listener(listener),
         _error_handler(error_handler) {}
   ~RuntimeLifecycleListenerDelegateDarwin() override = default;
 
   void OnRuntimeCreate(
-      std::shared_ptr<runtime::IVSyncObserver> observer) override;
-  void OnRuntimeInit(int64_t runtime_id) override;
-  void OnAppEnterForeground() override;
-  void OnAppEnterBackground() override;
+      std::shared_ptr<runtime::IVSyncObserver> observer) final{};
+  void OnRuntimeInit(int64_t runtime_id) final{};
+  void OnAppEnterForeground() final{};
+  void OnAppEnterBackground() final{};
   void OnRuntimeAttach(Napi::Env env) override;
   void OnRuntimeDetach() override;
 

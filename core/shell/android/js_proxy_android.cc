@@ -124,10 +124,10 @@ void RunOnJSThread(JNIEnv* env, jclass jcaller, jlong ptr, jobject runnable) {
 }
 
 void AddLifecycleListener(JNIEnv* env, jobject jcaller, jlong ptr,
-                          jobject delegate, jint listener_type) {
+                          jobject delegate) {
   JS_PROXY->AddLifecycleListener(
       std::make_unique<lynx::shell::RuntimeLifecycleListenerDelegateAndroid>(
-          env, delegate, listener_type));
+          env, delegate));
 }
 
 namespace lynx {

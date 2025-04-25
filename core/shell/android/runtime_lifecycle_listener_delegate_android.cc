@@ -11,35 +11,10 @@ namespace lynx {
 namespace shell {
 
 RuntimeLifecycleListenerDelegateAndroid::
-    RuntimeLifecycleListenerDelegateAndroid(JNIEnv* env, jobject delegate,
-                                            jint type)
+    RuntimeLifecycleListenerDelegateAndroid(JNIEnv* env, jobject delegate)
     : RuntimeLifecycleListenerDelegate(
-          type == 0 ? RuntimeLifecycleListenerDelegate::DelegateType::PART
-                    : RuntimeLifecycleListenerDelegate::DelegateType::FULL),
+          RuntimeLifecycleListenerDelegate::DelegateType::PART),
       impl_(env, delegate) {}
-
-void RuntimeLifecycleListenerDelegateAndroid::OnRuntimeCreate(
-    std::shared_ptr<runtime::IVSyncObserver> observer) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_RuntimeLifecycleListenerDelegate_onRuntimeCreate(
-      env, impl_.Get(), reinterpret_cast<jlong>(&observer));
-}
-
-void RuntimeLifecycleListenerDelegateAndroid::OnRuntimeInit(
-    int64_t runtime_id) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_RuntimeLifecycleListenerDelegate_onRuntimeInit(
-      env, impl_.Get(), reinterpret_cast<jlong>(runtime_id));
-}
-
-void RuntimeLifecycleListenerDelegateAndroid::OnAppEnterForeground() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_RuntimeLifecycleListenerDelegate_onAppEnterForeground(env, impl_.Get());
-}
-void RuntimeLifecycleListenerDelegateAndroid::OnAppEnterBackground() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_RuntimeLifecycleListenerDelegate_onAppEnterBackground(env, impl_.Get());
-}
 
 void RuntimeLifecycleListenerDelegateAndroid::OnRuntimeAttach(
     Napi::Env current_napi_env) {

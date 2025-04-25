@@ -214,8 +214,6 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
 
   private AtomicInteger mLynxGetDataCounter = new AtomicInteger(0);
   private SparseArray<LynxGetDataCallback> mCallbackSparseArray = new SparseArray<>();
-  private final List<RuntimeLifecycleListener> mRuntimeLifecycleListenerDelegates =
-      new CopyOnWriteArrayList<>();
 
   @Keep
   public LynxTemplateRender(Context context, LynxView lynxView, LynxViewBuilder builder) {
@@ -356,7 +354,6 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     mTemplateAssembler.setLynxContext(mLynxContext);
 
     mLynxContext.setLynxView(mLynxView);
-    mLynxContext.setTemplateRender(this);
     mLynxContext.setForceDarkAllowed(builder.forceDarkAllowed);
     mLynxContext.setContextData(mLynxViewBuilder.getContextData());
     if (mLynxViewBuilder.getImageCustomParam() != null) {
@@ -3032,8 +3029,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     nativeAttachRuntime(mNativePtr, mNativeLifecycle, runtime.getNativePtr());
     String jsGroupThreadName = getJSGroupThreadNameIfNeed();
     WeakReference<LynxContext> weakContext = mNativeFacade.getLynxContext();
-    mJSProxy =
-        new JSProxy(mNativePtr, weakContext, jsGroupThreadName, mRuntimeLifecycleListenerDelegates);
+    mJSProxy = new JSProxy(mNativePtr, weakContext, jsGroupThreadName);
     mNativeFacade.setJSProxy(mJSProxy);
     LynxContext context = weakContext.get();
     if (context != null) {
@@ -3073,8 +3069,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     String jsGroupThreadName = getJSGroupThreadNameIfNeed();
     WeakReference<LynxContext> weakContext = mNativeFacade.getLynxContext();
     if (mNativeFacade.getEnableJSRuntime()) {
-      mJSProxy = new JSProxy(
-          mNativePtr, weakContext, jsGroupThreadName, mRuntimeLifecycleListenerDelegates);
+      mJSProxy = new JSProxy(mNativePtr, weakContext, jsGroupThreadName);
     }
     mNativeFacade.setJSProxy(mJSProxy);
     if (weakContext.get() != null) {
@@ -3338,15 +3333,11 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
 
   @RestrictTo({RestrictTo.Scope.LIBRARY})
   public void addRuntimeLifecycleListener(@NonNull RuntimeLifecycleListener listener) {
-    if (null == listener) {
-      LLog.w(TAG, "add a null lifecycle listener.");
+    if (null == listener || null == mJSProxy) {
+      LLog.w(TAG, "add a null lifecycle listener or js proxy is null.");
       return;
     }
-    if (null == mJSProxy) {
-      mRuntimeLifecycleListenerDelegates.add(listener);
-    } else {
-      mJSProxy.addLifecycleListener(listener);
-    }
+    mJSProxy.addLifecycleListener(listener);
   }
 
   public static class LogLynxViewClient extends LynxViewClient {

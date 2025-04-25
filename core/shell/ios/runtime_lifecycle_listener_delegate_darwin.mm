@@ -5,55 +5,12 @@
 #include "lynx/core/shell/ios/runtime_lifecycle_listener_delegate_darwin.h"
 
 #import <Lynx/LynxError.h>
-#import <Lynx/LynxRuntimeFullLifecycleListener.h>
+#import <Lynx/LynxRuntimeLifecycleListener.h>
 #import <Lynx/LynxSubErrorCode.h>
 #include "base/include/log/logging.h"
 
 namespace lynx {
 namespace shell {
-void RuntimeLifecycleListenerDelegateDarwin::OnRuntimeCreate(
-    std::shared_ptr<runtime::IVSyncObserver> observer) {
-  if (Type() == DelegateType::FULL) {
-    @try {
-      id<LynxRuntimeFullLifecycleListener> l = id<LynxRuntimeFullLifecycleListener>(_listener);
-      [l onRuntimeCreate:&observer];
-    } @catch (NSException *exception) {
-      OnError(exception);
-    }
-  }
-}
-
-void RuntimeLifecycleListenerDelegateDarwin::OnRuntimeInit(int64_t runtime_id) {
-  if (Type() == DelegateType::FULL) {
-    @try {
-      id<LynxRuntimeFullLifecycleListener> l = id<LynxRuntimeFullLifecycleListener>(_listener);
-      [l onRuntimeInit:runtime_id];
-    } @catch (NSException *exception) {
-      OnError(exception);
-    }
-  }
-}
-
-void RuntimeLifecycleListenerDelegateDarwin::OnAppEnterForeground() {
-  if (Type() == DelegateType::FULL) {
-    @try {
-      id<LynxRuntimeFullLifecycleListener> l = id<LynxRuntimeFullLifecycleListener>(_listener);
-      [l onAppEnterForeground];
-    } @catch (NSException *exception) {
-      OnError(exception);
-    }
-  }
-}
-void RuntimeLifecycleListenerDelegateDarwin::OnAppEnterBackground() {
-  if (Type() == DelegateType::FULL) {
-    @try {
-      id<LynxRuntimeFullLifecycleListener> l = id<LynxRuntimeFullLifecycleListener>(_listener);
-      [l onAppEnterBackground];
-    } @catch (NSException *exception) {
-      OnError(exception);
-    }
-  }
-}
 
 void RuntimeLifecycleListenerDelegateDarwin::OnRuntimeAttach(Napi::Env current_napi_env) {
   @try {

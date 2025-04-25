@@ -572,6 +572,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
         reinterpret_cast<lynx::pub::LynxExtensionDelegate*>([instance getExtensionDelegate]);
     shell_->RegisterModuleFactory(extension_delegate->CreateModuleFactory());
     extension_delegate->SetRuntimeTaskRunner(shell_->GetRunners()->GetJSTaskRunner());
+    shell_->AddRuntimeActorReadyListener(extension_delegate->GetRuntimeActorReadyListener());
     [instance setUp];
   }
 }

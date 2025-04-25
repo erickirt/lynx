@@ -15,13 +15,23 @@
 #include "core/public/runtime_lifecycle_observer.h"
 
 namespace lynx {
+namespace shell {
+template <typename T>
+class LynxActor;
+}
+namespace runtime {
+class LynxRuntime;
+}
 namespace pub {
+using RuntimeActorReadyListener = base::MoveOnlyClosure<
+    void, std::shared_ptr<shell::LynxActor<runtime::LynxRuntime>>>;
 class LynxExtensionDelegate {
  public:
   virtual ~LynxExtensionDelegate() = default;
   virtual std::unique_ptr<piper::NativeModuleFactory> CreateModuleFactory() = 0;
   virtual void SetRuntimeTaskRunner(
       fml::RefPtr<fml::TaskRunner> task_runner) = 0;
+  virtual RuntimeActorReadyListener GetRuntimeActorReadyListener() = 0;
 };
 
 }  // namespace pub

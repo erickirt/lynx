@@ -44,8 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAttachLynxPageUICallback:(attachLynxPageUI)callback;
 
-void AddLifecycleListener(id<LynxRuntimeLifecycleListener> listener);
-
 @end
 
 NS_ASSUME_NONNULL_END

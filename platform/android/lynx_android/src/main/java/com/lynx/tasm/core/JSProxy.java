@@ -41,13 +41,10 @@ public class JSProxy {
   @GuardedBy("mLock") private HashMap<Long, Object> mArgsMap = new HashMap<Long, Object>();
   private boolean hasReport = false;
 
-  public JSProxy(long nativeCreator, WeakReference<LynxContext> context, String jsGroupThreadName,
-      List<RuntimeLifecycleListener> listeners) {
+  public JSProxy(long nativeCreator, WeakReference<LynxContext> context, String jsGroupThreadName) {
     mContext = context;
     mJSGroupThreadName = jsGroupThreadName;
     mNativePtr = nativeCreate(nativeCreator, jsGroupThreadName);
-    addLifecycleListeners(listeners);
-    listeners.clear();
   }
 
   public JSProxy(LynxBackgroundRuntime runtime, String jsGroupThreadName) {
@@ -158,12 +155,6 @@ public class JSProxy {
     }
   }
 
-  private void addLifecycleListeners(List<RuntimeLifecycleListener> listeners) {
-    for (RuntimeLifecycleListener listener : listeners) {
-      addLifecycleListener(listener);
-    }
-  }
-
   @RestrictTo({RestrictTo.Scope.LIBRARY})
   public void addLifecycleListener(@NonNull RuntimeLifecycleListener listener) {
     if (null == listener) {
@@ -174,7 +165,7 @@ public class JSProxy {
         new RuntimeLifecycleListenerDelegate(mContext, listener);
     mLock.readLock().lock();
     if (mNativePtr != 0) {
-      nativeAddLifecycleListener(mNativePtr, delegate, delegate.getListenerType());
+      nativeAddLifecycleListener(mNativePtr, delegate);
     }
     mLock.readLock().unlock();
   }
@@ -206,5 +197,5 @@ public class JSProxy {
   }
 
   private native void nativeAddLifecycleListener(
-      long nativePtr, RuntimeLifecycleListenerDelegate delegate, int listenerType);
+      long nativePtr, RuntimeLifecycleListenerDelegate delegate);
 }

@@ -3,7 +3,6 @@
 // LICENSE file in the root directory of this source tree.
 
 #import "core/shell/ios/js_proxy_darwin.h"
-#import <Lynx/LynxRuntimeFullLifecycleListener.h>
 
 #include <atomic>
 #include <unordered_map>
@@ -47,14 +46,8 @@ void JSProxyDarwin::AddLifecycleListener(id<LynxRuntimeLifecycleListener> listen
   if (!actor_) {
     return;
   }
-  runtime::RuntimeLifecycleListenerDelegate::DelegateType type;
-  if ([listener conformsToProtocol:@protocol(LynxRuntimeFullLifecycleListener)]) {
-    type = runtime::RuntimeLifecycleListenerDelegate::DelegateType::FULL;
-  } else {
-    type = runtime::RuntimeLifecycleListenerDelegate::DelegateType::PART;
-  }
   auto delegate = std::make_unique<lynx::shell::RuntimeLifecycleListenerDelegateDarwin>(
-      listener, type, _error_handler);
+      listener, _error_handler);
   actor_->Act([delegate = std::move(delegate)](auto& runtime) mutable {
     runtime->AddLifecycleListener(std::move(delegate));
   });

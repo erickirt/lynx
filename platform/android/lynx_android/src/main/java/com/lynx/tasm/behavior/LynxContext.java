@@ -188,7 +188,6 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
 
   private Map<String, LynxExtensionModule> mExtensionModules = new HashMap<>();
   private LynxImageFetcher mImageFetcher;
-  private WeakReference<LynxTemplateRender> mWeakTemplateRender;
 
   private boolean mEnableVSyncAligned;
 
@@ -388,11 +387,6 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
     }
   }
 
-  @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-  public void setTemplateRender(@NonNull LynxTemplateRender templateRender) {
-    this.mWeakTemplateRender = new WeakReference<>(templateRender);
-  }
-
   /**
    * Provide unique LynxView sessionID like "$currentTimestamp-$lynxViewIdentify" format
    * @return LynxSessionID generated in LynxTemplateRender
@@ -412,22 +406,6 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
       return null;
     }
     return mLynxView.get();
-  }
-
-  /**
-   * use {@link #getLynxView()} and {@link LynxView#addRuntimeLifecycleListener} instead
-   * @param listener
-   */
-  @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-  @Deprecated
-  public void addRuntimeLifecycleListener(@NonNull RuntimeLifecycleListener listener) {
-    if (null == mWeakTemplateRender) {
-      return;
-    }
-    LynxTemplateRender render = mWeakTemplateRender.get();
-    if (null != render) {
-      render.addRuntimeLifecycleListener(listener);
-    }
   }
 
   /**

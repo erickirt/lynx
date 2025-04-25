@@ -957,7 +957,6 @@ public class LynxContext : NSObject {
   public LynxUIIntersectionObserverManager* _Nullable LynxContext()::intersectionManager intersectionManager;
   public LynxView* _Nullable LynxContext()::lynxView lynxView;
   public int32_t LynxContext()::instanceId instanceId;
-  public JSProxyReadyBlock _Nullable LynxContext()::js_proxy_ready_listener js_proxy_ready_listener;
 }
 
 public protocol LynxContextModule-p : <LynxModule> {
@@ -2649,13 +2648,6 @@ public class LynxRoute : NSObject {
   public instancetype LynxRoute::initWithUrl:routeName:param:(NSString *url,[routeName] NSString *routeName,[param] NSDictionary *param);
 }
 
-public protocol LynxRuntimeFullLifecycleListener-p : <LynxRuntimeLifecycleListener> {
-  public void LynxRuntimeFullLifecycleListener-p::onRuntimeCreate:(void *_Nonnull vsyncObserver);
-  public void LynxRuntimeFullLifecycleListener-p::onRuntimeInit:(long runtimeId);
-  public void LynxRuntimeFullLifecycleListener-p::onAppEnterForeground();
-  public void LynxRuntimeFullLifecycleListener-p::onAppEnterBackground();
-}
-
 public protocol LynxRuntimeLifecycleListener-p : <NSObject> {
   public void LynxRuntimeLifecycleListener-p::onRuntimeAttach:(void *_Nonnull env);
   public void LynxRuntimeLifecycleListener-p::onRuntimeDetach();
@@ -3064,7 +3056,6 @@ public class LynxTemplateRender : NSObject, <LynxTemplateRenderProtocol>, <Templ
   public id< LynxUIRendererProtocol > LynxTemplateRender()::lynxUIRenderer();
   public LynxUIOwner * LynxTemplateRender()::uiOwner();
   public void LynxTemplateRender()::setAttachLynxPageUICallback:(attachLynxPageUI callback);
-  public void LynxTemplateRender()::AddLifecycleListener(id< LynxRuntimeLifecycleListener > listener);
   public lynx::piper::ModuleFactoryDarwin * LynxTemplateRender()::getModuleFactory();
 }
 
@@ -5163,8 +5154,6 @@ public interface UIViewController(LynxHeroTransition) {
   public const int LYNX_STATE_FAIL LYNX_STATE_FAIL;
   public const int LYNX_STATE_END LYNX_STATE_END;
   public const int LYNX_STATE_UNDETERMINED LYNX_STATE_UNDETERMINED;
-
-  typedef void(^ JSProxyReadyBlock) (void)
 
   public typedef NS_ENUM(NSInteger, LynxBooleanOption);
 

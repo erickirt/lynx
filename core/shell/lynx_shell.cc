@@ -1231,6 +1231,10 @@ void LynxShell::OnRuntimeCreate() {
       [message_event = std::move(event)](auto& runtime) mutable {
         runtime->OnReceiveMessageEvent(std::move(message_event));
       });
+  for (auto& listener : runtime_actor_ready_listeners_) {
+    std::move(listener)(runtime_actor_);
+  }
+  runtime_actor_ready_listeners_.clear();
 }
 
 void LynxShell::ConsumeModuleFactory(piper::LynxModuleManager* module_manager) {

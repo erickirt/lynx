@@ -18,6 +18,7 @@
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/base/threading/vsync_monitor.h"
 #include "core/inspector/observer/inspector_runtime_observer_ng.h"
+#include "core/public/lynx_extension_delegate.h"
 #include "core/public/lynx_resource_loader.h"
 #include "core/renderer/data/template_data.h"
 #include "core/renderer/ui_wrapper/common/prop_bundle_creator_default.h"
@@ -38,7 +39,6 @@
 #include "core/shell/tasm_mediator.h"
 #include "core/shell/tasm_operation_queue.h"
 #include "core/shell/thread_mode_auto_switch.h"
-#include "lynx/core/runtime/piper/js/runtime_lifecycle_listener_delegate.h"
 
 namespace lynx {
 
@@ -273,6 +273,10 @@ class LynxShell {
     return runtime_actor_;
   }
 
+  void AddRuntimeActorReadyListener(pub::RuntimeActorReadyListener listener) {
+    runtime_actor_ready_listeners_.emplace_back(std::move(listener));
+  }
+
   std::shared_ptr<LynxActor<shell::LynxEngine>> GetEngineActor() {
     return engine_actor_;
   }
@@ -422,6 +426,8 @@ class LynxShell {
   // Managed by Runtime, only keep those before runtime create.
   std::vector<std::unique_ptr<lynx::piper::NativeModuleFactory>>
       module_factories_;
+  std::vector<lynx::pub::RuntimeActorReadyListener>
+      runtime_actor_ready_listeners_;
 
   std::shared_ptr<LayoutResultManager> layout_result_manager_;
 

@@ -17,45 +17,23 @@ import java.lang.reflect.Constructor;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Keep
-public class RuntimeLifecycleListenerDelegate implements RuntimeFullLifecycleListener {
+public class RuntimeLifecycleListenerDelegate implements RuntimeLifecycleListener {
   private static final String TAG = "RuntimeListenerDelegate";
-  private static final int PART_TYPE = 0;
-  private static final int FULL_TYPE = 1;
 
   private final WeakReference<LynxContext> mLynxContextWeak;
-  private final int mType;
-  private RuntimeLifecycleListener mPartListener;
-  private RuntimeFullLifecycleListener mFullListener;
+  private RuntimeLifecycleListener mListener;
 
   public RuntimeLifecycleListenerDelegate(
       @NonNull WeakReference<LynxContext> lynxContext, @NonNull RuntimeLifecycleListener listener) {
     this.mLynxContextWeak = lynxContext;
-    if (listener instanceof RuntimeFullLifecycleListener) {
-      this.mFullListener = (RuntimeFullLifecycleListener) listener;
-      mType = FULL_TYPE;
-    } else {
-      this.mPartListener = listener;
-      mType = PART_TYPE;
-    }
-  }
-
-  @CalledByNative
-  public void onRuntimeCreate(long vsyncMonitorPtr) {
-    if (mFullListener != null) {
-      try {
-        mFullListener.onRuntimeCreate(vsyncMonitorPtr);
-      } catch (Exception e) {
-        onError(e);
-      }
-    }
+    this.mListener = listener;
   }
 
   @CalledByNative
   public void onRuntimeAttach(long napiEnv) {
-    RuntimeLifecycleListener listener = mType == PART_TYPE ? mPartListener : mFullListener;
-    if (listener != null) {
+    if (mListener != null) {
       try {
-        listener.onRuntimeAttach(napiEnv);
+        mListener.onRuntimeAttach(napiEnv);
       } catch (Exception e) {
         onError(e);
       }
@@ -64,51 +42,13 @@ public class RuntimeLifecycleListenerDelegate implements RuntimeFullLifecycleLis
 
   @CalledByNative
   public void onRuntimeDetach() {
-    RuntimeLifecycleListener listener = mType == PART_TYPE ? mPartListener : mFullListener;
-    if (listener != null) {
+    if (mListener != null) {
       try {
-        listener.onRuntimeDetach();
+        mListener.onRuntimeDetach();
       } catch (Exception e) {
         onError(e);
       }
     }
-  }
-
-  @CalledByNative
-  public void onRuntimeInit(long runtimeId) {
-    if (mFullListener != null) {
-      try {
-        mFullListener.onRuntimeInit(runtimeId);
-      } catch (Exception e) {
-        onError(e);
-      }
-    }
-  }
-
-  @CalledByNative
-  public void onAppEnterBackground() {
-    if (mFullListener != null) {
-      try {
-        mFullListener.onAppEnterBackground();
-      } catch (Exception e) {
-        onError(e);
-      }
-    }
-  }
-
-  @CalledByNative
-  public void onAppEnterForeground() {
-    if (mFullListener != null) {
-      try {
-        mFullListener.onAppEnterForeground();
-      } catch (Exception e) {
-        onError(e);
-      }
-    }
-  }
-
-  public int getListenerType() {
-    return mType;
   }
 
   private void onError(Exception e) {
