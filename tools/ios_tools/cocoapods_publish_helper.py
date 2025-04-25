@@ -67,7 +67,7 @@ def prepare_cocoapods_publish_source(tag, component):
 
     print('3. Generate lynx_core.js')
     os.chdir(repo_path)
-    run_command(f'tools/js_tools/build.sh ios platform/darwin/ios/JSAssets/release/lynx_core.js platform/darwin/ios/lynx_devtool/assets/lynx_core_dev.js {tag}')
+    run_command(f'python3 tools/js_tools/build.py --platform ios --release_output platform/darwin/ios/JSAssets/release/lynx_core.js --dev_output platform/darwin/ios/lynx_devtool/assets/lynx_core_dev.js --version {tag}')
     os.chdir(root_path)
 
     print('4. Generate zip files')

@@ -6,7 +6,6 @@ import os
 import shutil
 import sys
 
-
 # Set the script exit mode, equivalent to set -e in bash
 sys.tracebacklimit = 0
 
@@ -14,9 +13,14 @@ sys.tracebacklimit = 0
 current_dir = os.path.dirname(os.path.realpath(__file__))
 # Get the root directory
 root_dir = os.path.abspath(os.path.join(current_dir, '../../../../'))
+sys.path.append(root_dir)
+from tools.js_tools.pnpm_helper import run_pnpm_command
+
 template_dir = "dist/devtoolSwitch.lynx.bundle"
-android_target_dir = os.path.join(root_dir, "platform/android/lynx_devtool/src/main/assets/devtool_switch")
-ios_target_dir = os.path.join(root_dir, "platform/darwin/ios/lynx_devtool/assets")
+android_target_dir = os.path.join(
+    root_dir, "platform/android/lynx_devtool/src/main/assets/devtool_switch")
+ios_target_dir = os.path.join(root_dir,
+                              "platform/darwin/ios/lynx_devtool/assets")
 switch_page_dir = "switchPage/"
 
 # Get command-line arguments
@@ -26,8 +30,7 @@ print("========== build devtool switch page ==========")
 # Change to the current directory
 os.chdir(current_dir)
 # Execute the pnpm build command
-os.environ['PATH'] = f"{root_dir}/../buildtools/node/bin:{os.environ['PATH']}"
-os.system("pnpm build")
+run_pnpm_command(["pnpm", "build"], current_dir)
 
 print("========== copy devtool switch resource ==========")
 if output:
@@ -50,5 +53,6 @@ os.makedirs(os.path.join(android_target_dir, switch_page_dir), exist_ok=True)
 os.makedirs(ios_switch_page_path, exist_ok=True)
 
 # Copy the file to the target directory
-shutil.copy(os.path.join(current_dir, template_dir), os.path.join(android_target_dir, switch_page_dir))
+shutil.copy(os.path.join(current_dir, template_dir),
+            os.path.join(android_target_dir, switch_page_dir))
 shutil.copy(os.path.join(current_dir, template_dir), ios_switch_page_path)

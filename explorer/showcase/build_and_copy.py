@@ -5,6 +5,12 @@
 import os
 import shutil
 import subprocess
+import sys
+
+root_dir = subprocess.check_output(['git', 'rev-parse',
+                                    '--show-toplevel']).decode().strip()
+sys.path.append(root_dir)
+from tools.js_tools.pnpm_helper import run_pnpm_command
 
 # Define the Lynx example directory name
 LYNX_EXAMPLE_DIR_NAME = "@lynx-example"
@@ -14,8 +20,10 @@ showcase_root_dir = os.path.dirname(os.path.abspath(__file__))
 explorer_dir = os.path.dirname(showcase_root_dir)
 
 # Define Android and iOS asset directories
-android_assets_dir = os.path.join(explorer_dir, "android", "lynx_explorer", "src", "main", "assets")
-ios_resource_dir = os.path.join(explorer_dir, "darwin", "ios", "lynx_explorer", "LynxExplorer", "Resource")
+android_assets_dir = os.path.join(explorer_dir, "android", "lynx_explorer",
+                                  "src", "main", "assets")
+ios_resource_dir = os.path.join(explorer_dir, "darwin", "ios", "lynx_explorer",
+                                "LynxExplorer", "Resource")
 
 # Create Android and iOS asset directories if they don't exist
 if not os.path.exists(android_assets_dir):
@@ -35,15 +43,14 @@ os.makedirs(showcase_ios)
 
 print("========== build showcase page ==========")
 os.chdir(showcase_root_dir)
-root_dir = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().strip()
-os.environ['PATH'] = f"{root_dir}/../buildtools/node/bin:{os.environ['PATH']}"
 # Install dependencies and build
-os.system("pnpm install --frozen-lockfile")
-os.system("pnpm run build")
+run_pnpm_command(["pnpm", "install", "--frozen-lockfile"], os.getcwd())
+run_pnpm_command(["pnpm", "run", "build"], os.getcwd())
 
 print("========== copy showcase resource ==========")
 # Copy resources from node_modules
-node_modules_example_dir = os.path.join(showcase_root_dir, "node_modules", LYNX_EXAMPLE_DIR_NAME)
+node_modules_example_dir = os.path.join(showcase_root_dir, "node_modules",
+                                        LYNX_EXAMPLE_DIR_NAME)
 for path in os.listdir(node_modules_example_dir):
     path_android = os.path.join(showcase_android, path)
     path_ios = os.path.join(showcase_ios, path)

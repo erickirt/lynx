@@ -5,10 +5,7 @@
 import os
 import shutil
 import subprocess
-
-# Copyright 2025 The Lynx Authors. All rights reserved.
-# Licensed under the Apache License Version 2.0 that can be found in the
-# LICENSE file in the root directory of this source tree.
+import sys
 
 # Get the current directory of the script
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -16,14 +13,22 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 # Calculate the root path
 root_path = os.path.abspath(os.path.join(current_dir, '../../../../'))
 
+sys.path.append(root_path)
+from tools.js_tools.pnpm_helper import run_pnpm_command
+
 # Define the distribution path
-dist_path = os.path.join(root_path, 'devtool', 'lynx_devtool', 'resources', 'lynx-logbox', 'dist')
+dist_path = os.path.join(root_path, 'devtool', 'lynx_devtool', 'resources',
+                         'lynx-logbox', 'dist')
 
 # Define the Android target path
-android_target_path = os.path.join(root_path, 'platform', 'android', 'lynx_devtool', 'src', 'main', 'assets', 'logbox')
+android_target_path = os.path.join(root_path, 'platform', 'android',
+                                   'lynx_devtool', 'src', 'main', 'assets',
+                                   'logbox')
 
 # Define the iOS target path
-ios_target_path = os.path.join(root_path, 'platform', 'darwin', 'ios', 'lynx_devtool', 'assets', 'logbox')
+ios_target_path = os.path.join(root_path, 'platform', 'darwin', 'ios',
+                               'lynx_devtool', 'assets', 'logbox')
+
 
 def build():
     # Change to the root directory
@@ -33,8 +38,8 @@ def build():
     os.makedirs(dist_path, exist_ok=True)
 
     # Run the pnpm build command
-    os.environ['PATH'] = f"{root_path}/../buildtools/node/bin:{os.environ['PATH']}"
-    subprocess.run(['pnpm', '--filter', '@lynx-js/logbox', 'build'], check=True)
+    run_pnpm_command(['pnpm', '--filter', '@lynx-js/logbox', 'build'],
+                     root_path)
 
     # Remove the existing Android and iOS target directories
     if os.path.exists(android_target_path):
@@ -57,6 +62,7 @@ def build():
         else:
             shutil.copy2(s, d_android)
             shutil.copy2(s, d_ios)
+
 
 if __name__ == "__main__":
     build()

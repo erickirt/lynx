@@ -5,6 +5,12 @@
 import os
 import shutil
 import subprocess
+import sys
+
+root_dir = subprocess.check_output(['git', 'rev-parse',
+                                    '--show-toplevel']).decode().strip()
+sys.path.append(root_dir)
+from tools.js_tools.pnpm_helper import run_pnpm_command
 
 # Get the directory of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,12 +20,14 @@ explorer_dir = os.path.abspath(os.path.join(script_dir, '..', '..', '..'))
 print(f"explorer_dir: {explorer_dir}")
 
 # Define the Android assets directory
-android_assets_dir = os.path.join(explorer_dir, 'explorer', 'android', 'lynx_explorer', 'src', 'main', 'assets')
+android_assets_dir = os.path.join(explorer_dir, 'explorer', 'android',
+                                  'lynx_explorer', 'src', 'main', 'assets')
 if not os.path.exists(android_assets_dir):
     os.makedirs(android_assets_dir)
 
 # Define the iOS resource directory
-ios_resource_dir = os.path.join(explorer_dir, 'explorer', 'darwin', 'ios', 'lynx_explorer', 'LynxExplorer', 'Resource')
+ios_resource_dir = os.path.join(explorer_dir, 'explorer', 'darwin', 'ios',
+                                'lynx_explorer', 'LynxExplorer', 'Resource')
 if not os.path.exists(ios_resource_dir):
     os.makedirs(ios_resource_dir)
 
@@ -35,11 +43,9 @@ if os.path.exists(automation_ios):
 os.makedirs(automation_ios)
 
 print("========== build integration test demo pages ==========")
-root_dir = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().strip()
-os.environ['PATH'] = f"{root_dir}/buildtools/node/bin:{os.environ['PATH']}"
 # Install dependencies and build
-os.system('pnpm install --frozen-lockfile')
-os.system('pnpm run build')
+run_pnpm_command(["pnpm", "install", "--frozen-lockfile"], os.getcwd())
+run_pnpm_command(["pnpm", "run", "build"], os.getcwd())
 
 print("========== copy integration test demo pages resource==========")
 # Iterate through directories in the current script directory

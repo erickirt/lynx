@@ -5,9 +5,12 @@
 
 import os
 import subprocess
+import sys
 
 root_dir = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().strip()
-os.environ['PATH'] = f"{root_dir}/buildtools/node/bin:{os.environ['PATH']}"
+sys.path.append(root_dir)
+from tools.js_tools.pnpm_helper import run_pnpm_command
+
 # Install dependencies and build
-os.system('pnpm install')
-os.system('pnpm build')
+run_pnpm_command(['pnpm', 'install'], os.getcwd())
+run_pnpm_command(['pnpm', 'build'], os.getcwd())

@@ -12,8 +12,8 @@
   "author": "Lynx Authors",
   "license": "Apache-2.0",
   "scripts": {
-    "build:core:android": "./tools/js_tools/build.sh android platform/android/lynx_js_sdk/src/main/assets/lynx_core.js platform/android/lynx_js_sdk/src/debug/assets/lynx_core_dev.js",
-    "build:core:darwin": "./tools/js_tools/build.sh ios platform/darwin/ios/JSAssets/release/lynx_core.js platform/darwin/ios/JSAssets/debug/lynx_core_dev.js",
+    "build:core:android": "python3 ./tools/js_tools/build.py --platform android --release_output platform/android/lynx_js_sdk/src/main/assets/lynx_core.js --dev_output platform/android/lynx_js_sdk/src/debug/assets/lynx_core_dev.js",
+    "build:core:darwin": "python3 ./tools/js_tools/build.py --platform ios --release_output platform/darwin/ios/JSAssets/release/lynx_core.js --dev_output platform/darwin/ios/JSAssets/debug/lynx_core_dev.js",
     "export:core": "pnpm --filter @lynx-js/lynx-core build:lib",
     "build:node-shard-tools": "pnpm --filter @lynx-js/runtime-shared build"
   },
