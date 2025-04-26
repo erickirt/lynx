@@ -5,7 +5,7 @@ system = platform.system().lower()
 machine = platform.machine().lower()
 machine = "x86_64" if machine == "amd64" else machine
 
-venv_python = "python3"
+venv_python = "./tools/vpython"
 
 deps = {
     'platform/android/gradle/wrapper/gradle-6.7.1-all.zip': {
@@ -81,13 +81,6 @@ deps = {
         "cwd": "../",
         "commands": [
             "cp lynx/root.gn .gn",
-        ],
-    },
-    'python_venv_set': {
-        "type": "action",
-        "cwd": "../",
-        "commands": [
-            venv_python + " lynx/tools/vpython_tools/vpython_env_setup.py",
         ],
     },
     'change_executable_permission': {
