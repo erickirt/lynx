@@ -823,10 +823,6 @@ class TemplateAssembler final
   bool can_use_snapshot_;
   bool template_loaded_;
 
-  using PerfTime = long long;
-  PerfTime actual_fmp_start_;
-  PerfTime actual_fmp_end_;
-
   Delegate& delegate_;
   I18n i18n;
 

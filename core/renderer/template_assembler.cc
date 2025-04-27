@@ -204,8 +204,6 @@ TemplateAssembler::TemplateAssembler(Delegate& delegate,
       support_component_js_(false),
       target_sdk_version_("null"),
       template_loaded_(false),
-      actual_fmp_start_(0),
-      actual_fmp_end_(0),
       delegate_(delegate),
       touch_event_handler_(nullptr),
 #if ENABLE_AIR
@@ -350,10 +348,6 @@ bool TemplateAssembler::OnLoadTemplate(PipelineOptions& pipeline_options) {
 
   // Before template load start, update global props
   UpdateGlobalPropsWithDefaultProps(pipeline_options);
-
-  actual_fmp_start_ = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count();
   return true;
 }
 
@@ -1103,12 +1097,6 @@ void TemplateAssembler::ReloadTemplate(
   tasm::TimingCollector::Instance()->MarkFrameworkTiming(
       tasm::timing::kSetInitDataEnd);
 
-  // actual_fmp_start_ and actual_fmp_end_ should be reset.
-  actual_fmp_start_ = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count();
-  actual_fmp_end_ = 0;
-
   // No need to decode and set page config here.
   TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_VITALS, LYNX_DOM_READY);
 
@@ -1541,12 +1529,6 @@ void TemplateAssembler::UpdateComponentData(const runtime::UpdateDataTask& task,
   if (v.IsTrue()) {
     page_proxy_.UpdateComponentData(task.component_id_, task.data_,
                                     pipeline_options);
-
-    if (actual_fmp_end_ == 0) {
-      actual_fmp_end_ = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::system_clock::now().time_since_epoch())
-                            .count();
-    }
   } else {
     page_proxy_.UpdateComponentData(task.component_id_, task.data_,
                                     pipeline_options);
@@ -2178,14 +2160,6 @@ bool TemplateAssembler::UpdateGlobalDataInternal(
 
   bool result = page_proxy_.UpdateGlobalDataInternal(value, update_page_option,
                                                      pipeline_options);
-  lepus_value v = value.GetProperty(BASE_STATIC_STRING(k_actual_first_screen));
-  if (v.IsTrue()) {
-    if (actual_fmp_end_ == 0) {
-      actual_fmp_end_ = std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::system_clock::now().time_since_epoch())
-                            .count();
-    }
-  }
   return result;
 }
 
