@@ -15,7 +15,6 @@
 #include "core/build/gen/CallbackImpl_jni.h"
 #include "core/runtime/bindings/jsi/modules/android/lynx_module_android.h"
 #include "core/runtime/bindings/jsi/modules/android/method_invoker.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/recorder/recorder_controller.h"
 #include "lynx/core/value_wrapper/android/value_impl_android.h"
 

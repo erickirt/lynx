@@ -7,7 +7,7 @@
 
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/runtime/vm/lepus/binary_input_stream.h"
 
 namespace lynx {
@@ -46,7 +46,7 @@ bool BinaryReader::ReadCompactD64(double* out_value) {
 }
 
 bool BinaryReader::ReadStringDirectly(std::string* out_value) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, READ_STRING_DIRECTLY);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ReadStringDirectly");
   uint32_t length = 0;
   ERROR_UNLESS(ReadCompactU32(&length));
   ERROR_UNLESS(stream_->ReadString(*out_value, length));
@@ -54,7 +54,7 @@ bool BinaryReader::ReadStringDirectly(std::string* out_value) {
 }
 
 bool BinaryReader::ReadStringDirectly(base::String& out_value) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, READ_STRING_DIRECTLY);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ReadStringDirectly");
   uint32_t length = 0;
   ERROR_UNLESS(ReadCompactU32(&length));
   ERROR_UNLESS(stream_->ReadString(out_value, length));

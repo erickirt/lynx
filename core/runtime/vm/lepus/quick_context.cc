@@ -9,12 +9,13 @@
 
 #include "base/include/string/string_number_convert.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
+#include "core/base/trace/trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/common/js_error_reporter.h"
 #include "core/runtime/profile/runtime_profiler_manager.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/exception.h"
 #include "core/runtime/vm/lepus/jsvalue_helper.h"
@@ -367,7 +368,7 @@ void QuickContext::SetEnableStrictCheck(bool val) {
 
 void QuickContext::SetFunctionFileName(LEPUSValue func_obj,
                                        const char* file_name) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_SET_FUNC_FILE_NAME,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "SetFunctionFileName",
               [&](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("file_name", file_name);
               });
@@ -388,7 +389,7 @@ bool QuickContext::Execute(Value* ret_val) {
     LOGE("no compiled function object");
     return false;
   }
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_EXECUTE);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "LepusNG.Execute");
 
   EnsureLynx();
 
@@ -534,7 +535,8 @@ const std::string& QuickContext::name() const { return name_; }
 
 bool QuickContext::CheckTableShadowUpdatedWithTopLevelVariable(
     const lepus::Value& update) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICK_CONTEXT_CHECK_TABLE_SHADOW_UPDATED);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              "QuickContext::CheckTableShadowUpdatedWithTopLevelVariable");
   bool enable_deep_check = false;
 #if ENABLE_INSPECTOR && (ENABLE_TRACE_PERFETTO || ENABLE_TRACE_SYSTRACE)
   if (lynx::tasm::LynxEnv::GetInstance().IsTableDeepCheckEnabled()) {
@@ -601,7 +603,7 @@ bool QuickContext::CheckTableShadowUpdatedWithTopLevelVariable(
 
 bool QuickContext::UpdateTopLevelVariableByPath(base::Vector<std::string>& path,
                                                 const lepus::Value& val) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, QUICK_CONTEXT_UPDATE_TOP_LEVEL_VARIABLE);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "QuickContext::UpdateTopLevelVariable");
   if (!path.empty()) {
     // for performance.
     if (path.size() == 1) {
@@ -851,7 +853,7 @@ LEPUSValue QuickContext::SearchGlobalData(const std::string& name) {
 
 bool QuickContext::DeSerialize(const ContextBundle& bundle, bool reuse_context,
                                Value* ret, const char* file_name) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_DO_SERIALIZE);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "LepusNG.DeSerialize");
   const auto& quick_bundle = static_cast<const QuickContextBundle&>(bundle);
 
   if (reuse_context) {
@@ -879,7 +881,7 @@ bool QuickContext::DeSerialize(const ContextBundle& bundle, bool reuse_context,
 
 bool QuickContext::EvalBinary(const uint8_t* buf, uint64_t size, Value* ret,
                               const char* file_name) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_EVAL_BINARY);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, "LepusNG.EvalBinary");
   LEPUSValue val = LEPUS_EvalBinary(context(), buf, static_cast<size_t>(size),
                                     LEPUS_EVAL_BINARY_LOAD_ONLY);
   HandleScope func_scope(context(), &val, HANDLE_TYPE_LEPUS_VALUE);

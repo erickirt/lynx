@@ -15,7 +15,7 @@
 #include "base/include/value/base_string.h"
 #include "base/include/vector.h"
 #include "base/trace/native/trace_event.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/runtime/vm/lepus/context.h"
 #include "core/runtime/vm/lepus/function.h"
 #include "core/runtime/vm/lepus/heap.h"
@@ -39,7 +39,7 @@ class VMContext : public Context {
         enable_top_var_strict_mode_(true),
         closures_(),
         block_context_() {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, VM_CONTEXT_CONSTRUCTION);
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, "VMContext::VMContext");
   }
   ~VMContext() override;
   virtual void Initialize() override;

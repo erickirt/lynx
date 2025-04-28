@@ -10,11 +10,12 @@
 #include <vector>
 
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
+#include "core/base/trace/trace_event_def.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/bindings/jsi/modules/lynx_jsi_module_callback.h"
 #include "core/runtime/bindings/jsi/modules/module_interceptor.h"
 #include "core/runtime/jsi/jsi-inl.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 #if ENABLE_TESTBENCH_RECORDER
 #include "core/services/recorder/native_module_recorder.h"
@@ -65,7 +66,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
   piper::NativeModuleInfoCollectorPtr timing_collector =
       std::make_shared<piper::NativeModuleInfoCollector>(
           delegate_, name_, method.name, first_arg_str);
-  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FUNC_CALL_START,
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_func_call_start",
                       [collector = timing_collector,
                        call_func_start](lynx::perfetto::EventContext ctx) {
                         ctx.event()->add_debug_annotations(
@@ -104,7 +105,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
 
   uint64_t convert_params_start = base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY_JSB,
-                      JSB_TIMING_FUNC_CONVERT_PARAMS_START,
+                      "JSBTiming::jsb_func_convert_params_start",
                       [collector = timing_collector,
                        convert_params_start](lynx::perfetto::EventContext ctx) {
                         ctx.event()->add_debug_annotations(
@@ -113,7 +114,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
                           ctx.event()->add_flow_ids(collector->FlowId());
                         }
                       });
-  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, JS_VALUE_TO_PUB_VALUE);
+  TRACE_EVENT_BEGIN(LYNX_TRACE_CATEGORY_JSB, "JSValueToPubValue");
   CallbackMap callback_map;
   auto args_array = value_factory_->CreateArray();
   // args is a pointer array. can not use getArray to read value.
@@ -146,7 +147,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
         // platforms, we can proceed to remove the macro and trace event.
 #if (!OS_IOS && !OS_ANDROID)
         TRACE_EVENT_INSTANT(
-            LYNX_TRACE_CATEGORY_JSB, CREATE_JSB_CALLBACK,
+            LYNX_TRACE_CATEGORY_JSB, "CreateJSB Callback",
             [=](lynx::perfetto::EventContext ctx) {
               ctx.event()->add_flow_ids(callback_flow_id);
               auto* debug = ctx.event()->add_debug_annotations();
@@ -190,7 +191,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
   // issue: #1510
   uint64_t invoke_facade_method_start = base::CurrentSystemTimeMilliseconds();
   TRACE_EVENT_INSTANT(
-      LYNX_TRACE_CATEGORY_JSB, JSB_TIMING_FUNC_PLATFORM_METHOD_START,
+      LYNX_TRACE_CATEGORY_JSB, "JSBTiming::jsb_func_platform_method_start",
       [invoke_facade_method_start,
        collector = timing_collector](lynx::perfetto::EventContext ctx) {
         ctx.event()->add_debug_annotations(
@@ -263,7 +264,7 @@ LynxModuleImpl::invokeMethod(const MethodMetadata& method, Runtime* rt,
 
   timing_collector->EndPlatformMethodInvoke(invoke_facade_method_start);
   timing_collector->EndCallFunc(call_func_start);
-  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, MODULE_ON_METHOD_INVOKE);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_JSB, "OnMethodInvoked");
   if (!invoke_info.has_error) {
     delegate_->OnMethodInvoked(name_, method.name, error::E_SUCCESS);
   }

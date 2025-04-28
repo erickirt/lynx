@@ -8,8 +8,8 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/lynx_sub_error_code.h"
-#include "core/resource/trace/resource_trace_event_def.h"
 #include "core/shell/lynx_engine.h"
 #ifdef OS_ANDROID
 #include "core/runtime/jscache/js_cache_manager_facade.h"
@@ -62,7 +62,7 @@ void LazyBundleLoader::CallBackInfo::HandleError(
 
 void LazyBundleLoader::DidLoadComponent(
     LazyBundleLoader::CallBackInfo callback_info) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_COMPONENT_DID_LOAD_COMPONENT, "url",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DynamicComponent::DidLoadComponent", "url",
               callback_info.component_url);
   callback_info.sync = SyncRequiring(callback_info.component_url);
 
@@ -88,7 +88,7 @@ bool LazyBundleLoader::RequireTemplateCollected(RadonLazyComponent* lazy_bundle,
   if (requiring_urls_.find(url) == requiring_urls_.end()) {
     StartRecordRequireTime(url);
     {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_COMPONENT_REQUIRE_TEMPLATE,
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, "DynamicComponent::RequireTemplate",
                   "url", url);
       this->RequireTemplate(lazy_bundle, url, instance_id);
     }
@@ -202,7 +202,7 @@ void LazyBundleLoader::PreloadTemplates(const std::vector<std::string>& urls) {
 
 void LazyBundleLoader::DidPreloadTemplate(
     LazyBundleLoader::CallBackInfo callback_info) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_COMPONENT_DID_PRELOAD, "url",
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DynamicComponent::DidPreload", "url",
               callback_info.component_url);
   DecodeComponent(callback_info);
 

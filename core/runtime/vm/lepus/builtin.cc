@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/runtime/vm/lepus/array_api.h"
 #include "core/runtime/vm/lepus/base_api.h"
 #include "core/runtime/vm/lepus/date_api.h"
@@ -48,7 +49,7 @@ void RegisterTableFunction(Context* context,
 }
 
 void RegisterBuiltin(Context* ctx) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, REGISTER_BUILD_IN);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "RegisterBuiltin");
   RegisterBaseAPI(ctx);
   RegisterStringAPI(ctx);
   RegisterStringPrototypeAPI(ctx);

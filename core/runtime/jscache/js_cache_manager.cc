@@ -19,13 +19,13 @@
 #include "base/include/string/string_utils.h"
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/base/utils/file_utils.h"
 #include "core/renderer/tasm/config.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/runtime/jscache/js_cache_tracker.h"
 #include "core/runtime/piper/js/runtime_constant.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "quickjs/include/quickjs.h"
 
 #if defined(OS_ANDROID)
@@ -197,7 +197,7 @@ std::shared_ptr<Buffer> JsCacheManager::TryGetCache(
        << ", url: '" << source_url << "', template_url: '" << template_url
        << "', file_content size:" << buffer->size());
 
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, JS_CACHE_MANAGER_TRY_GET_CACHE,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "JsCacheManager::TryGetCache",
               [&source_url](lynx::perfetto::EventContext ctx) {
                 auto *debug = ctx.event()->add_debug_annotations();
                 debug->set_name("source_url");

@@ -7,8 +7,8 @@
 
 #include "base/include/timer/time_utils.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/base/threading/task_runner_manufactor.h"
-#include "core/base/trace/trace_event_def.h"
 
 namespace lynx {
 namespace base {
@@ -55,7 +55,7 @@ bool MessageLoopAndroidVSync::HasPendingVSyncRequest() {
 }
 
 void MessageLoopAndroidVSync::FlushTasks(fml::FlushType type) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, MESSAGE_LOOP_ANDROID_VASYNC_FLUSH_TASKS);
+  TRACE_EVENT("lynx", "MessageLoopAndroidVSync::FlushTasks");
   const auto now = fml::TimePoint::Now();
   auto begin = base::CurrentSystemTimeMilliseconds();
   base::closure invocation;

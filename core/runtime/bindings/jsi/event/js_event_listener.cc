@@ -4,10 +4,11 @@
 
 #include "core/runtime/bindings/jsi/event/js_event_listener.h"
 
+#include "core/base/lynx_trace_categories.h"
+#include "core/base/trace/trace_event_def.h"
 #include "core/runtime/bindings/common/event/message_event.h"
 #include "core/runtime/bindings/common/event/runtime_constants.h"
 #include "core/runtime/common/utils.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 
 namespace lynx {

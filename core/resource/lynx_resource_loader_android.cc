@@ -7,9 +7,9 @@
 #include "base/include/log/logging.h"
 #include "base/trace/native/trace_event.h"
 #include "core/base/android/jni_helper.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/LynxResourceLoader_jni.h"
 #include "core/resource/lynx_resource_setting.h"
-#include "core/resource/trace/resource_trace_event_def.h"
 
 using lynx::base::android::AttachCurrentThread;
 using lynx::base::android::JNIConvertHelper;
@@ -43,7 +43,7 @@ void LynxResourceLoaderAndroid::RegisterJni(JNIEnv* env) {
 void LynxResourceLoaderAndroid::LoadResource(
     const pub::LynxResourceRequest& request, bool request_in_current_thread,
     base::MoveOnlyClosure<void, pub::LynxResourceResponse&> callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, LOAD_RESOURCE,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LoadResource",
               [&request](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_debug_annotations("url", request.url);
               });

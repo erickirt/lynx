@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
+#include "core/base/lynx_trace_categories.h"
 
 namespace lynx {
 namespace piper {
@@ -25,7 +25,7 @@ template <typename... Args>
 inline void ApiCallBackManager::InvokeWithValuePersist(piper::Runtime *rt,
                                                        ApiCallBack callback,
                                                        Args &&...values) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, API_CALLBACK_MANAGER_INVOKE_WITH_VALUE,
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "ApiCallBackManager::InvokeWithValue",
               [&](lynx::perfetto::EventContext ctx) {
                 ctx.event()->add_terminating_flow_ids(callback.trace_flow_id());
               });

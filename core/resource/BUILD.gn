@@ -22,6 +22,5 @@ lynx_core_source_set("resource") {
   public_deps = [
     "external_resource:external_resource",
     "lazy_bundle:lazy_bundle",
-    "trace:resource_trace",
   ]
 }

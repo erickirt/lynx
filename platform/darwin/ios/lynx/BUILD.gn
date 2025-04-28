@@ -472,7 +472,6 @@ subspec_target("JSRuntime") {
     "//lynx/core/runtime/jsi/quickjs",
     "//lynx/core/runtime/profile:profile",
     "//lynx/core/runtime/profile/quickjs:quickjs_profile",
-    "//lynx/core/runtime/trace:runtime_trace",
   ]
 
   libraries = [ "stdc++" ]
@@ -676,7 +675,6 @@ subspec_target("resource") {
     "//lynx/core/resource",
     "//lynx/core/resource/external_resource:external_resource",
     "//lynx/core/resource/lazy_bundle:lazy_bundle",
-    "//lynx/core/resource/trace:resource_trace",
   ]
 }
 

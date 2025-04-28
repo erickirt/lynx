@@ -10,8 +10,8 @@
 #import <Lynx/LynxSubErrorCode.h>
 #import "LynxTemplateBundle+Converter.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/resource/lynx_resource_setting.h"
-#include "core/resource/trace/resource_trace_event_def.h"
 #include "core/shell/ios/data_utils.h"
 #import "darwin/common/lynx/TemplateRenderCallbackProtocol.h"
 
@@ -101,7 +101,7 @@ void LynxResourceLoaderDarwin::FetchScriptByProvider(const std::string& url,
     callback(res);
     return;
   }
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_SCRIPT_BY_PROVIDER, "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchScriptByProvider", "url", url);
   NSString* nsUrl = [NSString stringWithUTF8String:url.c_str()];
   LynxResourceRequest* req = [[LynxResourceRequest alloc] initWithUrl:nsUrl];
   __block __weak id<LynxErrorReceiverProtocol> weakErrorReceiver = _errorReceiver;
@@ -115,7 +115,7 @@ void LynxResourceLoaderDarwin::FetchScriptByProvider(const std::string& url,
 bool LynxResourceLoaderDarwin::FetchTemplateByGenericFetcher(const std::string& url,
                                                              CopyableClosure callback) {
   if (_templateResourceFetcher != nil) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_TEMPLATE_BY_GENERIC_FETCHER, "url", url);
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchTemplateByGenericFetcher", "url", url);
     NSString* nsUrl = [NSString stringWithUTF8String:url.c_str()];
     LynxResourceRequest* request =
         [[LynxResourceRequest alloc] initWithUrl:nsUrl type:LynxResourceTypeDynamicComponent];
@@ -140,7 +140,7 @@ bool LynxResourceLoaderDarwin::FetchTemplateByGenericFetcher(const std::string& 
 bool LynxResourceLoaderDarwin::FetchResourceByGenericFetcher(const std::string& url,
                                                              CopyableClosure callback) {
   if (_genericResourceFetcher != nil) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_RESOURCE_BY_GENERIC_FETCHER, "url", url);
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchResourceByGenericFetcher", "url", url);
     NSString* nsUrl = [NSString stringWithUTF8String:url.c_str()];
     LynxResourceRequest* request =
         [[LynxResourceRequest alloc] initWithUrl:nsUrl type:LynxResourceTypeDynamicComponent];
@@ -163,7 +163,7 @@ bool LynxResourceLoaderDarwin::FetchTemplateByProvider(const std::string& url,
     // TYPE: LYNX_PROVIDER_TYPE_LAZY_BUNDLE is not registered, should fallback;
     return false;
   }
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_TEMPLATE_BY_PROVIDER, "url", url);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchTemplateByProvider", "url", url);
   NSString* nsUrl = [NSString stringWithUTF8String:url.c_str()];
   LynxResourceRequest* req = [[LynxResourceRequest alloc] initWithUrl:nsUrl];
   [provider request:req
@@ -217,12 +217,12 @@ bool LynxResourceLoaderDarwin::FetchTemplateByFetcherWrapper(const std::string& 
     callback(resp);
   };
   if (request_in_current_thread) {
-    TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_TEMPLATE_BY_FETCHER_WRAPPER, "url", url);
+    TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchTemplateByFetcherWrapper", "url", url);
     [_fetcher_wrapper fetchResource:nsUrl withLoadedBlock:fetcherBlock];
   } else {
     // TODO(nihao.royal): it's only used in preloadTemplate by now, and need to be deleted later.
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^() {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY, FETCH_TEMPLATE_BY_FETCHER_WRAPPER);
+      TRACE_EVENT(LYNX_TRACE_CATEGORY, "FetchTemplateByFetcherWrapper");
       [_fetcher_wrapper fetchResource:nsUrl withLoadedBlock:fetcherBlock];
     });
   }
@@ -232,7 +232,7 @@ bool LynxResourceLoaderDarwin::FetchTemplateByFetcherWrapper(const std::string& 
 void LynxResourceLoaderDarwin::LoadResource(
     const pub::LynxResourceRequest& request, bool request_in_current_thread,
     base::MoveOnlyClosure<void, pub::LynxResourceResponse&> callback) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, LOAD_RESOURCE, [&request](lynx::perfetto::EventContext ctx) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "LoadResource", [&request](lynx::perfetto::EventContext ctx) {
     ctx.event()->add_debug_annotations("url", request.url);
   });
   // fetch Assets

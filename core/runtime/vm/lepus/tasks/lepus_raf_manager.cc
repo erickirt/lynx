@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/trace/native/trace_event.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/runtime/vm/lepus/context.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
 
@@ -21,7 +21,8 @@ AnimationFrameManager::FrameTask::FrameTask(
       cancelled_(false) {}
 
 void AnimationFrameManager::FrameTask::Execute(int64_t time_stamp) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, ANIMATION_FRAME_TASK_EXECUTE);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              "AnimationFrameTaskHandler::FrameTask::Execute");
   if (cancelled_) {
     return;
   }
@@ -39,7 +40,7 @@ AnimationFrameManager::~AnimationFrameManager() { Destroy(); }
 int64_t AnimationFrameManager::RequestAnimationFrame(
     lepus::Context* context, std::unique_ptr<lepus::Value> callback_closure) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY,
-              ANIMATION_FRAME_TASK_REQUEST_ANIMATION_FRAME);
+              "AnimationFrameTaskHandler::RequestAnimationFrame");
   const int64_t task_id = current_index_++;
   std::unique_ptr<FrameTask> task =
       std::make_unique<FrameTask>(context, std::move(callback_closure));
@@ -54,7 +55,8 @@ int64_t AnimationFrameManager::RequestAnimationFrame(
 }
 
 void AnimationFrameManager::CancelAnimationFrame(int64_t id) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, ANIMATION_FRAME_TASK_CANCEL_ANIMATION_FRAME);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              "AnimationFrameTaskHandler::CancelAnimationFrame");
   auto itr = task_map_first_.find(id);
   if (itr != task_map_first_.end()) {
     itr->second->Cancel();
@@ -68,7 +70,7 @@ void AnimationFrameManager::CancelAnimationFrame(int64_t id) {
 }
 
 void AnimationFrameManager::DoFrame(int64_t time_stamp) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, ANIMATION_FRAME_TASK_DO_FRAME);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "AnimationFrameTaskHandler::DoFrame");
   doing_frame_ = true;
   TaskMap& task_map = CurrentFrameTaskMap();
   for (auto& itr : task_map) {

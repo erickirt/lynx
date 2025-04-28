@@ -10,6 +10,7 @@
 #include "base/include/log/logging.h"
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/runtime/common/args_converter.h"
 #include "core/runtime/jsi/jsi.h"
@@ -20,7 +21,6 @@
 #include "core/runtime/jsi/v8/v8_host_object.h"
 #include "core/runtime/jsi/v8/v8_isolate_wrapper_impl.h"
 #include "core/runtime/profile/v8/v8_runtime_profiler_wrapper_impl.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "libplatform/libplatform.h"
 #if V8_MAJOR_VERSION >= 9
 #include "v8-proxy.h"
@@ -122,7 +122,7 @@ base::expected<Value, JSINativeException> V8Runtime::evaluateJavaScript(
     inspector_manager_->PrepareForScriptEval();
   }
 
-  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, EVALUATE_PREPARED_JAVA_SCRIPT, "url",
+  TRACE_EVENT_INSTANT(LYNX_TRACE_CATEGORY, "evaluatePreparedJavaScript", "url",
                       origin_url, "runtime_id", getRuntimeId());
 #if V8_MAJOR_VERSION >= 9
   auto origin = std::make_unique<v8::ScriptOrigin>(

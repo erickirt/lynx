@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/trace/native/trace_event.h"
+#include "core/base/lynx_trace_categories.h"
 #include "core/renderer/tasm/config.h"
-#include "core/runtime/trace/runtime_trace_event_def.h"
 #include "core/runtime/vm/lepus/array.h"
 #include "core/runtime/vm/lepus/lepus_date.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
@@ -25,7 +25,7 @@ namespace lepus {
 #if !ENABLE_JUST_LEPUSNG
 bool BaseBinaryReader::DeserializeFunction(fml::RefPtr<Function>& parent,
                                            fml::RefPtr<Function>& function) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, DESERIALIZE_FUNCTION);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeFunction");
   // const value
   DECODE_COMPACT_U32(size);
   function->const_values_.reserve(size);
@@ -99,7 +99,7 @@ bool BaseBinaryReader::DeserializeFunction(fml::RefPtr<Function>& parent,
 
 bool BaseBinaryReader::DeserializeGlobal(
     std::unordered_map<base::String, lepus::Value>& global) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, DESERIALIZE_GLOBAL);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeGlobal");
   DECODE_COMPACT_U32(size);
   for (size_t i = 0; i < size; ++i) {
     DECODE_STR(name);
@@ -110,7 +110,7 @@ bool BaseBinaryReader::DeserializeGlobal(
 
 bool BaseBinaryReader::DeserializeTopVariables(
     std::unordered_map<base::String, long>& top_level_variables) {
-  TRACE_EVENT(LYNX_TRACE_CATEGORY, DESERIALIZE_TOP_VARIABLES);
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, "DeserializeTopVariables");
   DECODE_COMPACT_U32(top_size);
   for (size_t i = 0; i < top_size; i++) {
     DECODE_STR(str);
