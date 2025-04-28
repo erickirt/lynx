@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.lynx.devtoolwrapper.CDPResultCallback;
 import com.lynx.devtoolwrapper.LogBoxLogLevel;
@@ -125,7 +124,7 @@ public class TouchEventDispatcher {
 
   private static final String TAG = "LynxTouchEventDispatcher";
 
-  public TouchEventDispatcher(@NonNull LynxUIOwner owner) {
+  public TouchEventDispatcher(LynxUIOwner owner) {
     mUIOwner = owner;
     Listener mListener = new Listener();
     mDetector = new GestureRecognizer(
