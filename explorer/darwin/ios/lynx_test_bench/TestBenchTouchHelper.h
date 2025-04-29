@@ -7,10 +7,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TestBenchEmulateTouchHelper : NSObject
-
-+ (void)emulateTouch:(NSDictionary*)dict;
-
+@protocol TestBenchTouchHelper <NSObject>
+@required
+- (void)emulateTouch:(NSDictionary*)dict;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #import "TestBenchReplayConfig.h"
 #import "TestBenchStateReplayView.h"
+#import "TestBenchTouchHelper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dispatchAction:(NSString *)functionName
                 params:(NSDictionary *)params
               interval:(NSInteger)interval;
+- (void)registerTouchHelper:(id<TestBenchTouchHelper>)touchHelper;
 @end
 
 NS_ASSUME_NONNULL_END

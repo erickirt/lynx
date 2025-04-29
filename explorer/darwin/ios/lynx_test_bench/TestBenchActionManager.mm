@@ -8,10 +8,9 @@
 #import <Lynx/LynxResourceProvider.h>
 #import <Lynx/LynxTemplateBundle.h>
 #import <Lynx/LynxTemplateBundleOption.h>
-#import <Lynx/third_party/zlib/zlib.h>
 #import <LynxDevtool/LynxInspectorOwner.h>
+#import <third_party/zlib/zlib.h>
 #import "TestBenchDynamicComponentFetcher.h"
-#import "TestBenchEmulateTouchHelper.h"
 #import "TestBenchEntranceViewController.h"
 #import "TestBenchEnv.h"
 #import "TestBenchOpenUrlModule.h"
@@ -75,6 +74,7 @@ static const int kVirtual = 1 << 2;
 @property NSDictionary* templateBundleParams;
 @property CGSize screenSize;
 @property(nonatomic, strong) NSMutableArray* actionCallbacks;
+@property(nonatomic, strong) id<TestBenchTouchHelper> touchHelper;
 
 @end
 
@@ -153,6 +153,10 @@ static const int kVirtual = 1 << 2;
 
 - (void)registerTestBenchActionCallback:(id<TestBenchActionCallback>)callback {
   [self.actionCallbacks addObject:callback];
+}
+
+- (void)registerTouchHelper:(id<TestBenchTouchHelper>)touchHelper {
+  self.touchHelper = touchHelper;
 }
 
 - (void)create {
@@ -857,7 +861,7 @@ static const int kVirtual = 1 << 2;
   }
   NSMutableDictionary* dict = [[NSMutableDictionary alloc] initWithDictionary:params];
   [dict setObject:self.lynxView forKey:@"LynxView"];
-  [TestBenchEmulateTouchHelper emulateTouch:dict];
+  [self.touchHelper emulateTouch:dict];
 }
 
 - (void)endTestBench {
