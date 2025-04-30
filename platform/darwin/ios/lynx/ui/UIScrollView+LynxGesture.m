@@ -2,13 +2,16 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
+#import <Lynx/LynxGestureDetectorDarwin.h>
 #import <Lynx/UIScrollView+LynxGesture.h>
+#import <objc/runtime.h>
 
 @implementation LynxGestureConsumer
 
 - (instancetype)init {
   if (self = [super init]) {
     _gestureConsumeStatus = LynxGestureConsumeStatusUndefined;
+    _interceptGestureStatus = LynxInterceptGestureStateUnset;
   }
   return self;
 }
@@ -17,11 +20,20 @@
   _gestureConsumeStatus = consume ? LynxGestureConsumeStatusAllow : LynxGestureConsumeStatusBlock;
 }
 
+- (void)interceptGesture:(BOOL)intercept {
+  _interceptGestureStatus =
+      intercept ? LynxInterceptGestureStateTrue : LynxInterceptGestureStateFalse;
+}
+
 @end
 
 @interface UIScrollView (LynxGestureDummy)
 
 - (LynxGestureConsumer *)gestureConsumer;
+
+- (UIPanGestureRecognizer *)lynxNativeGesturePanRecognizer;
+
+- (void)setLynxNativeGesturePanRecognizer:(UIPanGestureRecognizer *)recognizer;
 
 @end
 

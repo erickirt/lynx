@@ -6,7 +6,7 @@
 
 @class LynxUIScroller;
 
-@interface LynxScrollView : UIScrollView
+@interface LynxScrollView : UIScrollView <UIGestureRecognizerDelegate>
 
 // Force scroll-view to consume gesture and fails specified classes' gesture
 @property(nonatomic) BOOL forceCanScroll;
@@ -15,14 +15,19 @@
 // Use with blockGestureClass. Specify a tag for one view in blockGestureClass
 @property(nonatomic) NSInteger recognizedViewTag;
 // Use to find UI
-@property(weak, nonatomic) LynxUIScroller* weakUIScroller;
+@property(weak, nonatomic) LynxUIScroller *weakUIScroller;
 
 @property(nonatomic, assign) BOOL duringGestureScroll;
 @property(nonatomic, assign) BOOL gestureEnabled;
 @property(nonatomic, assign) BOOL increaseFrequencyWithGesture;
 
-@property(nonatomic, strong) LynxGestureConsumer* gestureConsumer;
+@property(nonatomic, strong) UIPanGestureRecognizer *nativeGesturePanRecognizer;
+
+@property(nonatomic, strong) LynxGestureConsumer *gestureConsumer;
 
 - (void)updateContentSize;
+
+- (void)setupNativeGestureRecognizerIfNeeded:
+    (NSDictionary<NSNumber *, LynxGestureDetectorDarwin *> *)gestureMap;
 
 @end  // LynxScrollView

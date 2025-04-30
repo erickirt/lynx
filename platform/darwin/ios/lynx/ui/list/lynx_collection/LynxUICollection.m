@@ -164,6 +164,14 @@ static const CGFloat SCROLL_BY_EPSILON = 0.1f;
   return collectionView;
 }
 
+- (void)handlePanGesture:(UIPanGestureRecognizer *)recognizer {
+  if (_gestureConsumer)
+    if (_gestureConsumer.interceptGestureStatus == LynxInterceptGestureStateTrue) {
+      return;
+    }
+  recognizer.state = UIGestureRecognizerStateCancelled;
+}
+
 - (void)dealloc {
   [self.appearEventCourier invalidate];
 }
@@ -657,6 +665,10 @@ static const CGFloat SCROLL_BY_EPSILON = 0.1f;
 
 - (void)consumeInternalGesture:(BOOL)consume {
   [self.gestureConsumer consumeGesture:consume];
+}
+
+- (void)interceptGesture:(BOOL)intercept {
+  [self.gestureConsumer interceptGesture:intercept];
 }
 
 - (BOOL)canConsumeGesture:(CGPoint)delta {

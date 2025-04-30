@@ -885,10 +885,16 @@ static const CGFloat OFFSET_ROTATE_AUTO = -1024.f;
   BOOL consume = [(params[@"consume"] ?: @(YES)) boolValue];
   if (inner) {
     [self consumeInternalGesture:consume];
+  } else {
+    [self interceptGesture:consume];
   }
 }
 
 - (void)consumeInternalGesture:(BOOL)consume {
+  // Override by sub class
+}
+
+- (void)interceptGesture:(BOOL)intercept {
   // Override by sub class
 }
 

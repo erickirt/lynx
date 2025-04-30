@@ -32,7 +32,47 @@
     }
   }
 
+  if (gestureRecognizer == _nativeGesturePanRecognizer && _gestureConsumer &&
+      _gestureConsumer.interceptGestureStatus == LynxInterceptGestureStateTrue) {
+    otherGestureRecognizer.state = UIGestureRecognizerStateFailed;
+    return NO;
+  }
+
   return NO;
+}
+
+- (void)handlePanGesture:(UIPanGestureRecognizer *)recognizer {
+  if (_gestureConsumer &&
+      _gestureConsumer.interceptGestureStatus == LynxInterceptGestureStateTrue) {
+    return;
+  }
+  recognizer.state = UIGestureRecognizerStateCancelled;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+  if (gestureRecognizer == self.nativeGesturePanRecognizer) {
+    return _gestureConsumer.interceptGestureStatus == LynxInterceptGestureStateTrue;
+  }
+  return YES;
+}
+
+- (void)setupNativeGestureRecognizerIfNeeded:
+    (NSDictionary<NSNumber *, LynxGestureDetectorDarwin *> *)gestureMap {
+  for (NSNumber *key in gestureMap) {
+    LynxGestureDetectorDarwin *detector = gestureMap[key];
+    // Check if a native gesture type exists.
+    if (detector.gestureType == LynxGestureTypeNative) {
+      // If found, ensure the native pan recognizer is set up on the scrollview.
+      if (!self.nativeGesturePanRecognizer) {
+        self.nativeGesturePanRecognizer =
+            [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                    action:@selector(handlePanGesture:)];
+        self.nativeGesturePanRecognizer.delegate = self;
+        [self addGestureRecognizer:self.nativeGesturePanRecognizer];
+      }
+      break;
+    }
+  }
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset {
@@ -59,6 +99,15 @@
   if (_weakUIScroller) {
     [_weakUIScroller updateContentSize];
   }
+}
+
+- (void)dealloc {
+  // Remove the gesture recognizer from the view
+  if (_nativeGesturePanRecognizer) {
+    [self removeGestureRecognizer:_nativeGesturePanRecognizer];
+    _nativeGesturePanRecognizer.delegate = nil;
+  }
+  _nativeGesturePanRecognizer = nil;
 }
 
 @end  // LynxScrollView
