@@ -172,6 +172,8 @@ ElementManager::ElementManager(
   task_runner_ = std::make_shared<tasm::TasmWorkerTaskRunner>();
   enable_new_animator_fiber_ = LynxEnv::GetInstance().EnableNewAnimatorFiber();
   enable_new_animator_radon_ = false;
+  element_context_task_queue_ = std::make_unique<ElementContextTaskQueue>(
+      [this]() { return GetParallelWithSyncLayout(); });
 }
 
 static bool EnableLayoutOnlyStatistic() {

@@ -23,6 +23,7 @@
 #include "core/renderer/css/css_style_sheet_manager.h"
 #include "core/renderer/dom/attribute_holder.h"
 #include "core/renderer/dom/element.h"
+#include "core/renderer/dom/element_context_task_queue.h"
 #include "core/renderer/dom/fiber/list_item_scheduler_adapter.h"
 #include "core/renderer/dom/fiber/pseudo_element.h"
 #include "core/renderer/dom/layout_bundle.h"
@@ -829,6 +830,22 @@ class FiberElement : public Element, public SelectorItem {
     }
   }
 
+  ListItemSchedulerAdapter* GetSchedulerAdapter() {
+    if (scheduler_adapter_) {
+      return scheduler_adapter_.get();
+    }
+    return nullptr;
+  }
+
+  inline bool ShouldProcessParallelTasks() {
+    return parallel_flush_ ||
+           resolve_status_ == AsyncResolveStatus::kSyncResolving;
+  }
+
+  inline void UpdateElementContextQueue(ElementContextTaskQueue* queue) {
+    element_context_queue_ = queue;
+  }
+
  protected:
   bool need_handle_fixed_ = false;
 
@@ -844,10 +861,6 @@ class FiberElement : public Element, public SelectorItem {
 
   bool IsNewlyCreated() const { return dirty_ & kDirtyCreated; }
 
-  bool ShouldProcessParallelTasks() {
-    return parallel_flush_ ||
-           resolve_status_ == AsyncResolveStatus::kSyncResolving;
-  }
   ParallelFlushReturn CreateParallelTaskHandler();
 
   void CacheStyleFromAttributes(CSSPropertyID id, CSSValue&& value);
@@ -889,6 +902,8 @@ class FiberElement : public Element, public SelectorItem {
   const AttrUMap& updated_attr_map() const { return updated_attr_map_; }
 
   bool ShouldDestroy() const;
+
+  ElementContextTaskQueue* element_context_queue_ = nullptr;
 
  private:
   friend class WrapperElement;
@@ -1074,7 +1089,7 @@ class FiberElement : public Element, public SelectorItem {
   std::unordered_map<PseudoState, std::unique_ptr<PseudoElement>>
       pseudo_elements_{};
 
-  std::shared_ptr<ListItemSchedulerAdapter> scheduler_adapter_;
+  std::shared_ptr<ListItemSchedulerAdapter> scheduler_adapter_ = nullptr;
 };
 
 }  // namespace tasm

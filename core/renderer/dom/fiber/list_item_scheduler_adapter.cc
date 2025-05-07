@@ -14,6 +14,14 @@
 namespace lynx {
 namespace tasm {
 
+ListItemSchedulerAdapter::ListItemSchedulerAdapter(
+    FiberElement* sub_root, list::BatchRenderStrategy batch_render_strategy) {
+  render_root_ = sub_root;
+  batch_render_strategy_ = batch_render_strategy;
+  element_context_task_queue_ = std::make_unique<ElementContextTaskQueue>(
+      [this]() { return batch_rendering_; });
+}
+
 void ListItemSchedulerAdapter::ResolveSubtreeProperty() {
   std::deque<FiberElement*> queue;
   queue.emplace_back(render_root_);

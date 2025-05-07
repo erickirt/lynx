@@ -73,6 +73,8 @@ FiberElement::FiberElement(ElementManager *manager, const base::String &tag,
     return;
   }
 
+  element_context_queue_ = manager->GetElementContextTaskQueue();
+
   // Set font scale and font size if needed.
   const auto &env_config = manager->GetLynxEnvConfig();
 
@@ -136,6 +138,7 @@ FiberElement::FiberElement(const FiberElement &element,
     config_ = lepus::Value::ShallowCopy(element.config());
   }
 
+  element_context_queue_ = element.element_context_queue_;
   // TODO(wujintian): Clone animation-related objects.
 }
 
@@ -183,6 +186,8 @@ void FiberElement::AttachToElementManager(
     // in new selector, mark style dirty while Created.
     MarkDirty(kDirtyStyle);
   }
+
+  element_context_queue_ = manager->GetElementContextTaskQueue();
 }
 
 void FiberElement::OnNodeAdded(FiberElement *child) {
@@ -3442,6 +3447,9 @@ PseudoElement *FiberElement::CreatePseudoElementIfNeed(PseudoState state) {
 
 void FiberElement::RecursivelyMarkRenderRootElement(FiberElement *render_root) {
   render_root_element_ = render_root;
+  if (render_root) {
+    element_context_queue_ = render_root->element_context_queue_;
+  }
   for (auto child : scoped_children_) {
     if (!child->is_list_item()) {
       child->RecursivelyMarkRenderRootElement(render_root);

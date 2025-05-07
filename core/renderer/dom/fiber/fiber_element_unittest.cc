@@ -12734,6 +12734,11 @@ TEST_P(FiberElementTest, MarkRenderRootElementTest) {
   auto list = manager->CreateFiberList(nullptr, "list", component_at_index,
                                        enqueue_component, component_at_indexes);
   parent->InsertNode(list);
+  list->disable_list_platform_implementation_ = true;
+  list->list_container_delegate_ =
+      list::CreateListContainerDelegate(list.get());
+  list->list_container_delegate_->UpdateBatchRenderStrategy(
+      list::BatchRenderStrategy::kAsyncResolveProperty);
   EXPECT_TRUE(list->render_root_element_ == nullptr);
 
   base::String component_id("21");
