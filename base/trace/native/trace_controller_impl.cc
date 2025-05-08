@@ -297,6 +297,13 @@ int TraceControllerImpl::StartTracing(
       trace_plugin_pair.second->DispatchSetup(config);
     }
   }
+
+#ifdef OS_ANDROID
+  if (delegate_) {
+    delegate_->RefreshATraceTags();
+    delegate_->SetIsTracingStarted(true);
+  }
+#endif
   session.session_impl->StartBlocking();
 
   // plugin
@@ -308,8 +315,8 @@ int TraceControllerImpl::StartTracing(
   if (config->enable_systrace) {
     if (!hook_systrace_) {
       hook_systrace_ = std::make_unique<HookSystemTrace>();
-      hook_systrace_->Install();
     }
+    hook_systrace_->Install();
   }
 
   // status
@@ -318,11 +325,6 @@ int TraceControllerImpl::StartTracing(
   LOGI("Tracing started, session id: " << session.id << " buffer size: "
                                        << config->buffer_size);
 
-#ifdef OS_ANDROID
-  if (delegate_) {
-    delegate_->RefreshATraceTags();
-  }
-#endif
   return session.id;
 }
 
@@ -346,6 +348,11 @@ bool TraceControllerImpl::StopTracing(int session_id) {
   session->session_impl->StopBlocking();
   session->started = false;
   is_tracing_started_ = false;
+#ifdef OS_ANDROID
+  if (delegate_) {
+    delegate_->SetIsTracingStarted(false);
+  }
+#endif
   if (session->config->is_startup_tracing) {
     startup_tracing_file_ = session->config->file_path;
   }

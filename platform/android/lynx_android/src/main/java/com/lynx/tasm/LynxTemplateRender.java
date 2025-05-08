@@ -1760,7 +1760,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
   }
 
   private void onTraceEventBegin(String eventName) {
-    if (!TraceEvent.enableTrace()) {
+    if (!TraceEvent.isTracingStarted()) {
       return;
     }
     HashMap map = new HashMap<String, String>();
@@ -1771,7 +1771,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
   }
 
   private void onTraceEventEnd(String eventName) {
-    if (!TraceEvent.enableTrace()) {
+    if (!TraceEvent.isTracingStarted()) {
       return;
     }
     TraceEvent.endSection(TraceEvent.CATEGORY_VITALS, eventName);
@@ -2378,7 +2378,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     }
     mContext = lynxView.getContext();
     Activity curActivity = ContextUtils.getActivity(mContext);
-    if (TraceEvent.enableTrace()) {
+    if (TraceEvent.isTracingStarted()) {
       Map<String, String> traceProps = new HashMap<>();
       traceProps.put("curActivity", curActivity != null ? curActivity.toString() : "");
       TraceEvent.beginSection(TraceEventDef.TEMPLATE_RENDER_ATTACH_LYNX_VIEW, traceProps);
@@ -2407,7 +2407,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     if (mDevTool != null) {
       mDevTool.attach(mLynxView);
     }
-    if (TraceEvent.enableTrace()) {
+    if (TraceEvent.isTracingStarted()) {
       TraceEvent.endSection(TraceEventDef.TEMPLATE_RENDER_ATTACH_LYNX_VIEW);
     }
     return true;
