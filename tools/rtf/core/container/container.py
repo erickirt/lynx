@@ -29,3 +29,6 @@ class Container:
 
     def test(self):
         pass
+
+    def get_summary(self):
+        pass

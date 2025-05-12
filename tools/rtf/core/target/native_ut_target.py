@@ -9,6 +9,7 @@ from core.target.target import Target
 from core.utils.log import Log
 from core.base.result import Err, Ok
 from core.base.constants import Constants
+from core.base.summary import Summary
 
 
 class NativeUTTarget(Target):
@@ -75,3 +76,25 @@ class NativeUTTarget(Target):
                     Constants.CALL_COMMAND_ERR, f"Run pre action ({action}) failed"
                 )
         return Ok()
+
+    def get_summary(self):
+        summary = Summary()
+        summary.insert("name", self.name)
+        if self.start_time is None:
+            self.start_time = self.end_time
+        state = "success"
+        if self.has_error():
+            state = "failure"
+        if self.is_aborted:
+            state = "aborted"
+        if self.is_timeout:
+            state = "timeout"
+        if self.end_time is None or self.start_time is None:
+            summary.insert("costTime", "-1")
+            state = "unknown"
+        else:
+            summary.insert(
+                "costTime", f"{int((self.end_time - self.start_time) * 1000)}"
+            )
+        summary.insert("state", state)
+        return summary

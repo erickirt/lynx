@@ -14,6 +14,7 @@ from core.target.target_factory import TargetFactory
 from core.utils.log import Log
 from core.base.result import Err, Ok
 from core.base.constants import Constants
+from core.base.summary import Summary
 
 
 class NativeUTContainer(Container):
@@ -72,9 +73,9 @@ class NativeUTContainer(Container):
     def after_test(self):
         return self.coverage.gen_report(self.serial_queue + self.parallel_queue)
 
-    def kill_all_process(self):
+    def kill_all_process(self, is_timeout=False):
         for target in self.parallel_queue:
-            target.kill()
+            target.kill(is_timeout)
 
     def __print_running_process(self, names: [str]):
         if len(names) <= 3:
@@ -110,6 +111,7 @@ class NativeUTContainer(Container):
                         over_processes_list.append(target.name)
                         only_run_process.remove(target.name)
                         current_time = datetime.timestamp(datetime.now())
+                        target.end_time = current_time
                         external_message = ""
                         if target.retry_count != 0:
                             external_message = (
@@ -129,7 +131,7 @@ class NativeUTContainer(Container):
             if not target.is_end():
                 Log.error(f"{target.name} timeout!")
                 target.print_log()
-        self.kill_all_process()
+        self.kill_all_process(is_timeout=True)
         return Err(Constants.TARGET_RUN_TIMEOUT_ERR, "Target run timeout.")
 
     def test(self):
@@ -141,6 +143,7 @@ class NativeUTContainer(Container):
             if result.is_err():
                 return result
             target.wait()
+            target.end_time = datetime.timestamp(datetime.now())
             if target.has_error():
                 Log.error(f"{target.name} has error!")
                 for observer in self.observers:
@@ -170,3 +173,11 @@ class NativeUTContainer(Container):
             self.parallel_queue.append(target)
         else:
             self.serial_queue.append(target)
+
+    def get_summary(self):
+        summary = Summary()
+        for target in self.serial_queue:
+            summary.append(target.get_summary())
+        for target in self.parallel_queue:
+            summary.append(target.get_summary())
+        return summary

@@ -2,6 +2,7 @@
 # Licensed under the Apache License Version 2.0 that can be found in the
 # LICENSE file in the root directory of this source tree.
 import copy
+from datetime import datetime
 import os.path
 
 from core.container.native_ut_container import NativeUTContainer
@@ -11,7 +12,9 @@ from core.env.trait_template import TraitTemplate
 from core.options.options import Options
 from core.utils.log import Log
 from core.base.result import Ok
+from core.base.summary import Summary, SummaryConsumer
 from plugins.plugin import Plugin
+import json
 
 
 class NativeUTListener(Options.OptionsListener):
@@ -41,6 +44,38 @@ class NativeUTListener(Options.OptionsListener):
         coverage["ignores"] = [
             os.path.join(options.workspace, ignore) for ignore in coverage["ignores"]
         ]
+
+
+class TraceEventSummary(SummaryConsumer):
+    def __init__(self):
+        super().__init__()
+
+    def should_skip(self, values):
+        if len(values) == 0:
+            return True
+        if len(values) == 1 and "name" in values:
+            return True
+        return False
+
+    def accept_aux(self, traces, summary: Summary):
+        if not self.should_skip(summary.values):
+            t = {
+                "name": "native_ut_monitor",
+                "ph": "i",
+                "ts": f"{int(datetime.timestamp(datetime.now())*1000)}",
+                "args": summary.values,
+            }
+            traces.append(t)
+        for sub_summary in summary.childs:
+            self.accept_aux(traces, sub_summary)
+
+    def accept(self, summary: Summary):
+        traces = {"traceEvents": []}
+        self.accept_aux(traces["traceEvents"], summary)
+        Log.info(traces)
+        trace_path = os.path.join(RTFEnv.get_project_root_path(), "native-ut-trace-events.json")
+        with open(trace_path, "w")  as f:
+            f.write(json.dumps(traces))
 
 
 class NativeUTPlugin(Plugin):
@@ -80,7 +115,9 @@ class NativeUTPlugin(Plugin):
         container = NativeUTContainer(
             template["builder"], template["coverage"], "native-ut"
         )
-        return container.run(template["targets"], args.target)
+        result = container.run(template["targets"], args.target)
+        TraceEventSummary().accept(container.get_summary())
+        return result
 
     def help(self):
         return "run targets of native-ut"

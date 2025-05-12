@@ -22,6 +22,8 @@ class Target:
         self.start_time = None
         self.end_time = None
         self.is_aborted = False
+        self.is_timeout = False
+        self.has_end = False
         self.process = None
         self.global_info = {}
         self.log_file = os.path.join(
@@ -47,10 +49,11 @@ class Target:
     def get_coverage_raw_data(self):
         pass
 
-    def kill(self):
+    def kill(self, is_timeout=False):
         if self.process:
             self.end_time = datetime.timestamp(datetime.now())
             self.is_aborted = True
+            self.is_timeout = is_timeout
             self.process.terminate()
 
     def is_end(self):
@@ -94,4 +97,7 @@ class Target:
         pass
 
     def run_pre_actions(self):
+        pass
+
+    def get_summary(self):
         pass
