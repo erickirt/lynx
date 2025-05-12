@@ -16,7 +16,8 @@ class PropBundleStyleWriter {
 
  public:
   static void PushStyleToBundle(PropBundle* bundle, CSSPropertyID id,
-                                starlight::ComputedCSSStyle* style);
+                                starlight::ComputedCSSStyle* style,
+                                bool use_specific_writer);
 
  private:
 #define DECLARE_STYLE_WRITER(name)            \

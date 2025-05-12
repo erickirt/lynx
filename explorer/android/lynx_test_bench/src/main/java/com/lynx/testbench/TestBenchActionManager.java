@@ -24,6 +24,7 @@ import com.lynx.devtoolwrapper.LynxBaseInspectorOwner;
 import com.lynx.tasm.LynxEnv;
 import com.lynx.tasm.LynxGroup;
 import com.lynx.tasm.LynxGroup.LynxGroupBuilder;
+import com.lynx.tasm.LynxLoadMeta;
 import com.lynx.tasm.LynxUpdateMeta;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
@@ -41,6 +42,7 @@ import com.lynx.tasm.behavior.ui.LynxUI;
 import com.lynx.tasm.behavior.ui.view.UIView;
 import com.lynx.tasm.provider.AbsTemplateProvider;
 import com.lynx.tasm.provider.LynxProviderRegistry;
+import com.lynx.tasm.utils.LynxViewBuilderProperty;
 import com.lynx.tasm.utils.UIThreadUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -161,6 +163,7 @@ public class TestBenchActionManager {
   private TestBenchLynxViewClient mViewClient;
   private boolean mReplayGesture;
   private boolean mPreDecode;
+  private boolean mDisableOptPushStyleToBundle;
   private int mDelayEndInterval;
   private TestBenchReplayStateView mStateView;
   private int mScreenWidth;
@@ -472,6 +475,8 @@ public class TestBenchActionManager {
     mDisableUpdateViewport = queryMap.getBoolean("disableUpdateViewport", false);
 
     mCreateWhenReload = queryMap.getBoolean("createWhenReload", false);
+
+    mDisableOptPushStyleToBundle = queryMap.getInt("disable_opt_push_style_to_bundle", 0) == 1;
 
     int[] colorValues = {255, 255, 255, 255};
 
@@ -1017,7 +1022,19 @@ public class TestBenchActionManager {
         mLoadTemplateData = templateInitData.deepClone();
         templateInitData.recycle();
         if (!mSSRLoaded) {
-          mLynxView.renderTemplateWithBaseUrl(templateSource, mLoadTemplateData, url);
+          LynxLoadMeta.Builder builder = new LynxLoadMeta.Builder();
+          builder.setBinaryData(templateSource);
+          builder.setUrl(url);
+          builder.setInitialData(mLoadTemplateData);
+          JSONObject nativeConfig = new JSONObject();
+          if (mDisableOptPushStyleToBundle) {
+            nativeConfig.put("enableOptPushStyleToBundle", false);
+          }
+          Map lynxConfig = new HashMap<>();
+          lynxConfig.put(LynxViewBuilderProperty.PLATFORM_CONFIG.getKey(), nativeConfig.toString());
+          builder.setLynxViewConfig(lynxConfig);
+
+          mLynxView.loadTemplate(builder.build());
         } else {
           mLynxView.ssrHydrate(templateSource, url, mLoadTemplateData);
         }
@@ -1114,9 +1131,20 @@ public class TestBenchActionManager {
         } else {
           templateSource = Base64.decode(params.getString("source"), Base64.DEFAULT);
         }
-        mLynxView.renderTemplateBundle(
-            TemplateBundle.fromTemplate(templateSource, mTemplateBundleOptions), mLoadTemplateData,
-            url);
+        LynxLoadMeta.Builder builder = new LynxLoadMeta.Builder();
+        builder.setTemplateBundle(
+            TemplateBundle.fromTemplate(templateSource, mTemplateBundleOptions));
+        builder.setUrl(url);
+        builder.setInitialData(mLoadTemplateData);
+        JSONObject nativeConfig = new JSONObject();
+        if (mDisableOptPushStyleToBundle) {
+          nativeConfig.put("enableOptPushStyleToBundle", false);
+        }
+        Map lynxConfig = new HashMap<>();
+        lynxConfig.put(LynxViewBuilderProperty.PLATFORM_CONFIG.getKey(), nativeConfig.toString());
+        builder.setLynxViewConfig(lynxConfig);
+
+        mLynxView.loadTemplate(builder.build());
       } else {
         mLynxView.renderTemplateBundle(mTemplateBundle, mLoadTemplateData, url);
       }

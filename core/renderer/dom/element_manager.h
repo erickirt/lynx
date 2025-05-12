@@ -981,6 +981,12 @@ class ElementManager {
 
   void SetEnableFiberElementForRadonDiff(TernaryBool value);
 
+  bool GetEnableOptPushStyleToBundle() {
+    return enable_opt_push_style_to_bundle_;
+  }
+
+  void SetEnableOptPushStyleToBundle(TernaryBool value);
+
   void SetEnableDumpElementTree(bool enable) {
     enable_dump_element_tree_ = enable;
   }
@@ -1143,6 +1149,8 @@ class ElementManager {
   bool animations_paused_ = false;
   // Save paused Animation Elements.
   std::unordered_set<tasm::Element *> paused_animation_element_set_;
+
+  bool enable_opt_push_style_to_bundle_ = false;
 
   // If it has been set to 'true', OnPatchFinish will not trigger layout
   // anymore, platform must trigger layout manually.

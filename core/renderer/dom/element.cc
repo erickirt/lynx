@@ -798,8 +798,10 @@ void Element::ResetPropBundle() {
 
 void Element::PushToBundle(CSSPropertyID id) {
   PreparePropBundleIfNeed();
-  PropBundleStyleWriter::PushStyleToBundle(prop_bundle_.get(), id,
-                                           computed_css_style());
+  PropBundleStyleWriter::PushStyleToBundle(
+      prop_bundle_.get(), id, computed_css_style(),
+      element_manager_ ? element_manager_->GetEnableOptPushStyleToBundle()
+                       : true);
 }
 
 void Element::ResolveStyle(StyleMap& new_styles,

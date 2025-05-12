@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readonly) BOOL createWhenReload;
 
+@property(nonatomic, readonly) BOOL disableOptPushStyleToBundle;
+
 // rgba : red_green_blue_alpha
 @property(nonatomic, readonly) UIColor* backgroundColor;
 @property(nonatomic, readonly) BOOL enableSizeOptimization;

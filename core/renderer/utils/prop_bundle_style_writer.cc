@@ -24,18 +24,12 @@ namespace tasm {
 // corresponding writer here.
 
 void PropBundleStyleWriter::PushStyleToBundle(
-    PropBundle* bundle, CSSPropertyID id, starlight::ComputedCSSStyle* style) {
-  // Add settings here. Decide whether to use DefaultWriterFunc or
-  // SpecificWriter based on the setting, and also perform a performance
-  // comparison through the setting.
-
-  static bool kUseSpecificWriter = LynxEnv::GetInstance().GetBoolEnv(
-      lynx::tasm::LynxEnv::Key::OPT_PUSH_STYLE_TO_BUNDLE, false);
-
+    PropBundle* bundle, CSSPropertyID id, starlight::ComputedCSSStyle* style,
+    bool use_specific_writer) {
   if (id > kPropertyStart && id < kPropertyEnd) {
     if (void (*const writer)(PropBundle*, starlight::ComputedCSSStyle*) =
             GetWriter()[id]) {
-      if (kUseSpecificWriter) {
+      if (use_specific_writer) {
         (*writer)(bundle, style);
       } else {
         DefaultWriterFunc(bundle, id, style);

@@ -155,6 +155,8 @@ static constexpr const char* kEnableUseContextPool = "enableUseContextPool";
 static constexpr const char* kEnableUseMapBuffer = "enableUseMapBuffer";
 static constexpr const char* kEnableFiberElementForRadonDiff =
     "enableFiberElementForRadonDiff";
+static constexpr const char* kEnableOptPushStyleToBundle =
+    "enableOptPushStyleToBundle";
 static constexpr const char* kEnableLynxScrollFluency =
     "enableLynxScrollFluency";
 static constexpr const char* kPreferredFps = "preferredFps";
@@ -992,6 +994,13 @@ bool LynxBinaryConfigDecoder::DecodePageConfig(
         doc[kEnableFiberElementForRadonDiff].GetBool()
             ? TernaryBool::TRUE_VALUE
             : TernaryBool::FALSE_VALUE);
+  }
+
+  if (doc.HasMember(kEnableOptPushStyleToBundle) &&
+      doc[kEnableOptPushStyleToBundle].IsBool()) {
+    page_config->SetEnableOptPushStyleToBundle(
+        doc[kEnableOptPushStyleToBundle].GetBool() ? TernaryBool::TRUE_VALUE
+                                                   : TernaryBool::FALSE_VALUE);
   }
 
   // enableLynxScrollFluency

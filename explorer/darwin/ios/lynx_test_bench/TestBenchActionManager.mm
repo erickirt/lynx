@@ -670,6 +670,18 @@ static const int kVirtual = 1 << 2;
   }
 }
 
+- (NSString*)convertNSDictToJsonString:(NSDictionary*)dict {
+  NSError* error;
+  NSData* jsonData = [NSJSONSerialization dataWithJSONObject:dict
+                                                     options:NSJSONWritingPrettyPrinted
+                                                       error:&error];
+  NSString* jsonString = [NSString new];
+  if (jsonData) {
+    jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+  }
+  return jsonString;
+}
+
 - (void)loadTemplate:(NSDictionary*)params {
   NSString* url = [[TestBenchEnv sharedInstance] testBenchUrlPrefix];
   if (_globalPropsCache) {
@@ -713,7 +725,18 @@ static const int kVirtual = 1 << 2;
   }
 
   if (isCSR && !_isSSRLoaded) {
-    [_lynxView loadTemplate:_source withURL:url initData:initData];
+    LynxLoadMeta* loadMeta = [LynxLoadMeta new];
+    loadMeta.lynxViewConfig = [NSMutableDictionary new];
+    NSMutableDictionary* nativeConfig = [NSMutableDictionary new];
+    if ([[self replayConfig] disableOptPushStyleToBundle]) {
+      [nativeConfig setObject:@NO forKey:@"enableOptPushStyleToBundle"];
+    }
+    [loadMeta.lynxViewConfig setObject:[self convertNSDictToJsonString:nativeConfig]
+                                forKey:@"platform_config"];
+    loadMeta.binaryData = _source;
+    loadMeta.url = url;
+    loadMeta.initialData = initData;
+    [_lynxView loadTemplate:loadMeta];
   } else if (isCSR && _isSSRLoaded) {
     [_lynxView ssrHydrate:_source withURL:url initData:initData];
     _isSSRLoaded = false;
@@ -759,6 +782,20 @@ static const int kVirtual = 1 << 2;
           [[NSData alloc] initWithBase64EncodedString:source
                                               options:NSDataBase64DecodingIgnoreUnknownCharacters];
     }
+
+    LynxLoadMeta* loadMeta = [LynxLoadMeta new];
+    loadMeta.lynxViewConfig = [NSMutableDictionary new];
+    NSMutableDictionary* nativeConfig = [NSMutableDictionary new];
+    if ([[self replayConfig] disableOptPushStyleToBundle]) {
+      [nativeConfig setObject:@NO forKey:@"enableOptPushStyleToBundle"];
+    }
+    [loadMeta.lynxViewConfig setObject:[self convertNSDictToJsonString:nativeConfig]
+                                forKey:@"platform_config"];
+    loadMeta.templateBundle = [[LynxTemplateBundle alloc] initWithTemplate:[self source]
+                                                                    option:_templateBundleOption];
+    loadMeta.url = url;
+    loadMeta.initialData = initData;
+
     [_lynxView
         loadTemplateBundle:[[LynxTemplateBundle alloc] initWithTemplate:[self source]
                                                                  option:_templateBundleOption]

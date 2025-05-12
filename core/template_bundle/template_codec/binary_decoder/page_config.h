@@ -1046,6 +1046,14 @@ class PageConfig final : public EntryConfig {
 
   bool GetEnableReloadLifecycle() { return enable_reload_lifecycle_; }
 
+  void SetEnableOptPushStyleToBundle(TernaryBool enable) {
+    enable_opt_push_style_to_bundle_ = enable;
+  }
+
+  TernaryBool GetEnableOptPushStyleToBundle() const {
+    return enable_opt_push_style_to_bundle_;
+  }
+
   inline void SetEnableFiberElementForRadonDiff(TernaryBool enable) {
     enable_fiber_element_for_radon_diff_ = enable;
   }
@@ -1383,6 +1391,8 @@ class PageConfig final : public EntryConfig {
 
   // enable bind primjs-icu
   bool enable_bind_icu_{false};
+
+  TernaryBool enable_opt_push_style_to_bundle_{TernaryBool::UNDEFINE_VALUE};
 
   TernaryBool enable_fiber_element_for_radon_diff_{TernaryBool::UNDEFINE_VALUE};
 

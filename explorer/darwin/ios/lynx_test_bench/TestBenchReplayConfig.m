@@ -36,6 +36,11 @@
                                                                 forKey:@"createWhenReload"
                                                           defaultValue:NO];
 
+    _disableOptPushStyleToBundle =
+        [TestBenchURLAnalyzer getQueryBooleanParameter:baseURL
+                                                forKey:@"disable_opt_push_style_to_bundle"
+                                          defaultValue:NO];
+
     NSString* threadModeStr = [TestBenchURLAnalyzer getQueryStringParameter:baseURL
                                                                      forKey:@"thread_mode"];
     if (threadModeStr != nil) {

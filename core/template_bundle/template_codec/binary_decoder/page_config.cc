@@ -28,30 +28,33 @@ static constexpr const char* const kEnableNativeList = "enableNativeList";
 
 const PageConfig::PageConfigMap<TernaryBool>& PageConfig::GetFuncBoolMap() {
   static const base::NoDestructor<const PageConfigMap<TernaryBool>>
-      kPageConfigFuncBoolMap{
-          {{"trailNewImage",
-            {&PageConfig::SetTrailNewImage, &PageConfig::GetTrailNewImage}},
-           {"asyncRedirect",
-            {&PageConfig::SetAsyncRedirectUrl,
-             &PageConfig::GetAsyncRedirectUrl}},
-           {"enableUseMapBuffer",
-            {&PageConfig::SetEnableUseMapBuffer,
-             &PageConfig::GetEnableUseMapBuffer}},
-           {"enableUIOperationOptimize",
-            {&PageConfig::SetEnableUIOperationOptimize,
-             &PageConfig::GetEnableUIOperationOptimize}},
-           {kEnableNativeList,
-            {&PageConfig::SetEnableNativeList,
-             &PageConfig::GetEnableNativeList}},
-           {"enableFiberElementForRadonDiff",
-            {&PageConfig::SetEnableFiberElementForRadonDiff,
-             &PageConfig::GetEnableFiberElementForRadonDiff}},
-           {"enableMicrotaskPromisePolyfill",
-            {&PageConfig::SetEnableMicrotaskPromisePolyfill,
-             &PageConfig::GetEnableMicrotaskPromisePolyfill}},
-           {kEnableSignalAPI,
-            {&PageConfig::SetEnableSignalAPI,
-             &PageConfig::GetEnableSignalAPI}}}};
+      kPageConfigFuncBoolMap{{
+          {"trailNewImage",
+           {&PageConfig::SetTrailNewImage, &PageConfig::GetTrailNewImage}},
+          {"asyncRedirect",
+           {&PageConfig::SetAsyncRedirectUrl,
+            &PageConfig::GetAsyncRedirectUrl}},
+          {"enableUseMapBuffer",
+           {&PageConfig::SetEnableUseMapBuffer,
+            &PageConfig::GetEnableUseMapBuffer}},
+          {"enableUIOperationOptimize",
+           {&PageConfig::SetEnableUIOperationOptimize,
+            &PageConfig::GetEnableUIOperationOptimize}},
+          {kEnableNativeList,
+           {&PageConfig::SetEnableNativeList,
+            &PageConfig::GetEnableNativeList}},
+          {"enableFiberElementForRadonDiff",
+           {&PageConfig::SetEnableFiberElementForRadonDiff,
+            &PageConfig::GetEnableFiberElementForRadonDiff}},
+          {"enableMicrotaskPromisePolyfill",
+           {&PageConfig::SetEnableMicrotaskPromisePolyfill,
+            &PageConfig::GetEnableMicrotaskPromisePolyfill}},
+          {kEnableSignalAPI,
+           {&PageConfig::SetEnableSignalAPI, &PageConfig::GetEnableSignalAPI}},
+          {"enableOptPushStyleToBundle",
+           {&PageConfig::SetEnableOptPushStyleToBundle,
+            &PageConfig::GetEnableOptPushStyleToBundle}},
+      }};
   return *kPageConfigFuncBoolMap;
 }
 
