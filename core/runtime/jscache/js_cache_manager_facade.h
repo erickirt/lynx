@@ -8,6 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/include/closure.h"
+#include "core/runtime/jscache/js_cache_manager.h"
+
 namespace lynx {
 namespace tasm {
 class LynxTemplateBundle;
@@ -15,6 +18,7 @@ class LynxTemplateBundle;
 
 namespace piper {
 class StringBuffer;
+class Buffer;
 enum class JSRuntimeType;
 
 namespace cache {
@@ -30,14 +34,16 @@ class JsCacheManagerFacade {
   // The PostCacheGenerationTask method makes a cache generation request to the
   // app-service.js code stored in the incoming LynxTemplateBundle. Cache
   // generation will be performed asynchronously on a background thread.
-  static void PostCacheGenerationTask(const tasm::LynxTemplateBundle& bundle,
-                                      const std::string& template_url,
-                                      JSRuntimeType engine_type);
+  static void PostCacheGenerationTask(
+      const tasm::LynxTemplateBundle& bundle, const std::string& template_url,
+      JSRuntimeType engine_type,
+      std::unique_ptr<BytecodeGenerateCallback> callback = nullptr);
 
   static void PostCacheGenerationTask(
       const std::string& source_url, const std::string& template_url,
       const std::shared_ptr<const StringBuffer>& source,
-      JSRuntimeType engine_type);
+      JSRuntimeType engine_type,
+      std::unique_ptr<BytecodeGenerateCallback> callback = nullptr);
 
   static void ClearBytecode(const std::string& template_url,
                             JSRuntimeType engine_type);
@@ -45,7 +51,8 @@ class JsCacheManagerFacade {
  private:
   static inline void PostCacheGenerationTaskQuickJs(
       const std::string& source_url, const std::string& template_url,
-      const std::shared_ptr<const StringBuffer>& buffer);
+      const std::shared_ptr<const StringBuffer>& buffer,
+      std::unique_ptr<BytecodeGenerateCallback> callback);
 
 #ifdef QUICKJS_CACHE_UNITTEST
  public:

@@ -32,6 +32,8 @@
 namespace lynx {
 namespace piper {
 namespace cache {
+using BytecodeGenerateCallback =
+    base::MoveOnlyClosure<void, std::string, piper::Buffer *>;
 
 class JsCacheManager {
  public:
@@ -55,16 +57,19 @@ class JsCacheManager {
     std::shared_ptr<const Buffer> js_buffer;  // source code of js file
     std::unique_ptr<CacheGenerator>
         cache_generator;  // function to generate cache
+    std::unique_ptr<BytecodeGenerateCallback> callback;
 
     TaskInfo(TaskType type, JsFileIdentifier identifier,
              std::optional<std::string> md5_optional,
              std::shared_ptr<const Buffer> js_buffer,
-             std::unique_ptr<CacheGenerator> generator)
+             std::unique_ptr<CacheGenerator> generator,
+             std::unique_ptr<BytecodeGenerateCallback> callback = nullptr)
         : type(type),
           identifier(std::move(identifier)),
           md5_optional(std::move(md5_optional)),
           js_buffer(std::move(js_buffer)),
-          cache_generator(std::move(generator)) {}
+          cache_generator(std::move(generator)),
+          callback(std::move(callback)) {}
   };
 
   explicit JsCacheManager(JSRuntimeType type);
@@ -95,12 +100,14 @@ class JsCacheManager {
    * @param cache_generator function to generate cache.
    * @param force If true, it will generate cache file even if it's already
    * existed.
+   * @param callback this can be null. If it's not null, when exec finished,
+   * pass result to it.
    */
-  void RequestCacheGeneration(const std::string &source_url,
-                              const std::string &template_url,
-                              const std::shared_ptr<const Buffer> &buffer,
-                              std::unique_ptr<CacheGenerator> cache_generator,
-                              bool force);
+  void RequestCacheGeneration(
+      const std::string &source_url, const std::string &template_url,
+      const std::shared_ptr<const Buffer> &buffer,
+      std::unique_ptr<CacheGenerator> cache_generator, bool force,
+      std::unique_ptr<BytecodeGenerateCallback> callback = nullptr);
 
   /**
    * Remove bytecode by template_url.

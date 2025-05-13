@@ -12,6 +12,7 @@
 #include "core/base/android/java_only_map.h"
 #include "core/base/android/jni_helper.h"
 #include "core/renderer/dom/android/lepus_message_consumer.h"
+#include "core/runtime/jscache/android/bytecode_callback.h"
 #include "core/runtime/jscache/js_cache_manager_facade.h"
 #include "core/shell/android/tasm_platform_invoker_android.h"
 #include "core/template_bundle/template_codec/binary_decoder/lynx_binary_reader.h"
@@ -100,16 +101,45 @@ void ReleaseBundle(JNIEnv* env, jclass jcaller, jlong ptr) {
 }
 
 void PostJsCacheGenerationTask(JNIEnv* env, jclass jcaller, jlong bundle,
-                               jstring bytecodeSourceUrl, jboolean useV8) {
+                               jstring bytecodeSourceUrl, jboolean useV8,
+                               jobject callback) {
   std::string template_url =
       lynx::base::android::JNIConvertHelper::ConvertToString(env,
                                                              bytecodeSourceUrl);
   lynx::tasm::LynxTemplateBundle* template_bundle =
       reinterpret_cast<lynx::tasm::LynxTemplateBundle*>(bundle);
+  std::unique_ptr<lynx::piper::cache::BytecodeGenerateCallback>
+      bytecode_callback = nullptr;
+  if (nullptr != callback) {
+    lynx::base::android::ScopedGlobalJavaRef<jobject> jni_object(env, callback);
+    bytecode_callback = std::make_unique<
+        lynx::piper::cache::BytecodeGenerateCallback>(
+        [jni_object = std::move(jni_object)](std::string error_msg,
+                                             lynx::piper::Buffer* buffer) {
+          JNIEnv* env = lynx::base::android::AttachCurrentThread();
+          lynx::base::android::ScopedLocalJavaRef<jstring> jni_error_msg;
+          if (!error_msg.empty()) {
+            jni_error_msg =
+                lynx::base::android::JNIConvertHelper::ConvertToJNIStringUTF(
+                    env, error_msg);
+          }
+          jobject byte_buffer(nullptr);
+          if (nullptr != buffer) {
+            byte_buffer = env->NewDirectByteBuffer(
+                const_cast<void*>(static_cast<const void*>(buffer->data())),
+                buffer->size());
+          }
+          lynx::piper::cache::OnBytecodeResponse(env, std::move(jni_object),
+                                                 std::move(jni_error_msg),
+                                                 byte_buffer);
+        });
+  }
+  // base::android::ScopedWeakGlobalJavaRef<jobject> jni_object_;
   lynx::piper::cache::JsCacheManagerFacade::PostCacheGenerationTask(
       *template_bundle, template_url,
       useV8 ? lynx::piper::JSRuntimeType::v8
-            : lynx::piper::JSRuntimeType::quickjs);
+            : lynx::piper::JSRuntimeType::quickjs,
+      std::move(bytecode_callback));
 }
 
 jboolean ConstructContext(JNIEnv* env, jclass jcaller, jlong ptr, jint count) {

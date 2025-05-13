@@ -265,12 +265,16 @@ std::shared_ptr<Buffer> JsCacheManager::TryGetCache(
 void JsCacheManager::RequestCacheGeneration(
     const std::string &source_url, const std::string &template_url,
     const std::shared_ptr<const Buffer> &buffer,
-    std::unique_ptr<CacheGenerator> cache_generator, bool force) {
+    std::unique_ptr<CacheGenerator> cache_generator, bool force,
+    std::unique_ptr<BytecodeGenerateCallback> callback) {
   LOGI("RequestCacheGeneration url: '"
        << source_url << "', template_url: '" << template_url
        << "', file_content size:" << buffer->size());
   if (!IsCacheEnabledForTemplate(template_url)) {
     LOGI("bytecode disabled");
+    if (callback) {
+      (*callback)("disabled", nullptr);
+    }
     return;
   }
 
@@ -280,7 +284,7 @@ void JsCacheManager::RequestCacheGeneration(
       TaskInfo(force ? TaskInfo::TaskType::GENERATE_CACHE
                      : TaskInfo::TaskType::GENERATE_CACHE_IF_NEEDED,
                std::move(identifier), std::move(md5_optional), buffer,
-               std::move(cache_generator)));
+               std::move(cache_generator), std::move(callback)));
 }
 
 /*
@@ -383,12 +387,15 @@ void JsCacheManager::RunTasks() {
 bool JsCacheManager::RunTask(TaskInfo &task) {
   auto start = base::CurrentTimeMilliseconds();
 
-  auto &[type, identifier, md5_optional, buffer, generator] = task;
+  auto &[type, identifier, md5_optional, buffer, generator, callback] = task;
 
   if (type == TaskInfo::TaskType::GENERATE_CACHE_IF_NEEDED) {
     if (auto info = GetMetaData().GetFileInfo(identifier)) {
       if (auto cache =
               LoadCacheFromStorage(*info, EnsureMd5(buffer, md5_optional))) {
+        if (callback) {
+          (*callback)("", cache.get());
+        }
         return true;
       }
     }
@@ -407,7 +414,14 @@ bool JsCacheManager::RunTask(TaskInfo &task) {
         engine_type_, identifier.url, identifier.template_url,
         GetBytecodeGenerateEngineVersion(),
         JsCacheErrorCode::RUNTIME_GENERATE_FAILED);
+    if (callback) {
+      (*callback)("generate failed.", nullptr);
+    }
     return false;
+  } else {
+    if (callback) {
+      (*callback)("", cache_buffer.get());
+    }
   }
   auto generate_cost = base::CurrentTimeMilliseconds() - start;
 

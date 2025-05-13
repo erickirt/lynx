@@ -19,7 +19,8 @@ namespace piper {
 namespace cache {
 void JsCacheManagerFacade::PostCacheGenerationTask(
     const tasm::LynxTemplateBundle& bundle, const std::string& template_url,
-    JSRuntimeType engine_type) {
+    JSRuntimeType engine_type,
+    std::unique_ptr<BytecodeGenerateCallback> callback) {
   std::string path = runtime::kAppServiceJSName;
   auto source_opt = bundle.GetJsBundle().GetJsContent(path);
   if (source_opt) {
@@ -29,7 +30,7 @@ void JsCacheManagerFacade::PostCacheGenerationTask(
           bundle.IsCard() ? path
                           : piper::App::GenerateDynamicComponentSourceUrl(
                                 template_url, path),
-          template_url, source.GetBuffer(), engine_type);
+          template_url, source.GetBuffer(), engine_type, std::move(callback));
     }
   }
 }
@@ -37,7 +38,8 @@ void JsCacheManagerFacade::PostCacheGenerationTask(
 void JsCacheManagerFacade::PostCacheGenerationTask(
     const std::string& source_url, const std::string& template_url,
     const std::shared_ptr<const StringBuffer>& source,
-    JSRuntimeType engine_type) {
+    JSRuntimeType engine_type,
+    std::unique_ptr<BytecodeGenerateCallback> callback) {
   LOGI("JsCacheManagerFacade::PostCacheGenerationTask source_url: "
        << source_url << " template_url: " << template_url
        << " engine_type: " << static_cast<int>(engine_type));
@@ -49,7 +51,8 @@ void JsCacheManagerFacade::PostCacheGenerationTask(
       LOGI("PostCacheGenerationTask for JSC is not supported");
       return;
     case JSRuntimeType::quickjs: {
-      PostCacheGenerationTaskQuickJs(source_url, template_url, source);
+      PostCacheGenerationTaskQuickJs(source_url, template_url, source,
+                                     std::move(callback));
       return;
     }
     case JSRuntimeType::jsvm:
@@ -69,7 +72,8 @@ void JsCacheManagerFacade::ClearBytecode(const std::string& template_url,
 
 inline void JsCacheManagerFacade::PostCacheGenerationTaskQuickJs(
     const std::string& source_url, const std::string& template_url,
-    const std::shared_ptr<const StringBuffer>& buffer) {
+    const std::shared_ptr<const StringBuffer>& buffer,
+    std::unique_ptr<BytecodeGenerateCallback> callback) {
 #ifdef QUICKJS_CACHE_UNITTEST
   post_cache_generation_task_quickjs_for_testing(source_url, template_url,
                                                  buffer);
@@ -77,7 +81,8 @@ inline void JsCacheManagerFacade::PostCacheGenerationTaskQuickJs(
   auto generator =
       std::make_unique<cache::QuickjsCacheGenerator>(source_url, buffer);
   JsCacheManager::GetQuickjsInstance().RequestCacheGeneration(
-      source_url, template_url, buffer, std::move(generator), false);
+      source_url, template_url, buffer, std::move(generator), false,
+      std::move(callback));
 #endif
 }
 }  // namespace cache

@@ -3662,6 +3662,10 @@ public enum com::lynx::tasm::LynxBooleanOption {
   public com.lynx.tasm.LynxBooleanOption.FALSE FALSE;
 }
 
+public interface com::lynx::jsbridge::LynxBytecodeCallback {
+  public void com.lynx.jsbridge.LynxBytecodeCallback.onResponse(String errorMsg, ByteBuffer buffer);
+}
+
 public class com::lynx::tasm::navigator::LynxCardManager : com.lynx.tasm.navigator.LynxRouteLruCache.LynxRouteCacheListener {
   public void com.lynx.tasm.navigator.LynxCardManager.registerRoute(ReadableMap routeTable);
   public void com.lynx.tasm.navigator.LynxCardManager.registerInitLynxView(LynxView lynxView);
@@ -8127,6 +8131,7 @@ public class com::lynx::tasm::TemplateBundle :  {
   public long com.lynx.tasm.TemplateBundle.getNativePtr();
   public void com.lynx.tasm.TemplateBundle.release();
   public boolean com.lynx.tasm.TemplateBundle.isValid();
+  public void com.lynx.tasm.TemplateBundle.postJsCacheGenerationTask(String bytecodeSourceUrl, boolean useV8, @Nullable LynxBytecodeCallback callback);
   public void com.lynx.tasm.TemplateBundle.postJsCacheGenerationTask(String bytecodeSourceUrl, boolean useV8);
   public String com.lynx.tasm.TemplateBundle.getErrorMessage();
   public String com.lynx.tasm.TemplateBundle.getUrl();

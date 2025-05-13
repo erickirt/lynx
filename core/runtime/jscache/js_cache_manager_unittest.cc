@@ -395,6 +395,22 @@ TEST_F(JsCacheManagerTest, RequestCacheGenerationCore) {
   EXPECT_EQ(std::string((char *)buffer->data()), std::string(mock_cache));
 }
 
+TEST_F(JsCacheManagerTest, RequestCacheGenerationCallback) {
+  auto &instance = QuickjsCacheManagerForTesting::GetInstance();
+  bool called = false;
+  instance.RequestCacheGeneration(
+      k_source_url, "RequestCacheGeneration.js",
+      std::make_shared<StringBuffer>(js_file),
+      std::make_unique<TestingCacheGenerator>(js_file), false,
+      std::make_unique<BytecodeGenerateCallback>([&called](std::string msg,
+                                                           Buffer *buffer) {
+        EXPECT_TRUE(buffer);
+        EXPECT_EQ(std::string((char *)buffer->data()), std::string(js_file));
+        called = true;
+      }));
+  EXPECT_TRUE(called);
+}
+
 // SaveCacheContentToStorage
 TEST_F(JsCacheManagerTest, SaveCacheContentToStorageSuccess) {
   auto &instance = QuickjsCacheManagerForTesting::GetInstance();

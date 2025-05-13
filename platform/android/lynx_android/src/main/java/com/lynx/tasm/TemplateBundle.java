@@ -5,7 +5,9 @@
 package com.lynx.tasm;
 
 import android.text.TextUtils;
+import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
+import com.lynx.jsbridge.LynxBytecodeCallback;
 import com.lynx.react.bridge.ReadableMap;
 import com.lynx.tasm.LynxEnv;
 import com.lynx.tasm.TemplateBundleOption;
@@ -176,12 +178,24 @@ public final class TemplateBundle {
    * The task will be executed in a background thread.
    * @param bytecodeSourceUrl The source url of the template.
    * @param useV8 Whether to generate bytecode for V8 engine instead of QuickJS.
+   * @param callback When generate finished, this will response the result.
    */
-  public void postJsCacheGenerationTask(String bytecodeSourceUrl, boolean useV8) {
+  public void postJsCacheGenerationTask(
+      String bytecodeSourceUrl, boolean useV8, @Nullable LynxBytecodeCallback callback) {
     if (!isValid() || TextUtils.isEmpty(bytecodeSourceUrl)) {
       return;
     }
-    nativePostJsCacheGenerationTask(getNativePtr(), bytecodeSourceUrl, useV8);
+    nativePostJsCacheGenerationTask(getNativePtr(), bytecodeSourceUrl, useV8, callback);
+  }
+
+  /**
+   * Post a task to generate bytecode for a given template bundle.
+   * The task will be executed in a background thread.
+   * @param bytecodeSourceUrl The source url of the template.
+   * @param useV8 Whether to generate bytecode for V8 engine instead of QuickJS.
+   */
+  public void postJsCacheGenerationTask(String bytecodeSourceUrl, boolean useV8) {
+    postJsCacheGenerationTask(bytecodeSourceUrl, useV8, null);
   }
 
   /**
@@ -226,7 +240,7 @@ public final class TemplateBundle {
   }
 
   private static native void nativePostJsCacheGenerationTask(
-      long bundle, String bytecodeSourceUrl, boolean useV8);
+      long bundle, String bytecodeSourceUrl, boolean useV8, LynxBytecodeCallback callback);
 
   private static native long nativeParseTemplate(byte[] temp, Object[] buffer);
   private static native void nativeReleaseBundle(long ptr);
