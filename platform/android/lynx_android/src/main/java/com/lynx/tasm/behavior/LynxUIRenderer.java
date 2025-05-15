@@ -625,8 +625,8 @@ public class LynxUIRenderer implements ILynxUIRenderer {
       return null;
     }
     View lynxDecoderView = view.getRootView();
-    LLog.e(TAG, "getBitmapOfScreen: lynxDecoderView is null");
     if (lynxDecoderView == null) {
+      LLog.e(TAG, "getBitmapOfScreen: lynxDecoderView is null");
       return null;
     }
     final Canvas screenCanvas = new Canvas(screenBitmap);
