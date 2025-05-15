@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "base/include/sorted_for_each.h"
+#include "core/renderer/simple_styling/style_object.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/jscache/quickjs/bytecode/quickjs_bytecode_provider.h"
@@ -25,6 +26,7 @@
 #include "core/runtime/vm/lepus/bytecode_generator.h"
 #include "core/runtime/vm/lepus/exception.h"
 #include "core/runtime/vm/lepus/quick_context.h"
+#include "core/template_bundle/template_codec/binary_encoder/style_object_encoder/style_object_parser.h"
 #include "core/template_bundle/template_codec/generator/source_generator.h"
 #include "core/template_bundle/template_codec/template_binary.h"
 
@@ -108,6 +110,11 @@ size_t TemplateBinaryWriter::Encode() {
   auto common_encode_func = [this]() {
     // Encode css section
     EncodeCSSDescriptor();
+
+    if (compile_options_.enable_simple_styling_) {
+      // Encode simple styling objects.
+      EncodeSimpleStyleObjects();
+    }
 
     // Encode JS section
     if (compile_options_.encode_quickjs_bytecode_) {
@@ -413,6 +420,45 @@ bool TemplateBinaryWriter::EncodeCSSSelector(
     current++;
   }
   return true;
+}
+
+void TemplateBinaryWriter::EncodeSimpleStyleObjects() {
+  TemplateSectionRecorder recorder(
+      BinarySection::STYLE_OBJECT, BinaryOffsetType::TYPE_STYLE_OBJECT, this,
+      stream_.get(), binary_info_, offset_map_, section_size_info_);
+  if (!style_object_parser_) {
+    return;
+  }
+  auto& style_objects = style_object_parser_->StyleObjects();
+  StyleObjectRoute route;
+  uint32_t descriptor_offset = stream()->size();
+  uint32_t start = 0;
+  uint32_t end = 0;
+  if (!style_objects.empty()) {
+    std::for_each(style_objects.begin(), style_objects.end(),
+                  [descriptor_offset, &route, &start, &end,
+                   this](const style::StyleObject& style_obj) {
+                    EncodeCSSAttributes(style_obj.Properties()->GetStyleMap());
+                    end = stream()->size() - descriptor_offset;
+                    route.style_object_ranges.emplace_back(start, end);
+                    start = end;
+                  });
+    start = stream()->size();
+    EncodeSimpleStyleObjectsRoute(route);
+    end = stream()->size();
+    stream_->Move(descriptor_offset, start, end - start);
+  }
+}
+
+void TemplateBinaryWriter::EncodeSimpleStyleObjectsRoute(
+    const StyleObjectRoute& route) {
+  WriteCompactU32(route.style_object_ranges.size());
+  std::for_each(route.style_object_ranges.begin(),
+                route.style_object_ranges.end(), [this](const CSSRange& it) {
+                  // CSSRange
+                  WriteCompactU32(it.start);
+                  WriteCompactU32(it.end);
+                });
 }
 
 bool TemplateBinaryWriter::EncodeCSSKeyframesToken(

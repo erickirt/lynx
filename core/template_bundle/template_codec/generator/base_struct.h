@@ -84,6 +84,9 @@ struct GeneratorOptions {
   // for style extraction
   rapidjson::Value parsed_styles_;
 
+  // for simple styling
+  rapidjson::Value style_objects_;
+
   // for non fiber css meta
   rapidjson::Document css_obj_{};
 

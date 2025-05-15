@@ -23,6 +23,9 @@ class MetaFactory {
   static void GetCSSMeta(rapidjson::Value& document,
                          EncoderOptions& encoder_options);
 
+  static void GetStyleObjects(rapidjson::Value& document,
+                              EncoderOptions& encoder_options);
+
   static void GetAndCheckTargetSdkVersion(rapidjson::Value& compiler_options,
                                           EncoderOptions& encoder_options);
 

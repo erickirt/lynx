@@ -20,7 +20,10 @@ lynx_core_source_set("binary_encoder") {
     "repack_binary_writer.h",
   ]
 
-  public_deps = [ "css_encoder:css_encoder" ]
+  public_deps = [
+    "css_encoder:css_encoder",
+    "style_object_encoder:style_object_encoder",
+  ]
 
   exclude_configs = []
   if (is_wasm) {

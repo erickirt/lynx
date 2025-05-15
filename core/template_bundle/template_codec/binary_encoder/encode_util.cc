@@ -361,6 +361,9 @@ std::string BinarySectionTypeToString(BinarySection section) {
     case BinarySection::NEW_ELEMENT_TEMPLATE:
       res = "new_element_template";
       break;
+    case BinarySection::STYLE_OBJECT:
+      res = "style_object";
+      break;
   }
   return res;
 }

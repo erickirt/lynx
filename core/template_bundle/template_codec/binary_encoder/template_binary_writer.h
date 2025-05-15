@@ -39,13 +39,15 @@ class VirtualComponent;
 
 class TemplateAssembler;
 class SourceGenerator;
+class StyleObjectParser;
+struct StyleObjectRoute;
 
 class TemplateBinaryWriter : public CSRElementBinaryWriter {
  public:
   TemplateBinaryWriter(
       lepus::Context* context, bool use_lepusng, bool silence,
       SourceGenerator* parser, CSSParser* css_parser,
-      rapidjson::Value* air_styles,
+      StyleObjectParser* style_object_parser, rapidjson::Value* air_styles,
       rapidjson::Value* element_template_parsed_styles,
       rapidjson::Document* element_template, const char* lepus_version,
       const std::string& cli_version, const std::string& app_type,
@@ -72,7 +74,8 @@ class TemplateBinaryWriter : public CSRElementBinaryWriter {
         silence_(silence),
         template_info_(template_info),
         js_code_(js_code),
-        custom_sections_(custom_sections) {}
+        custom_sections_(custom_sections),
+        style_object_parser_(style_object_parser) {}
   size_t Encode();
   bool WriteToFile(const char* file_name);
   const std::vector<uint8_t> WriteToVector();
@@ -157,6 +160,9 @@ class TemplateBinaryWriter : public CSRElementBinaryWriter {
       std::vector<std::pair<std::string, CustomSectionHeader>>;
   void EncodeCustomSectionRoute(const CustomSectionHeaders& route);
 
+  void EncodeSimpleStyleObjects();
+  void EncodeSimpleStyleObjectsRoute(const StyleObjectRoute& route);
+
  private:
   static int FindJSFileInDirectory(
       const char* path, const char* relationPath,
@@ -198,6 +204,8 @@ class TemplateBinaryWriter : public CSRElementBinaryWriter {
 
   // custom sections
   rapidjson::Value* custom_sections_{nullptr};
+
+  StyleObjectParser* style_object_parser_;
 };
 
 }  // namespace tasm

@@ -7,6 +7,7 @@
 #include "base/include/sorted_for_each.h"
 #include "core/base/json/json_util.h"
 #include "core/renderer/utils/base/tasm_constants.h"
+#include "core/template_bundle/template_codec/generator/base_struct.h"
 #include "core/template_bundle/template_codec/generator/source_generator.h"
 #include "third_party/aes/aes.h"
 #include "third_party/rapidjson/document.h"
@@ -67,6 +68,8 @@ constexpr const char* kTemplateInfo = "templateInfo";
 constexpr const char* kCompilerOptions = "compilerOptions";
 constexpr const char* kCss = "css";
 constexpr const char* kCssMap = "cssMap";
+constexpr const char* kStyleObjects = "simpleStyleObjects";
+constexpr const char* kEnableSimpleStyling = "enableSimpleStyling";
 constexpr const char* kCssSource = "cssSource";
 constexpr const char* kParsedStyle = "parsedStyle";
 constexpr const char* kConfig = "config";
@@ -246,6 +249,14 @@ void MetaFactory::GetCSSMeta(rapidjson::Value& document,
                 .GetAllocator());
       }
     }
+  }
+}
+
+void MetaFactory::GetStyleObjects(rapidjson::Value& document,
+                                  EncoderOptions& encoder_options) {
+  if (encoder_options.compile_options_.enable_simple_styling_ &&
+      document.HasMember(kStyleObjects)) {
+    encoder_options.generator_options_.style_objects_ = document[kStyleObjects];
   }
 }
 
@@ -734,6 +745,10 @@ EncoderOptions MetaFactory::GetEncoderOptions(rapidjson::Document& document) {
       debuginfo_outside;
   encoder_options.generator_options_.lepus_closure_fix_ = lepus_closure_fix;
 
+  bool enable_simple_styling = false;
+  GET_VALUE_FROM_JSON(options, kEnableSimpleStyling, Bool,
+                      enable_simple_styling);
+
   CompileOptions compile_options{
       encoder_options.compile_options_.target_sdk_version_,
       std::string(template_debug_url),
@@ -775,7 +790,8 @@ EncoderOptions MetaFactory::GetEncoderOptions(rapidjson::Document& document) {
       enable_css_invalidation,
       enable_air_raw_css,
       encode_quickjs_bytecode,
-      enable_async_lepus_chunk};
+      enable_async_lepus_chunk,
+      enable_simple_styling};
 
   // Set compile_options_
   encoder_options.compile_options_ = compile_options;
@@ -789,6 +805,9 @@ EncoderOptions MetaFactory::GetEncoderOptions(rapidjson::Document& document) {
 
   // Get CSS Meta
   GET_UNLESS(GetCSSMeta(document, encoder_options));
+
+  // Get style objects for simple styling mode
+  GET_UNLESS(GetStyleObjects(document, encoder_options));
 
   // Get Config
   GET_UNLESS(GetConfig(encoder_options));

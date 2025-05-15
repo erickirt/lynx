@@ -155,6 +155,12 @@ targets({
         "coverage": True,
         "enable_parallel":True,
     },
+    "style_object_encoder_testset_exec":{
+        "cwd": ".",
+        "owners":["Zhongyr"],
+        "coverage": True,
+        "enable_parallel":True,
+    },
     "jsbridge_tests_exec":{
         "cwd": ".",
         "owners":["ZhaoSongGOO"],

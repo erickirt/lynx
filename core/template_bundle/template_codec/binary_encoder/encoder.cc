@@ -22,6 +22,7 @@
 #include "core/template_bundle/template_codec/binary_encoder/encode_util.h"
 #include "core/template_bundle/template_codec/binary_encoder/repack_binary_reader.h"
 #include "core/template_bundle/template_codec/binary_encoder/repack_binary_writer.h"
+#include "core/template_bundle/template_codec/binary_encoder/style_object_encoder/style_object_parser.h"
 #include "core/template_bundle/template_codec/binary_encoder/template_binary_writer.h"
 #include "core/template_bundle/template_codec/generator/base_struct.h"
 #include "core/template_bundle/template_codec/generator/meta_factory.h"
@@ -218,9 +219,39 @@ std::unique_ptr<CSSParser> ParserCSS(EncoderOptions& encoder_options) {
   return css_parser;
 }
 
+std::unique_ptr<StyleObjectParser> ParserStyleObject(
+    EncoderOptions& encoder_options) {
+  if (!encoder_options.generator_options_.silence_) {
+    printf("    parsing style objects...\n");
+  }
+  auto style_object_parser =
+      std::make_unique<StyleObjectParser>(encoder_options.compile_options_);
+  try {
+    if (encoder_options.compile_options_.enable_simple_styling_) {
+      style_object_parser->Parse(
+          encoder_options.generator_options_.style_objects_);
+    } else {
+      return nullptr;
+    }
+  } catch (lynx::lepus::ParseException& e) {
+    std::string err_str =
+        MakeErrorResult(e.msg_.c_str(), e.file_.c_str(), e.location_.c_str());
+    encoder_options.parser_result_ = false;
+    encoder_options.err_msg_ = err_str;
+    return style_object_parser;
+  } catch (lynx::lepus::CompileException& e) {
+    std::string err_str = MakeErrorResult(e.message().c_str(), "", "");
+    encoder_options.parser_result_ = false;
+    encoder_options.err_msg_ = err_str;
+    return style_object_parser;
+  }
+  return style_object_parser;
+}
+
 std::unique_ptr<TemplateBinaryWriter> EncodeTemplate(
-    CSSParser* css_parser, SourceGenerator* ttml_parser,
-    lepus::Context* vm_context, EncoderOptions& encoder_options) {
+    CSSParser* css_parser, StyleObjectParser* style_object_parser,
+    SourceGenerator* ttml_parser, lepus::Context* vm_context,
+    EncoderOptions& encoder_options) {
   if (!encoder_options.generator_options_.silence_) {
     printf("    encoding...\n");
     printf("engine version:%s\n", targetSdkVersion);
@@ -230,6 +261,7 @@ std::unique_ptr<TemplateBinaryWriter> EncodeTemplate(
   auto encoder = std::make_unique<TemplateBinaryWriter>(
       vm_context, encoder_options.compile_options_.enable_lepus_ng_,
       encoder_options.generator_options_.silence_, ttml_parser, css_parser,
+      style_object_parser,
       &encoder_options.generator_options_.air_parsed_styles_,
       &encoder_options.generator_options_.parsed_styles_,
       &encoder_options.generator_options_.element_template_,
@@ -354,6 +386,9 @@ lynx::tasm::EncodeResult EncodeInner(const std::string& options_str) {
   auto css_parser = ParserCSS(encoder_options);
   IF_FAIL_RETURN
 
+  auto style_object_parser = ParserStyleObject(encoder_options);
+  IF_FAIL_RETURN
+
   // step 2: compile ttml
   auto ttml_parser = ParserTTML(css_parser.get(), encoder_options);
   IF_FAIL_RETURN
@@ -368,8 +403,9 @@ lynx::tasm::EncodeResult EncodeInner(const std::string& options_str) {
   auto vm_context = GetVMContent(encoder_options);
 
   // step 4: encode template
-  auto encoder = EncodeTemplate(css_parser.get(), ttml_parser.get(),
-                                vm_context.get(), encoder_options);
+  auto encoder =
+      EncodeTemplate(css_parser.get(), style_object_parser.get(),
+                     ttml_parser.get(), vm_context.get(), encoder_options);
   IF_FAIL_RETURN
 
   // step 5: generate template

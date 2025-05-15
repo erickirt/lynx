@@ -104,40 +104,43 @@ struct CompileOptions {
   bool encode_quickjs_bytecode_ = false;
   // allow async decode lepus chunk
   bool enable_async_lepus_chunk_decode_ = false;
+  // using simple styling mode
+  bool enable_simple_styling_{false};
 };
 
-#define FOREACH_FIXED_LENGTH_FIELD(V)       \
-  V(UINT8, enable_css_parser_, 1);          \
-  V(UINT8, enable_css_external_class_, 2);  \
-  V(UINT8, enable_css_strict_mode_, 3);     \
-  V(UINT8, enable_lepus_ng_, 4);            \
-  V(UINT8, default_overflow_visible_, 5);   \
-  V(UINT8, enable_css_variable_, 6);        \
-  V(UINT8, default_implicit_animation_, 7); \
-  V(INT32, radon_mode_, 8);                 \
-  V(INT32, front_end_dsl_, 9);              \
-  V(UINT8, enable_keep_page_data, 10);      \
-  V(UINT8, enable_remove_css_scope_, 11);   \
-  V(UINT8, enable_css_class_merge_, 13);    \
-  V(UINT8, default_display_linear_, 14);    \
-  V(UINT8, remove_css_parser_log_, 15);     \
-  V(UINT8, enable_lynx_air_, 16);           \
-  V(UINT8, enable_lazy_css_decode_, 17);    \
-  V(UINT8, enable_event_refactor_, 18);     \
-  V(UINT8, force_calc_new_style_, 19);      \
-  V(UINT8, enable_trial_options_, 20);      \
-  V(UINT8, enable_async_css_decode_, 21);   \
-  V(UINT8, enable_css_engine, 22);          \
-  V(UINT8, enable_component_config_, 23);   \
-  V(UINT8, lynx_air_mode_, 24);             \
-  V(UINT8, enable_fiber_arch_, 25);         \
-  V(UINT8, lepusng_debuginfo_outside_, 26); \
-  V(UINT8, enable_flexible_template_, 27);  \
-  V(UINT8, arch_option_, 28);               \
-  V(UINT8, enable_css_selector_, 29);       \
-  V(UINT8, enable_reuse_context, 30);       \
-  V(UINT8, enable_css_invalidation_, 31);   \
-  V(UINT8, enable_async_lepus_chunk_decode_, 32);
+#define FOREACH_FIXED_LENGTH_FIELD(V)             \
+  V(UINT8, enable_css_parser_, 1);                \
+  V(UINT8, enable_css_external_class_, 2);        \
+  V(UINT8, enable_css_strict_mode_, 3);           \
+  V(UINT8, enable_lepus_ng_, 4);                  \
+  V(UINT8, default_overflow_visible_, 5);         \
+  V(UINT8, enable_css_variable_, 6);              \
+  V(UINT8, default_implicit_animation_, 7);       \
+  V(INT32, radon_mode_, 8);                       \
+  V(INT32, front_end_dsl_, 9);                    \
+  V(UINT8, enable_keep_page_data, 10);            \
+  V(UINT8, enable_remove_css_scope_, 11);         \
+  V(UINT8, enable_css_class_merge_, 13);          \
+  V(UINT8, default_display_linear_, 14);          \
+  V(UINT8, remove_css_parser_log_, 15);           \
+  V(UINT8, enable_lynx_air_, 16);                 \
+  V(UINT8, enable_lazy_css_decode_, 17);          \
+  V(UINT8, enable_event_refactor_, 18);           \
+  V(UINT8, force_calc_new_style_, 19);            \
+  V(UINT8, enable_trial_options_, 20);            \
+  V(UINT8, enable_async_css_decode_, 21);         \
+  V(UINT8, enable_css_engine, 22);                \
+  V(UINT8, enable_component_config_, 23);         \
+  V(UINT8, lynx_air_mode_, 24);                   \
+  V(UINT8, enable_fiber_arch_, 25);               \
+  V(UINT8, lepusng_debuginfo_outside_, 26);       \
+  V(UINT8, enable_flexible_template_, 27);        \
+  V(UINT8, arch_option_, 28);                     \
+  V(UINT8, enable_css_selector_, 29);             \
+  V(UINT8, enable_reuse_context, 30);             \
+  V(UINT8, enable_css_invalidation_, 31);         \
+  V(UINT8, enable_async_lepus_chunk_decode_, 32); \
+  V(UINT8, enable_simple_styling_, 33);
 
 #define FOREACH_STRING_FIELD(V) \
   V(target_sdk_version_, 0);    \

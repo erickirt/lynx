@@ -42,6 +42,7 @@ enum BinaryOffsetType {
   TYPE_LEPUS_CHUNK,
   TYPE_CUSTOM_SECTIONS,
   TYPE_NEW_ELEMENT_TEMPLATE,
+  TYPE_STYLE_OBJECT,
 };
 
 enum BinarySection {
@@ -63,6 +64,7 @@ enum BinarySection {
   LEPUS_CHUNK,
   CUSTOM_SECTIONS,
   NEW_ELEMENT_TEMPLATE,
+  STYLE_OBJECT,
 };
 
 enum PageSection {
@@ -114,6 +116,10 @@ struct DynamicComponentRoute {
 typedef Range CSSRange;
 struct CSSRoute {
   base::OrderedFlatMap<int, CSSRange> fragment_ranges;
+};
+
+struct StyleObjectRoute {
+  std::vector<CSSRange> style_object_ranges;
 };
 
 typedef Range LepusChunkRange;

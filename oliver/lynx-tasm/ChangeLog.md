@@ -1,3 +1,6 @@
+# 0.0.9
+* add 'enableSimpleStyling' to compileOptions. And support encode style objects into template for simplified styling mode.
+
 # 0.0.8
 * support new css properties: `offset-path`, `offset-distance`, `offset-rotate`.
 
