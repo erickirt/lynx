@@ -34,7 +34,11 @@ int Cast(size_t v) {
 
 template <>
 string Cast(size_t v) {
-  return "string_" + to_string(v);
+  if (v % 2 == 0) {
+    return "string_" + to_string(v);
+  } else {
+    return to_string(v) + "string_";
+  }
 }
 
 template <>
@@ -44,7 +48,11 @@ shared_ptr<string> Cast(size_t v) {
 
 template <>
 String Cast(size_t v) {
-  return String(std::string("string_") + to_string(v));
+  if (v % 2 == 0) {
+    return String(std::string("string_") + to_string(v));
+  } else {
+    return String(to_string(v) + std::string("string_"));
+  }
 }
 
 template <>
@@ -143,85 +151,179 @@ Value Cast(size_t v) {
   }
 
 #define TEST_MAP_INSERT_II(DATA_COUNT, MAP, ...)         \
-  TEST_FUNC_MAP_INSERT(ii, DATA_COUNT, MAP, __VA_ARGS__) \
-  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_ii)
+  TEST_FUNC_MAP_INSERT(II, DATA_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_II)
 
-#define TEST_MAP_INSERT_SS(DATA_COUNT, MAP, ...)         \
+#define TEST_MAP_INSERT_ss(DATA_COUNT, MAP, ...)         \
   TEST_FUNC_MAP_INSERT(ss, DATA_COUNT, MAP, __VA_ARGS__) \
   BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_ss)
 
-#define TEST_MAP_INSERT_IS(DATA_COUNT, MAP, ...)         \
-  TEST_FUNC_MAP_INSERT(is, DATA_COUNT, MAP, __VA_ARGS__) \
-  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_is)
+#define TEST_MAP_INSERT_ISP(DATA_COUNT, MAP, ...)         \
+  TEST_FUNC_MAP_INSERT(ISP, DATA_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_ISP)
 
 #define TEST_MAP_INSERT_SV(DATA_COUNT, MAP, ...)         \
-  TEST_FUNC_MAP_INSERT(sv, DATA_COUNT, MAP, __VA_ARGS__) \
-  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_sv)
+  TEST_FUNC_MAP_INSERT(SV, DATA_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_SV)
+
+#define TEST_MAP_INSERT_IV(DATA_COUNT, MAP, ...)         \
+  TEST_FUNC_MAP_INSERT(IV, DATA_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_IV)
+
+#define TEST_MAP_INSERT_SS(DATA_COUNT, MAP, ...)         \
+  TEST_FUNC_MAP_INSERT(SS, DATA_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_insert_##DATA_COUNT##_SS)
 
 TEST_MAP_INSERT_II(8, map, int, int);
 TEST_MAP_INSERT_II(8, unordered_map, int, int);
 TEST_MAP_INSERT_II(8, OrderedFlatMap, int, int);
 TEST_MAP_INSERT_II(8, InlineOrderedFlatMap, int, int, 8);
+TEST_MAP_INSERT_II(8, LinearFlatMap, int, int);
+TEST_MAP_INSERT_II(8, InlineLinearFlatMap, int, int, 8);
 
 TEST_MAP_INSERT_II(2048, map, int, int);
 TEST_MAP_INSERT_II(2048, unordered_map, int, int);
 TEST_MAP_INSERT_II(2048, OrderedFlatMap, int, int);
 TEST_MAP_INSERT_II(2048, InlineOrderedFlatMap, int, int, 2048);
+TEST_MAP_INSERT_II(800, LinearFlatMap, int, int);
+TEST_MAP_INSERT_II(800, InlineLinearFlatMap, int, int, 800);
 
-TEST_MAP_INSERT_SS(8, map, string, string);
-TEST_MAP_INSERT_SS(8, unordered_map, string, string);
-TEST_MAP_INSERT_SS(8, OrderedFlatMap, string, string);
-TEST_MAP_INSERT_SS(8, InlineOrderedFlatMap, string, string, 8);
+TEST_MAP_INSERT_ss(8, map, string, string);
+TEST_MAP_INSERT_ss(8, unordered_map, string, string);
+TEST_MAP_INSERT_ss(8, OrderedFlatMap, string, string);
+TEST_MAP_INSERT_ss(8, InlineOrderedFlatMap, string, string, 8);
+TEST_MAP_INSERT_ss(8, LinearFlatMap, string, string);
+TEST_MAP_INSERT_ss(8, InlineLinearFlatMap, string, string, 8);
 
-TEST_MAP_INSERT_SS(32, map, string, string);
-TEST_MAP_INSERT_SS(32, unordered_map, string, string);
-TEST_MAP_INSERT_SS(32, OrderedFlatMap, string, string);
-TEST_MAP_INSERT_SS(32, InlineOrderedFlatMap, string, string, 32);
+TEST_MAP_INSERT_ss(24, map, string, string);
+TEST_MAP_INSERT_ss(24, unordered_map, string, string);
+TEST_MAP_INSERT_ss(24, OrderedFlatMap, string, string);
+TEST_MAP_INSERT_ss(24, InlineOrderedFlatMap, string, string, 24);
+TEST_MAP_INSERT_ss(32, LinearFlatMap, string, string);
+TEST_MAP_INSERT_ss(32, InlineLinearFlatMap, string, string, 36);
 
-TEST_MAP_INSERT_IS(8, map, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(8, unordered_map, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(8, OrderedFlatMap, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(8, InlineOrderedFlatMap, int, shared_ptr<string>, 8);
+TEST_MAP_INSERT_ISP(8, map, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(8, unordered_map, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(8, OrderedFlatMap, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(8, InlineOrderedFlatMap, int, shared_ptr<string>, 8);
+TEST_MAP_INSERT_ISP(8, LinearFlatMap, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(8, InlineLinearFlatMap, int, shared_ptr<string>, 8);
 
-TEST_MAP_INSERT_IS(96, map, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(96, unordered_map, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(96, OrderedFlatMap, int, shared_ptr<string>);
-TEST_MAP_INSERT_IS(96, InlineOrderedFlatMap, int, shared_ptr<string>, 96);
+TEST_MAP_INSERT_ISP(72, map, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(72, unordered_map, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(72, OrderedFlatMap, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(72, InlineOrderedFlatMap, int, shared_ptr<string>, 72);
+TEST_MAP_INSERT_ISP(128, LinearFlatMap, int, shared_ptr<string>);
+TEST_MAP_INSERT_ISP(128, InlineLinearFlatMap, int, shared_ptr<string>, 128);
 
 TEST_MAP_INSERT_SV(8, map, String, Value);
 TEST_MAP_INSERT_SV(8, unordered_map, String, Value);
 TEST_MAP_INSERT_SV(8, OrderedFlatMap, String, Value);
 TEST_MAP_INSERT_SV(8, InlineOrderedFlatMap, String, Value, 8);
+TEST_MAP_INSERT_SV(8, LinearFlatMap, String, Value);
+TEST_MAP_INSERT_SV(8, InlineLinearFlatMap, String, Value, 8);
 
 TEST_MAP_INSERT_SV(12, map, String, Value);
 TEST_MAP_INSERT_SV(12, unordered_map, String, Value);
 TEST_MAP_INSERT_SV(12, OrderedFlatMap, String, Value);
-TEST_MAP_INSERT_SV(12, InlineOrderedFlatMap, String, Value, 32);
+TEST_MAP_INSERT_SV(12, InlineOrderedFlatMap, String, Value, 12);
+TEST_MAP_INSERT_SV(24, LinearFlatMap, String, Value);
+TEST_MAP_INSERT_SV(24, InlineLinearFlatMap, String, Value, 24);
+
+TEST_MAP_INSERT_IV(8, map, int, Value);
+TEST_MAP_INSERT_IV(8, unordered_map, int, Value);
+TEST_MAP_INSERT_IV(8, OrderedFlatMap, int, Value);
+TEST_MAP_INSERT_IV(8, InlineOrderedFlatMap, int, Value, 8);
+TEST_MAP_INSERT_IV(8, LinearFlatMap, int, Value);
+TEST_MAP_INSERT_IV(8, InlineLinearFlatMap, int, Value, 8);
+
+TEST_MAP_INSERT_IV(18, map, int, Value);
+TEST_MAP_INSERT_IV(18, unordered_map, int, Value);
+TEST_MAP_INSERT_IV(18, OrderedFlatMap, int, Value);
+TEST_MAP_INSERT_IV(18, InlineOrderedFlatMap, int, Value, 18);
+TEST_MAP_INSERT_IV(36, LinearFlatMap, int, Value);
+TEST_MAP_INSERT_IV(36, InlineLinearFlatMap, int, Value, 36);
+
+TEST_MAP_INSERT_SS(8, map, String, String);
+TEST_MAP_INSERT_SS(8, unordered_map, String, String);
+TEST_MAP_INSERT_SS(8, OrderedFlatMap, String, String);
+TEST_MAP_INSERT_SS(8, InlineOrderedFlatMap, String, String, 8);
+TEST_MAP_INSERT_SS(8, LinearFlatMap, String, String);
+TEST_MAP_INSERT_SS(8, InlineLinearFlatMap, String, String, 8);
+
+TEST_MAP_INSERT_SS(24, map, String, String);
+TEST_MAP_INSERT_SS(24, unordered_map, String, String);
+TEST_MAP_INSERT_SS(24, OrderedFlatMap, String, String);
+TEST_MAP_INSERT_SS(24, InlineOrderedFlatMap, String, String, 24);
+TEST_MAP_INSERT_SS(36, LinearFlatMap, String, String);
+TEST_MAP_INSERT_SS(36, InlineLinearFlatMap, String, String, 36);
 
 #define TEST_MAP_FIND_I(DATA_COUNT, NOT_FOUND_COUNT, MAP, ...)         \
-  TEST_FUNC_MAP_FIND(i, DATA_COUNT, NOT_FOUND_COUNT, MAP, __VA_ARGS__) \
-  BENCHMARK(BM_##MAP##_find_##DATA_COUNT##_i)
+  TEST_FUNC_MAP_FIND(I, DATA_COUNT, NOT_FOUND_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_find_##DATA_COUNT##_I)
 
-#define TEST_MAP_FIND_S(DATA_COUNT, NOT_FOUND_COUNT, MAP, ...)         \
+#define TEST_MAP_FIND_s(DATA_COUNT, NOT_FOUND_COUNT, MAP, ...)         \
   TEST_FUNC_MAP_FIND(s, DATA_COUNT, NOT_FOUND_COUNT, MAP, __VA_ARGS__) \
   BENCHMARK(BM_##MAP##_find_##DATA_COUNT##_s)
 
-TEST_MAP_FIND_I(6, 2, map, int, int);
-TEST_MAP_FIND_I(6, 2, unordered_map, int, int);
-TEST_MAP_FIND_I(6, 2, OrderedFlatMap, int, int);
+#define TEST_MAP_FIND_S(DATA_COUNT, NOT_FOUND_COUNT, MAP, ...)         \
+  TEST_FUNC_MAP_FIND(S, DATA_COUNT, NOT_FOUND_COUNT, MAP, __VA_ARGS__) \
+  BENCHMARK(BM_##MAP##_find_##DATA_COUNT##_S)
 
-TEST_MAP_FIND_I(256, 32, map, int, int);
-TEST_MAP_FIND_I(256, 32, unordered_map, int, int);
-TEST_MAP_FIND_I(256, 32, OrderedFlatMap, int, int);
+TEST_MAP_FIND_I(2, 1, map, int, int);
+TEST_MAP_FIND_I(2, 1, unordered_map, int, int);  // std::unordered_map is faster
+TEST_MAP_FIND_I(2, 1, OrderedFlatMap, int, int);
+TEST_MAP_FIND_I(2, 1, LinearFlatMap, int, int);
 
-TEST_MAP_FIND_S(6, 2, map, string, string);
-TEST_MAP_FIND_S(6, 2, unordered_map, string, string);
-TEST_MAP_FIND_S(6, 2, OrderedFlatMap, string, string);
+TEST_MAP_FIND_I(12, 2, map, int, int);
+TEST_MAP_FIND_I(12, 2, unordered_map, int, int);
+TEST_MAP_FIND_I(12, 2, OrderedFlatMap, int, int);
+TEST_MAP_FIND_I(12, 2, LinearFlatMap, int,
+                int);  // 12 equivalent to OrderedFlatMap
 
-TEST_MAP_FIND_S(256, 32, map, string, string);
-TEST_MAP_FIND_S(256, 32, unordered_map, string, string);
-TEST_MAP_FIND_S(256, 32, OrderedFlatMap, string, string);
+TEST_MAP_FIND_I(128, 16, map, int, int);
+TEST_MAP_FIND_I(128, 16, unordered_map, int, int);
+TEST_MAP_FIND_I(128, 16, OrderedFlatMap, int, int);
+TEST_MAP_FIND_I(128, 16, LinearFlatMap, int, int);
 
+TEST_MAP_FIND_s(3, 1, map, string, string);
+TEST_MAP_FIND_s(3, 1, unordered_map, string, string);
+TEST_MAP_FIND_s(3, 1, OrderedFlatMap, string, string);
+TEST_MAP_FIND_s(
+    3, 1, LinearFlatMap, string,
+    string);  // equivalent to std::unordered_map, faster than OrderedFlatMap
+
+// If most keys share the same prefix substring, LinearFlatMap scores would be
+// worse
+TEST_MAP_FIND_s(30, 4, map, string, string);
+TEST_MAP_FIND_s(30, 4, unordered_map, string, string);
+TEST_MAP_FIND_s(30, 4, OrderedFlatMap, string, string);
+TEST_MAP_FIND_s(
+    30, 4, LinearFlatMap, string,
+    string);  // 30 equivalent to ordered, less than 30 LinearFlatMap is faster
+
+TEST_MAP_FIND_S(2, 1, map, String, String);
+TEST_MAP_FIND_S(2, 1, unordered_map, String, String);
+TEST_MAP_FIND_S(2, 1, OrderedFlatMap, String, String);
+TEST_MAP_FIND_S(
+    2, 1, LinearFlatMap, String,
+    String);  // equivalent to std::unordered_map, faster than OrderedFlatMap
+
+TEST_MAP_FIND_S(6, 1, map, String, String);
+TEST_MAP_FIND_S(6, 1, unordered_map, String, String);
+TEST_MAP_FIND_S(6, 1, OrderedFlatMap, String, String);
+TEST_MAP_FIND_S(6, 1, LinearFlatMap, String,
+                String);  // a little slower than std::unordered_map, faster
+                          // than OrderedFlatMap
+
+// If most keys share the same prefix substring, LinearFlatMap scores would be
+// worse
+TEST_MAP_FIND_S(80, 4, map, String, String);
+TEST_MAP_FIND_S(80, 4, unordered_map, String, String);
+TEST_MAP_FIND_S(80, 4, OrderedFlatMap, String, String);
+TEST_MAP_FIND_S(
+    80, 4, LinearFlatMap, String,
+    String);  // 80 equivalent to ordered, less than 80 LinearFlatMap is faster
 }  // namespace base
 }  // namespace lynx
 

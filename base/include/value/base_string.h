@@ -232,11 +232,21 @@ class String {
     return string_view() == std::string_view(p, N - 1);
   }
 
-  bool operator==(const String& other) const { return str() == other.str(); }
+  bool operator==(const String& other) const {
+    auto* this_impl = UntagImpl(ref_impl_);
+    auto* other_impl = UntagImpl(other.ref_impl_);
+    return this_impl->hash_ == other_impl->hash_ &&
+           this_impl->str() == other_impl->str();
+  }
   bool operator==(const char* other) const { return str() == other; }
   bool operator==(const std::string& other) const { return str() == other; }
 
-  bool operator!=(const String& other) const { return str() != other.str(); }
+  bool operator!=(const String& other) const {
+    auto* this_impl = UntagImpl(ref_impl_);
+    auto* other_impl = UntagImpl(other.ref_impl_);
+    return this_impl->hash_ != other_impl->hash_ ||
+           this_impl->str() != other_impl->str();
+  }
   bool operator!=(const char* other) const { return str() != other; }
   bool operator!=(const std::string& other) const { return str() != other; }
 

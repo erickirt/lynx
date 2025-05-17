@@ -84,17 +84,26 @@ struct IsTrivial<T, true> {
 };
 
 template <class T>
-BASE_VECTOR_NEVER_INLINE void _nontrivial_destruct_reverse(T* begin,
-                                                           size_t count) {
-  // To be consistent with std::vector. Elements are destructed from back.
-  auto end = begin + count;
-  while (end != begin) {
-    --end;
-    end->~T();
+void _nontrivial_destruct_reverse([[maybe_unused]] T* begin,
+                                  [[maybe_unused]] size_t count) {
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    // To be consistent with std::vector. Elements are destructed from back.
+    auto end = begin + count;
+    while (end != begin) {
+      --end;
+      end->~T();
+    }
+    //  for (; begin != end; ++begin) {
+    //    begin->~T();
+    //  }
   }
-  //  for (; begin != end; ++begin) {
-  //    begin->~T();
-  //  }
+}
+
+template <class T>
+void _nontrivial_destruct_one(T* begin) {
+  if constexpr (!std::is_trivially_destructible_v<T>) {
+    begin->~T();
+  }
 }
 
 template <class T>
@@ -147,6 +156,9 @@ template <class T>
 struct VectorPrototype {
   static constexpr auto is_trivial =
       IsTrivial<T, is_instance<T, std::pair>{}>::value;
+  static constexpr auto is_trivially_destructible =
+      std::is_trivially_destructible_v<T>;
+
   using iterator = T*;
   using const_iterator = const T*;
 
@@ -490,9 +502,10 @@ struct VectorTemplateless {
  */
 template <class T>
 struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
-  using iterator = typename VectorPrototype<T>::iterator;
-  using const_iterator = typename VectorPrototype<T>::const_iterator;
+  using typename VectorPrototype<T>::iterator;
+  using typename VectorPrototype<T>::const_iterator;
   using VectorPrototype<T>::is_trivial;
+  using VectorPrototype<T>::is_trivially_destructible;
   using VectorPrototype<T>::size;
   using VectorPrototype<T>::capacity;
   using VectorPrototype<T>::is_static_buffer;
@@ -604,33 +617,18 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
 
   ~Vector() { _free(); }
 
-  reference push_back(const T& v) {
-    _grow_if_need();
-    auto end = _end_iter();
-    ::new (static_cast<void*>(end)) T(v);
-    _inc_count();
-    return *end;
-  }
-
-  reference push_back(T&& v) {
-    _grow_if_need();
-    auto end = _end_iter();
-    ::new (static_cast<void*>(end)) T(std::move(v));
-    _inc_count();
-    return *end;
+  template <class U>
+  reference push_back(U&& v) {
+    return emplace_back(std::forward<U>(v));
   }
 
   template <class... Args>
   reference emplace_back(Args&&... args) {
-    if constexpr (std::is_integral_v<T> || std::is_pointer_v<T>) {
-      return push_back(std::forward<Args>(args)...);
-    } else {
-      _grow_if_need();
-      auto end = _end_iter();
-      ::new (static_cast<void*>(end)) T(std::forward<Args>(args)...);
-      _inc_count();
-      return *end;
-    }
+    _grow_if_need();
+    auto end = _end_iter();
+    ::new (static_cast<void*>(end)) T(std::forward<Args>(args)...);
+    _inc_count();
+    return *end;
   }
 
   void pop_back() {
@@ -638,7 +636,7 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
       return;
     }
     if constexpr (!is_trivial) {
-      _nontrivial_destruct_reverse(_end_iter() - 1, 1);
+      _nontrivial_destruct_one(_end_iter() - 1);
     }
     _dec_count();
   }
@@ -754,33 +752,23 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
       ::new (static_cast<void*>(it)) T(std::forward<Args>(args)...);
       return it;
     } else {
-      auto diff = pos - _begin_iter();
-      _grow_if_need();
-      auto dest_pos = _begin_iter() + diff;
-      auto new_last = _end_iter();
-      if (dest_pos > new_last) {
-        BASE_VECTOR_DCHECK(false);
-      } else {
-        if (dest_pos < new_last) {
-          // Construct new T at end, and move previous back item to it.
-          _nontrivial_construct_move(new_last, new_last - 1, 1);
-          // Move left objects.
-          _nontrivial_move_backward(new_last - 1, new_last - 2,
-                                    new_last - dest_pos - 1);
+      auto pair = _nontrivial_prepare_insert(pos);
+      if constexpr (!is_trivially_destructible) {
+        if (!pair.second) {
           // Element at dest_pos was moved but needs destruction.
-          dest_pos->~T();
+          pair.first->~T();
         }
-        // Construct at dest_pos.
-        ::new (static_cast<void*>(dest_pos)) T(std::forward<Args>(args)...);
-
-        _inc_count();
       }
-      return dest_pos;
+      // Construct at dest_pos.
+      ::new (static_cast<void*>(pair.first)) T(std::forward<Args>(args)...);
+      return pair.first;
     }
   }
 
+  template <class U>
   iterator insert(std::nullptr_t,
-                  const T& value) = delete;  // Avoid misuse of insert(0)
+                  U&& value) = delete;  // Avoid misuse of insert(0)
+
   iterator insert(const iterator pos, const T& value) {
     if constexpr (is_trivial) {
       // For trivial types, always call templateless implementation for binary
@@ -789,33 +777,18 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
       *it = value;
       return it;
     } else {
-      auto diff = pos - _begin_iter();
-      _grow_if_need();
-      auto dest_pos = _begin_iter() + diff;
-      auto new_last = _end_iter();
-      if (dest_pos > new_last) {
-        BASE_VECTOR_DCHECK(false);
+      auto pair = _nontrivial_prepare_insert(pos);
+      if (!pair.second) {
+        // Assign value to dest_pos.
+        *pair.first = value;
       } else {
-        if (dest_pos < new_last) {
-          // Construct new T at end, and move previous back item to it.
-          _nontrivial_construct_move(new_last, new_last - 1, 1);
-          // Move left objects.
-          _nontrivial_move_backward(new_last - 1, new_last - 2,
-                                    new_last - dest_pos - 1);
-          // Copy assign value to dest_pos.
-          *dest_pos = value;
-        } else {
-          // dest_pos == new_last, use constructor for non-trivial T.
-          ::new (static_cast<void*>(dest_pos)) T(value);
-        }
-        _inc_count();
+        // Construct at dest_pos.
+        ::new (static_cast<void*>(pair.first)) T(value);
       }
-      return dest_pos;
+      return pair.first;
     }
   }
 
-  iterator insert(std::nullptr_t,
-                  T&& value) = delete;  // Avoid misuse of insert(0)
   iterator insert(const iterator pos, T&& value) {
     if constexpr (is_trivial) {
       // For trivial types, always call templateless implementation for binary
@@ -824,28 +797,15 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
       *it = std::move(value);
       return it;
     } else {
-      auto diff = pos - _begin_iter();
-      _grow_if_need();
-      auto dest_pos = _begin_iter() + diff;
-      auto new_last = _end_iter();
-      if (dest_pos > new_last) {
-        BASE_VECTOR_DCHECK(false);
+      auto pair = _nontrivial_prepare_insert(pos);
+      if (!pair.second) {
+        // Assign value to dest_pos.
+        *pair.first = std::move(value);
       } else {
-        if (dest_pos < new_last) {
-          // Construct new T at end, and move previous back item to it.
-          _nontrivial_construct_move(new_last, new_last - 1, 1);
-          // Move left objects.
-          _nontrivial_move_backward(new_last - 1, new_last - 2,
-                                    new_last - dest_pos - 1);
-          // Move assign value to dest_pos.
-          *dest_pos = std::move(value);
-        } else {
-          // dest_pos == new_last, use constructor for non-trivial T.
-          ::new (static_cast<void*>(dest_pos)) T(std::move(value));
-        }
-        _inc_count();
+        // Construct at dest_pos.
+        ::new (static_cast<void*>(pair.first)) T(std::move(value));
       }
-      return dest_pos;
+      return pair.first;
     }
   }
 
@@ -1208,6 +1168,32 @@ struct Vector : protected VectorTemplateless, public VectorPrototype<T> {
       }
     }
   }
+
+  // Extract common codes and optimize for binary size.
+  // Returns pair<pos, true_if_construct_at_end>
+  BASE_VECTOR_NEVER_INLINE std::pair<iterator, bool> _nontrivial_prepare_insert(
+      const iterator pos) {
+    auto diff = pos - _begin_iter();
+    _grow_if_need();
+    auto dest_pos = _begin_iter() + diff;
+    auto new_last = _end_iter();
+    bool construct_at_end = false;
+    if (dest_pos > new_last) {
+      BASE_VECTOR_DCHECK(false);
+    } else {
+      if (dest_pos < new_last) {
+        // Construct new T at end, and move previous back item to it.
+        _nontrivial_construct_move(new_last, new_last - 1, 1);
+        // Move left objects.
+        _nontrivial_move_backward(new_last - 1, new_last - 2,
+                                  new_last - dest_pos - 1);
+      } else {
+        construct_at_end = true;
+      }
+      _inc_count();
+    }
+    return {dest_pos, construct_at_end};
+  }
 };
 
 template <class T>
@@ -1260,8 +1246,8 @@ ByteArray ByteArrayFromBuffer(const T (&data)[Num]) {
  */
 template <class T, size_t N>
 struct InlineVector : public Vector<T> {
-  using iterator = typename VectorPrototype<T>::iterator;
-  using const_iterator = typename VectorPrototype<T>::const_iterator;
+  using typename VectorPrototype<T>::iterator;
+  using typename VectorPrototype<T>::const_iterator;
   using VectorPrototype<T>::is_trivial;
   using VectorPrototype<T>::size;
   using VectorPrototype<T>::capacity;
@@ -1448,43 +1434,12 @@ template <class T, size_t N>
 using InlineStack = std::stack<T, InlineVector<T, N>>;
 
 /**
- * @brief Ordered map/set base on array. Performance consideration:
- *  1. Insertion is relatively slow because of reallocation and moving of
- * elements. While map/set also need rebalancing of RB tree.
- * Performance test data shows that when the key is a basic type such as int,
- * the insertion performance of the container is still ahead of std::map when
- * the data volume reaches several thousands. When the key is a type with
- * relatively low movement overhead such as std::string, the insertion
- * performance is on par with std::map when the data volume reaches 30-50.
- * Besides, ordered map/set on array supports real reserve() to pre-allocate
- * container buffer.
- *  2. Finding is array-based binary-search which should outperform map/set
- * because array is linear and much simpler.
- *  3. Memory layout is much better than node-based map and unordered_map
- * because elements are stored linearly and continuously.
- *  4. Compiled binary size is the same as map/set and smaller than
- * unordered_map/unordered_set.
- *  5. Struct type size(16b) is smaller than std::map, std::set,
- * std::unordered_map and std::unordered_set.
- *
- * Best use scenarios:
- * 1. Small amount of data, from dozens to hundreds.
- * 2. Low moving overhead for Key and Value, such as primitive types,
- * std::string, std::shared_ptr.
- * 3. More queries than data modifications.
- *
- * Please use the following specialized types:
- *   OrderedFlatMap
- *   InlineOrderedFlatMap
- *   OrderedFlatSet
- *   InlineOrderedFlatSet
- *
- * When implementing custom Compare method. Use f(const K&, const K&) as
- * signature to avoid unnecessary copy.
+ * @brief Base storage type for binary-search array and linear search array.
+ * It provides definitions and interfaces which have nothing to do with
+ * query method of key.
  */
-template <class K, class T, size_t N, class Compare = std::less<K>>
-struct BinarySearchArray {
- public:
+template <class K, class T, size_t N>
+struct KeyValueArray {
   static constexpr auto is_map = !std::is_void_v<T>;
 
   using key_type = K;
@@ -1509,8 +1464,8 @@ struct BinarySearchArray {
         const_cast<store_container_type*>(&array_));
   }
 
-  template <class K2, class T2, size_t N2, class Compare2>
-  friend struct BinarySearchArray;
+  template <class K2, class T2, size_t N2>
+  friend struct KeyValueArray;
 
  public:
   using iterator = typename container_type::iterator;
@@ -1520,30 +1475,23 @@ struct BinarySearchArray {
       typename container_type::const_reverse_iterator;
 
  public:
-  BinarySearchArray() = default;
-  BinarySearchArray(std::initializer_list<value_type> list) {
-    for (auto& v : list) {
-      insert(std::move(v));
-    }
-  }
+  KeyValueArray() = default;
 
   template <size_t N2>
-  BinarySearchArray(const BinarySearchArray<K, T, N2, Compare>& other)
-      : array_(other.array_) {}
+  KeyValueArray(const KeyValueArray<K, T, N2>& other) : array_(other.array_) {}
 
   template <size_t N2>
-  BinarySearchArray(BinarySearchArray<K, T, N2, Compare>&& other)
+  KeyValueArray(KeyValueArray<K, T, N2>&& other)
       : array_(std::move(other.array_)) {}
 
   template <size_t N2>
-  BinarySearchArray& operator=(
-      const BinarySearchArray<K, T, N2, Compare>& other) {
+  KeyValueArray& operator=(const KeyValueArray<K, T, N2>& other) {
     this->array_ = other.array_;
     return *this;
   }
 
   template <size_t N2>
-  BinarySearchArray& operator=(BinarySearchArray<K, T, N2, Compare>&& other) {
+  KeyValueArray& operator=(KeyValueArray<K, T, N2>&& other) {
     this->array_ = std::move(other.array_);
     return *this;
   }
@@ -1585,6 +1533,107 @@ struct BinarySearchArray {
 
   const_reverse_iterator crend() const { return array().crend(); }
 
+  iterator erase(iterator pos) {
+    return reinterpret_cast<iterator>(
+        array_.erase(reinterpret_cast<store_iterator>(pos)));
+  }
+
+  template <size_t N2>
+  bool operator==(const KeyValueArray<K, T, N2>& other) const {
+    return this->array_ == other.array_;
+  }
+
+  template <size_t N2>
+  bool operator!=(const KeyValueArray<K, T, N2>& other) const {
+    return this->array_ != other.array_;
+  }
+
+ protected:
+  store_container_type array_;
+};
+
+/**
+ * @brief For ordered map/set base on array. Performance consideration:
+ *  1. Insertion is relatively slow because of reallocation and moving of
+ * elements. While map/set also need rebalancing of RB tree.
+ * Performance test data shows that when the key is a basic type such as int,
+ * the insertion performance of the container is still ahead of std::map when
+ * the data volume reaches several thousands. When the key is a type with
+ * relatively low movement overhead such as std::string, the insertion
+ * performance is on par with std::map when the data volume reaches 30-50.
+ * Besides, ordered map/set on array supports real reserve() to pre-allocate
+ * container buffer.
+ *  2. Finding is array-based binary-search which should outperform map/set
+ * because array is linear and much simpler.
+ *  3. Memory layout is much better than node-based map and unordered_map
+ * because elements are stored linearly and continuously.
+ *  4. Compiled binary size is the same as map/set and smaller than
+ * unordered_map/unordered_set.
+ *  5. Struct type size(16b) is smaller than std::map, std::set,
+ * std::unordered_map and std::unordered_set.
+ *
+ * Best use scenarios:
+ * 1. Small amount of data, from dozens to hundreds.
+ * 2. Low moving overhead for Key and Value, such as primitive types,
+ * std::string, std::shared_ptr.
+ * 3. More queries than data modifications.
+ *
+ * Please use the following specialized types:
+ *   OrderedFlatMap
+ *   InlineOrderedFlatMap
+ *   OrderedFlatSet
+ *   InlineOrderedFlatSet
+ *
+ * When implementing custom Compare method. Use f(const K&, const K&) as
+ * signature to avoid unnecessary copy.
+ */
+template <class K, class T, size_t N, class Compare = std::less<K>>
+struct BinarySearchArray : public KeyValueArray<K, T, N> {
+ protected:
+  template <class K2, class T2, size_t N2, class Compare2>
+  friend struct BinarySearchArray;
+
+  using KeyValueArray<K, T, N>::array_;
+
+ public:
+  using typename KeyValueArray<K, T, N>::value_type;
+  using typename KeyValueArray<K, T, N>::iterator;
+  using typename KeyValueArray<K, T, N>::const_iterator;
+  using typename KeyValueArray<K, T, N>::store_iterator;
+  using KeyValueArray<K, T, N>::begin;
+  using KeyValueArray<K, T, N>::end;
+  using KeyValueArray<K, T, N>::erase;
+
+ public:
+  BinarySearchArray() = default;
+  BinarySearchArray(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
+    for (auto& v : list) {
+      insert(std::move(v));
+    }
+  }
+
+  template <size_t N2>
+  BinarySearchArray(const BinarySearchArray<K, T, N2, Compare>& other)
+      : KeyValueArray<K, T, N>(other) {}
+
+  template <size_t N2>
+  BinarySearchArray(BinarySearchArray<K, T, N2, Compare>&& other)
+      : KeyValueArray<K, T, N>(std::move(other)) {}
+
+  template <size_t N2>
+  BinarySearchArray& operator=(
+      const BinarySearchArray<K, T, N2, Compare>& other) {
+    this->array_ = other.array_;
+    return *this;
+  }
+
+  template <size_t N2>
+  BinarySearchArray& operator=(BinarySearchArray<K, T, N2, Compare>&& other) {
+    this->array_ = std::move(other.array_);
+    return *this;
+  }
+
   std::pair<iterator, bool> insert(const value_type& value) {
     auto pos = lower_bound(*reinterpret_cast<const K*>(&value));
     if (pos != end() && *reinterpret_cast<const K*>(pos) ==
@@ -1607,11 +1656,6 @@ struct BinarySearchArray {
                   reinterpret_cast<store_iterator>(pos), std::move(value))),
               true};
     }
-  }
-
-  iterator erase(iterator pos) {
-    return reinterpret_cast<iterator>(
-        array_.erase(reinterpret_cast<store_iterator>(pos)));
   }
 
   size_t erase(const K& key) {
@@ -1646,6 +1690,8 @@ struct BinarySearchArray {
 
   size_t count(const K& key) const { return contains(key) ? 1 : 0; }
 
+  bool is_data_ordered() const { return true; }
+
   template <size_t N2>
   bool operator==(const BinarySearchArray<K, T, N2, Compare>& other) const {
     return this->array_ == other.array_;
@@ -1657,14 +1703,142 @@ struct BinarySearchArray {
   }
 
  protected:
-  BASE_VECTOR_NEVER_INLINE iterator lower_bound(const K& value) const {
+  BASE_VECTOR_NEVER_INLINE iterator lower_bound(const K& key) const {
     return const_cast<iterator>(std::lower_bound(
-        begin(), end(), value, [](const value_type& item, const K& value) {
+        begin(), end(), key, [](const value_type& item, const K& value) {
           return Compare()(*reinterpret_cast<const K*>(&item), value);
         }));
   }
+};
 
-  store_container_type array_;
+/**
+ * @brief Used to implement map/set, but only provides map/set style interface,
+ * internal data is stored in array linearly, and search also uses linear
+ * search.
+ *
+ * It is very suitable for scenarios that require a map/set interface, but the
+ * amount of data is relatively small, and the number of container traversals is
+ * far greater than the number of searches.
+ */
+template <class K, class T, size_t N>
+struct LinearSearchArray : public KeyValueArray<K, T, N> {
+ protected:
+  template <class K2, class T2, size_t N2>
+  friend struct LinearSearchArray;
+
+  using KeyValueArray<K, T, N>::array_;
+
+ public:
+  using typename KeyValueArray<K, T, N>::value_type;
+  using typename KeyValueArray<K, T, N>::iterator;
+  using typename KeyValueArray<K, T, N>::const_iterator;
+  using typename KeyValueArray<K, T, N>::store_iterator;
+  using KeyValueArray<K, T, N>::begin;
+  using KeyValueArray<K, T, N>::end;
+  using KeyValueArray<K, T, N>::erase;
+
+ public:
+  LinearSearchArray() = default;
+  LinearSearchArray(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
+    for (auto& v : list) {
+      insert(std::move(v));
+    }
+  }
+
+  template <size_t N2>
+  LinearSearchArray(const LinearSearchArray<K, T, N2>& other)
+      : KeyValueArray<K, T, N>(other) {}
+
+  template <size_t N2>
+  LinearSearchArray(LinearSearchArray<K, T, N2>&& other)
+      : KeyValueArray<K, T, N>(std::move(other)) {}
+
+  template <size_t N2>
+  LinearSearchArray& operator=(const LinearSearchArray<K, T, N2>& other) {
+    this->array_ = other.array_;
+    return *this;
+  }
+
+  template <size_t N2>
+  LinearSearchArray& operator=(LinearSearchArray<K, T, N2>&& other) {
+    this->array_ = std::move(other.array_);
+    return *this;
+  }
+
+  std::pair<iterator, bool> insert(const value_type& value) {
+    auto pos = find_exact(*reinterpret_cast<const K*>(&value));
+    if (pos != nullptr) {
+      return {pos, false};  // duplicate
+    } else {
+      return {reinterpret_cast<iterator>(&array_.emplace_back(value)), true};
+    }
+  }
+
+  std::pair<iterator, bool> insert(value_type&& value) {
+    auto pos = find_exact(*reinterpret_cast<const K*>(&value));
+    if (pos != nullptr) {
+      return {pos, false};  // duplicate
+    } else {
+      return {
+          reinterpret_cast<iterator>(&array_.emplace_back(std::move(value))),
+          true};
+    }
+  }
+
+  size_t erase(const K& key) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      array_.erase(reinterpret_cast<store_iterator>(pos));
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
+  iterator find(const K& key) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos;
+    } else {
+      return end();
+    }
+  }
+
+  const_iterator find(const K& key) const {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos;
+    } else {
+      return end();
+    }
+  }
+
+  bool contains(const K& key) const { return find_exact(key) != nullptr; }
+
+  size_t count(const K& key) const { return contains(key) ? 1 : 0; }
+
+  bool is_data_ordered() const { return false; }
+
+  template <size_t N2>
+  bool operator==(const LinearSearchArray<K, T, N2>& other) const {
+    return this->array_ == other.array_;
+  }
+
+  template <size_t N2>
+  bool operator!=(const LinearSearchArray<K, T, N2>& other) const {
+    return this->array_ != other.array_;
+  }
+
+ protected:
+  BASE_VECTOR_NEVER_INLINE iterator find_exact(const K& key) const {
+    for (auto it = array_.begin(), end = array_.end(); it != end; it++) {
+      if (*reinterpret_cast<const K*>(it) == key) {
+        return reinterpret_cast<iterator>(const_cast<store_iterator>(it));
+      }
+    }
+    return nullptr;
+  }
 };
 
 template <class K, class T, size_t N, class Compare = std::less<K>>
@@ -1673,19 +1847,19 @@ struct BinarySearchMap : public BinarySearchArray<K, T, N, Compare> {
   template <class K2, class T2, size_t N2, class Compare2>
   friend struct BinarySearchMap;
 
+  using KeyValueArray<K, T, N>::array_;
+
  public:
-  using value_type = typename BinarySearchArray<K, T, N, Compare>::value_type;
-  using iterator = typename BinarySearchArray<K, T, N, Compare>::iterator;
-  using store_iterator =
-      typename BinarySearchArray<K, T, N, Compare>::store_iterator;
-  using BinarySearchArray<K, T, N, Compare>::array_;
-  using BinarySearchArray<K, T, N, Compare>::array;
+  using typename BinarySearchArray<K, T, N, Compare>::value_type;
+  using typename BinarySearchArray<K, T, N, Compare>::iterator;
+  using typename BinarySearchArray<K, T, N, Compare>::store_iterator;
   using BinarySearchArray<K, T, N, Compare>::insert;
   using BinarySearchArray<K, T, N, Compare>::lower_bound;
-  using BinarySearchArray<K, T, N, Compare>::end;
+  using KeyValueArray<K, T, N>::end;
 
   BinarySearchMap() = default;
   BinarySearchMap(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
     for (auto& v : list) {
       insert(std::move(v));
     }
@@ -1732,17 +1906,34 @@ struct BinarySearchMap : public BinarySearchArray<K, T, N, Compare> {
     ::abort();  // Always nothrow
   }
 
-  template <class U, class V>
-  std::pair<iterator, bool> insert_or_assign(U&& key, V&& obj) {
+  template <class V>
+  std::pair<iterator, bool> insert_or_assign(const K& key, V&& value) {
     auto pos = lower_bound(key);
     if (pos != end() && *reinterpret_cast<const K*>(pos) == key) {
-      pos->second = std::forward<V>(obj);
+      pos->second = std::forward<V>(value);
       return {pos, false};
     } else {
-      return {reinterpret_cast<iterator>(array_.insert(
+      return {reinterpret_cast<iterator>(array_.emplace(
                   reinterpret_cast<store_iterator>(pos),
-                  value_type{std::forward<U>(key), std::forward<V>(obj)})),
+                  std::piecewise_construct, std::forward_as_tuple(key),
+                  std::forward_as_tuple(std::forward<V>(value)))),
               true};
+    }
+  }
+
+  template <class V>
+  std::pair<iterator, bool> insert_or_assign(K&& key, V&& value) {
+    auto pos = lower_bound(key);
+    if (pos != end() && *reinterpret_cast<const K*>(pos) == key) {
+      pos->second = std::forward<V>(value);
+      return {pos, false};
+    } else {
+      return {
+          reinterpret_cast<iterator>(array_.emplace(
+              reinterpret_cast<store_iterator>(pos), std::piecewise_construct,
+              std::forward_as_tuple(std::move(key)),
+              std::forward_as_tuple(std::forward<V>(value)))),
+          true};
     }
   }
 
@@ -1775,14 +1966,9 @@ struct BinarySearchMap : public BinarySearchArray<K, T, N, Compare> {
     }
   }
 
-  template <class... Args>
-  std::pair<iterator, bool> try_emplace(const K& key, Args&&... args) {
-    return emplace(key, std::forward<Args>(args)...);
-  }
-
-  template <class... Args>
-  std::pair<iterator, bool> try_emplace(K&& key, Args&&... args) {
-    return emplace(std::move(key), std::forward<Args>(args)...);
+  template <class U, class... Args>
+  std::pair<iterator, bool> try_emplace(U&& key, Args&&... args) {
+    return emplace(std::forward<U>(key), std::forward<Args>(args)...);
   }
 
   template <typename... Args1, typename... Args2>
@@ -1816,15 +2002,25 @@ struct BinarySearchMap : public BinarySearchArray<K, T, N, Compare> {
   }
 
  protected:
-  template <class U>
-  iterator try_insert(U&& key) {
+  iterator try_insert(const K& key) {
     auto pos = lower_bound(key);
     if (pos != end() && *reinterpret_cast<const K*>(pos) == key) {
       return pos;
     } else {
-      return reinterpret_cast<iterator>(
-          array_.insert(reinterpret_cast<store_iterator>(pos),
-                        value_type{std::forward<U>(key), T()}));
+      return reinterpret_cast<iterator>(array_.emplace(
+          reinterpret_cast<store_iterator>(pos), std::piecewise_construct,
+          std::forward_as_tuple(key), std::tuple<>()));
+    }
+  }
+
+  iterator try_insert(K&& key) {
+    auto pos = lower_bound(key);
+    if (pos != end() && *reinterpret_cast<const K*>(pos) == key) {
+      return pos;
+    } else {
+      return reinterpret_cast<iterator>(array_.emplace(
+          reinterpret_cast<store_iterator>(pos), std::piecewise_construct,
+          std::forward_as_tuple(std::move(key)), std::tuple<>()));
     }
   }
 };
@@ -1835,13 +2031,15 @@ struct BinarySearchSet : public BinarySearchArray<K, void, N, Compare> {
   template <class K2, size_t N2, class Compare2>
   friend struct BinarySearchSet;
 
+  using BinarySearchArray<K, void, N, Compare>::array_;
+
  public:
-  using value_type =
-      typename BinarySearchArray<K, void, N, Compare>::value_type;
+  using typename BinarySearchArray<K, void, N, Compare>::value_type;
   using BinarySearchArray<K, void, N, Compare>::insert;
 
   BinarySearchSet() = default;
   BinarySearchSet(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
     for (auto& v : list) {
       insert(std::move(v));
     }
@@ -1878,6 +2076,236 @@ struct BinarySearchSet : public BinarySearchArray<K, void, N, Compare> {
   }
 };
 
+template <class K, class T, size_t N>
+struct LinearSearchMap : public LinearSearchArray<K, T, N> {
+ protected:
+  template <class K2, class T2, size_t N2>
+  friend struct LinearSearchMap;
+
+  using KeyValueArray<K, T, N>::array_;
+
+ public:
+  using typename LinearSearchArray<K, T, N>::value_type;
+  using typename LinearSearchArray<K, T, N>::iterator;
+  using typename LinearSearchArray<K, T, N>::store_iterator;
+  using LinearSearchArray<K, T, N>::insert;
+  using LinearSearchArray<K, T, N>::find_exact;
+  using KeyValueArray<K, T, N>::end;
+
+  LinearSearchMap() = default;
+  LinearSearchMap(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
+    for (auto& v : list) {
+      insert(std::move(v));
+    }
+  }
+
+  template <size_t N2>
+  LinearSearchMap(const LinearSearchMap<K, T, N2>& other)
+      : LinearSearchArray<K, T, N>(other) {}
+
+  template <size_t N2>
+  LinearSearchMap(LinearSearchMap<K, T, N2>&& other)
+      : LinearSearchArray<K, T, N>(std::move(other)) {}
+
+  template <size_t N2>
+  LinearSearchMap& operator=(const LinearSearchMap<K, T, N2>& other) {
+    this->array_ = other.array_;
+    return *this;
+  }
+
+  template <size_t N2>
+  LinearSearchMap& operator=(LinearSearchMap<K, T, N2>&& other) {
+    this->array_ = std::move(other.array_);
+    return *this;
+  }
+
+  template <class U>
+  T& operator[](U&& key) {
+    return try_insert(std::forward<U>(key))->second;
+  }
+
+  T& at(const K& key) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos->second;
+    }
+    ::abort();  // Always nothrow
+  }
+
+  const T& at(const K& key) const {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos->second;
+    }
+    ::abort();  // Always nothrow
+  }
+
+  template <class V>
+  std::pair<iterator, bool> insert_or_assign(const K& key, V&& value) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      pos->second = std::forward<V>(value);
+      return {pos, false};
+    } else {
+      return {reinterpret_cast<iterator>(&array_.emplace_back(
+                  std::piecewise_construct, std::forward_as_tuple(key),
+                  std::forward_as_tuple(std::forward<V>(value)))),
+              true};
+    }
+  }
+
+  template <class V>
+  std::pair<iterator, bool> insert_or_assign(K&& key, V&& value) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      pos->second = std::forward<V>(value);
+      return {pos, false};
+    } else {
+      return {
+          reinterpret_cast<iterator>(&array_.emplace_back(
+              std::piecewise_construct, std::forward_as_tuple(std::move(key)),
+              std::forward_as_tuple(std::forward<V>(value)))),
+          true};
+    }
+  }
+
+  template <class... Args>
+  std::pair<iterator, bool> emplace(const K& key, Args&&... args) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return {pos, false};
+    } else {
+      return {reinterpret_cast<iterator>(&array_.emplace_back(
+                  std::piecewise_construct, std::forward_as_tuple(key),
+                  std::forward_as_tuple(std::forward<Args>(args)...))),
+              true};
+    }
+  }
+
+  template <class... Args>
+  std::pair<iterator, bool> emplace(K&& key, Args&&... args) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return {pos, false};
+    } else {
+      return {
+          reinterpret_cast<iterator>(&array_.emplace_back(
+              std::piecewise_construct, std::forward_as_tuple(std::move(key)),
+              std::forward_as_tuple(std::forward<Args>(args)...))),
+          true};
+    }
+  }
+
+  template <class U, class... Args>
+  std::pair<iterator, bool> try_emplace(U&& key, Args&&... args) {
+    return emplace(std::forward<U>(key), std::forward<Args>(args)...);
+  }
+
+  template <typename... Args1, typename... Args2>
+  std::pair<iterator, bool> emplace(std::piecewise_construct_t,
+                                    std::tuple<Args1...> args1,
+                                    std::tuple<Args2...> args2) {
+    // Construct key in first place.
+    K key = std::make_from_tuple<K>(std::move(args1));
+
+    // Do emplace.
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return {pos, false};  // key is discarded
+    } else {
+      return {reinterpret_cast<iterator>(&array_.emplace_back(
+                  std::piecewise_construct,
+                  std::forward_as_tuple(std::move(key)), std::move(args2))),
+              true};
+    }
+  }
+
+  template <size_t N2>
+  bool operator==(const LinearSearchMap<K, T, N2>& other) const {
+    return this->array_ == other.array_;
+  }
+
+  template <size_t N2>
+  bool operator!=(const LinearSearchMap<K, T, N2>& other) const {
+    return this->array_ != other.array_;
+  }
+
+ protected:
+  iterator try_insert(const K& key) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos;
+    } else {
+      return reinterpret_cast<iterator>(
+          &array_.emplace_back(std::piecewise_construct,
+                               std::forward_as_tuple(key), std::tuple<>()));
+    }
+  }
+
+  iterator try_insert(K&& key) {
+    auto pos = find_exact(key);
+    if (pos != nullptr) {
+      return pos;
+    } else {
+      return reinterpret_cast<iterator>(&array_.emplace_back(
+          std::piecewise_construct, std::forward_as_tuple(std::move(key)),
+          std::tuple<>()));
+    }
+  }
+};
+
+template <class K, size_t N>
+struct LinearSearchSet : public LinearSearchArray<K, void, N> {
+ protected:
+  template <class K2, size_t N2>
+  friend struct LinearSearchSet;
+
+  using LinearSearchArray<K, void, N>::array_;
+
+ public:
+  using typename LinearSearchArray<K, void, N>::value_type;
+  using LinearSearchArray<K, void, N>::insert;
+
+  LinearSearchSet() = default;
+  LinearSearchSet(std::initializer_list<value_type> list) {
+    array_.reserve(list.size());
+    for (auto& v : list) {
+      insert(std::move(v));
+    }
+  }
+
+  template <size_t N2>
+  LinearSearchSet(const LinearSearchSet<K, N2>& other)
+      : LinearSearchArray<K, void, N>(other) {}
+
+  template <size_t N2>
+  LinearSearchSet(LinearSearchSet<K, N2>&& other)
+      : LinearSearchArray<K, void, N>(std::move(other)) {}
+
+  template <size_t N2>
+  LinearSearchSet& operator=(const LinearSearchSet<K, N2>& other) {
+    this->array_ = other.array_;
+    return *this;
+  }
+
+  template <size_t N2>
+  LinearSearchSet& operator=(LinearSearchSet<K, N2>&& other) {
+    this->array_ = std::move(other.array_);
+    return *this;
+  }
+
+  template <size_t N2>
+  bool operator==(const LinearSearchSet<K, N2>& other) const {
+    return this->array_ == other.array_;
+  }
+
+  template <size_t N2>
+  bool operator!=(const LinearSearchSet<K, N2>& other) const {
+    return this->array_ != other.array_;
+  }
+};
+
 template <class K, class T, class Compare = std::less<K>>
 using OrderedFlatMap = BinarySearchMap<K, T, 0, Compare>;
 
@@ -1889,6 +2317,18 @@ using OrderedFlatSet = BinarySearchSet<K, 0, Compare>;
 
 template <class K, size_t N, class Compare = std::less<K>>
 using InlineOrderedFlatSet = BinarySearchSet<K, N, Compare>;
+
+template <class K, class T>
+using LinearFlatMap = LinearSearchMap<K, T, 0>;
+
+template <class K, class T, size_t N>
+using InlineLinearFlatMap = LinearSearchMap<K, T, N>;
+
+template <class K>
+using LinearFlatSet = LinearSearchSet<K, 0>;
+
+template <class K, size_t N>
+using InlineLinearFlatSet = LinearSearchSet<K, N>;
 
 }  // namespace base
 }  // namespace lynx

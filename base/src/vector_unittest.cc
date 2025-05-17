@@ -2751,264 +2751,7 @@ TEST(Vector, AlgorithmsNontrivial) {
   }
 }
 
-template <class SET>
-static void TestSet() {
-  auto to_s = [](SET& set) -> std::string {
-    std::string result;
-    for (auto& i : set) {
-      result += std::to_string(i);
-    }
-    return result;
-  };
-
-  SET set;
-  set.insert(1);
-  set.insert(5);
-  set.insert(3);
-  set.insert(7);
-  set.insert(6);
-  set.insert(2);
-  set.insert(4);
-  auto it = set.insert(8);
-  EXPECT_EQ(*it.first, 8);
-  EXPECT_TRUE(it.second);
-  EXPECT_FALSE(set.insert(3).second);
-  EXPECT_EQ(to_s(set), "12345678");
-
-  EXPECT_EQ(set.size(), 8);
-
-  EXPECT_EQ(set.erase(5), 1);
-  set.erase(1);
-  EXPECT_EQ(set.size(), 6);
-  EXPECT_EQ(to_s(set), "234678");
-
-  EXPECT_TRUE(set.contains(6));
-  EXPECT_FALSE(set.contains(1));
-  EXPECT_FALSE(set.contains(5));
-
-  auto find3 = set.find(3);
-  auto find1 = set.find(1);
-  EXPECT_EQ(*find3, 3);
-  EXPECT_TRUE(find1 == set.end());
-
-  EXPECT_EQ(to_s(set), "234678");
-  EXPECT_EQ(*set.erase(find3), 4);
-  EXPECT_EQ(to_s(set), "24678");
-
-  set.clear();
-  EXPECT_TRUE(set.empty());
-
-  // Check functionality after clear.
-  set.insert(1);
-  EXPECT_EQ(set.size(), 1);
-  EXPECT_TRUE(set.contains(1));
-  EXPECT_TRUE(set.find(1) != set.end());
-}
-
-TEST(Structure_Array, OrderedFlatSet) { TestSet<OrderedFlatSet<int>>(); }
-
-TEST(Structure_Array, InlineOrderedFlatSet) {
-  TestSet<InlineOrderedFlatSet<int, 20>>();
-}
-
-template <class MAP>
-static void TestMap1() {
-  auto to_s = [](MAP& map) -> std::string {
-    std::string result;
-    for (auto& i : map) {
-      result += i.second;
-    }
-    return result;
-  };
-
-  MAP map;
-  EXPECT_TRUE(map.empty());
-
-  map.insert({1, "1"});
-  map.insert({5, "5"});
-  map.insert({3, "3"});
-  map.insert({7, "7"});
-  map.insert({6, "6"});
-  map.insert({2, "2"});
-  map.insert({4, "4"});
-  auto it = map.insert({8, "8"});
-  EXPECT_EQ(it.first->first, 8);
-  EXPECT_EQ(it.first->second, "8");
-  EXPECT_TRUE(it.second);
-  EXPECT_FALSE(map.insert({3, "3"}).second);
-  EXPECT_EQ(to_s(map), "12345678");
-
-  EXPECT_EQ(map.size(), 8);
-
-  typename MAP::value_type pair{0, "0"};
-  map.insert(pair);
-  EXPECT_EQ(to_s(map), "012345678");
-
-  EXPECT_EQ(map.erase(5), 1);
-  map.erase(1);
-  map.erase(1024);
-  EXPECT_EQ(map.size(), 7);
-  EXPECT_EQ(to_s(map), "0234678");
-
-  EXPECT_TRUE(map.contains(0));
-  EXPECT_TRUE(map.contains(6));
-  EXPECT_FALSE(map.contains(1));
-  EXPECT_FALSE(map.contains(5));
-
-  auto find3 = map.find(3);
-  auto find1 = map.find(1);
-  EXPECT_TRUE(find1 == map.end());
-  EXPECT_EQ(find3->first, 3);
-  EXPECT_EQ(find3->second, "3");
-  find3->second = "333";
-  EXPECT_EQ(to_s(map), "023334678");
-
-  EXPECT_EQ(map.erase(find3)->second, "4");
-  EXPECT_EQ(to_s(map), "024678");
-
-  EXPECT_EQ(map[1], "");
-  EXPECT_EQ(map.size(), 7);
-  EXPECT_EQ(to_s(map), "024678");
-
-  map[1] = "1";
-  map[5] = "5";
-  map[8] = "888";
-  EXPECT_EQ(map.size(), 8);
-  EXPECT_EQ(to_s(map), "0124567888");
-
-  {
-    auto result = map.insert_or_assign(5, "555");
-    auto result2 = map.insert_or_assign(9, "9");
-    EXPECT_EQ(result.first->first, 5);
-    EXPECT_EQ(result.first->second, "555");
-    EXPECT_FALSE(result.second);
-
-    EXPECT_EQ(result2.first->first, 9);
-    EXPECT_EQ(result2.first->second, "9");
-    EXPECT_TRUE(result2.second);
-  }
-  EXPECT_EQ(map.size(), 9);
-  EXPECT_EQ(to_s(map), "0124555678889");
-
-  {
-    auto er = map.emplace(1, "1");
-    EXPECT_EQ(er.first->first, 1);
-    EXPECT_EQ(er.first->second, "1");
-    EXPECT_FALSE(er.second);
-    EXPECT_EQ(map.size(), 9);
-    EXPECT_EQ(to_s(map), "0124555678889");
-  }
-
-  {
-    auto er = map.emplace(10, "abcdef", 3);
-    EXPECT_EQ(er.first->first, 10);
-    EXPECT_EQ(er.first->second, "abc");
-    EXPECT_TRUE(er.second);
-    EXPECT_EQ(map.size(), 10);
-    EXPECT_EQ(to_s(map), "0124555678889abc");
-  }
-
-  map.clear();
-  EXPECT_TRUE(map.empty());
-
-  // Check functionality after clear.
-  map.insert({1, "1"});
-  EXPECT_EQ(map.size(), 1);
-  EXPECT_TRUE(map.contains(1));
-  EXPECT_TRUE(map.find(1) != map.end());
-}
-
-template <class MAP>
-static void TestMap2() {
-  auto to_s = [](MAP& map) -> std::string {
-    std::string result;
-    for (auto& i : map) {
-      result += std::to_string(i.second);
-    }
-    return result;
-  };
-
-  MAP map;
-  EXPECT_TRUE(map.empty());
-
-  map.insert({"1", 1});
-  map.insert({"5", 5});
-  map.insert({"3", 3});
-  map.insert({"7", 7});
-  map.insert({"6", 6});
-  map.insert({"2", 2});
-  map.insert({"4", 4});
-  auto it = map.insert({"8", 8});
-  EXPECT_EQ(it.first->first, "8");
-  EXPECT_EQ(it.first->second, 8);
-  EXPECT_TRUE(it.second);
-  EXPECT_FALSE(map.insert({"3", 3}).second);
-  EXPECT_EQ(to_s(map), "12345678");
-
-  EXPECT_EQ(map.size(), 8);
-
-  typename MAP::value_type pair{"0", 0};
-  map.insert(pair);
-  EXPECT_EQ(to_s(map), "012345678");
-
-  EXPECT_EQ(map.erase("5"), 1);
-  map.erase("1");
-  map.erase("abc");
-  EXPECT_EQ(map.size(), 7);
-  EXPECT_EQ(to_s(map), "0234678");
-
-  EXPECT_TRUE(map.contains("0"));
-  EXPECT_TRUE(map.contains("6"));
-  EXPECT_FALSE(map.contains("1"));
-  EXPECT_FALSE(map.contains("5"));
-
-  auto find3 = map.find("3");
-  auto find1 = map.find("1");
-  EXPECT_TRUE(find1 == map.end());
-  EXPECT_EQ(find3->first, "3");
-  EXPECT_EQ(find3->second, 3);
-  find3->second = 333;
-  EXPECT_EQ(to_s(map), "023334678");
-
-  EXPECT_EQ(map.erase(find3)->second, 4);
-  EXPECT_EQ(to_s(map), "024678");
-
-  EXPECT_EQ(map["1"], 0);
-  EXPECT_EQ(map.size(), 7);
-  EXPECT_EQ(to_s(map), "0024678");
-
-  map["1"] = 1;
-  map["5"] = 5;
-  map["8"] = 888;
-  EXPECT_EQ(map.size(), 8);
-  EXPECT_EQ(to_s(map), "0124567888");
-
-  std::string key = "a";
-  map[std::move(key)] = 999;
-  EXPECT_EQ(to_s(map), "0124567888999");
-  EXPECT_TRUE(key.empty());
-
-  map.clear();
-  EXPECT_TRUE(map.empty());
-
-  // Check functionality after clear.
-  map.insert({"1", 1});
-  EXPECT_EQ(map.size(), 1);
-  EXPECT_TRUE(map.contains("1"));
-  EXPECT_TRUE(map.find("1") != map.end());
-}
-
-TEST(Structure_Array, OrderedFlatMap) {
-  TestMap1<OrderedFlatMap<int, std::string>>();
-  TestMap2<OrderedFlatMap<std::string, int>>();
-}
-
-TEST(Structure_Array, InlineOrderedFlatMap) {
-  TestMap1<InlineOrderedFlatMap<int, std::string, 20>>();
-  TestMap2<InlineOrderedFlatMap<std::string, int, 20>>();
-}
-
-TEST(Structure_Array, ArrayEmplace) {
+TEST(Vector, ArrayEmplace) {
   Vector<std::string> vec;
   vec.emplace_back("abc", 2);
   vec.emplace_back("123", 2);
@@ -3034,140 +2777,6 @@ TEST(Structure_Array, ArrayEmplace) {
   EXPECT_TRUE(vec2[2] == 9);
   EXPECT_TRUE(vec2[3] == 8);
   EXPECT_TRUE(vec2[4] == 5);
-}
-
-TEST(Structure_Array, MapInsertOrAssign) {
-  InlineOrderedFlatMap<std::string, std::string, 5> map{
-      {"3", "c"}, {"2", "b"}, {"1", "a"}};
-  EXPECT_EQ(map.size(), 3);
-  EXPECT_EQ(map["1"], "a");
-  EXPECT_EQ(map["2"], "b");
-  EXPECT_EQ(map["3"], "c");
-  EXPECT_EQ(map["4"], "");
-
-  auto r = map.insert_or_assign("4", "d");
-  EXPECT_FALSE(r.second);
-  EXPECT_EQ(map["4"], "d");
-
-  std::string s5 = "5";
-  std::string se = "e";
-  auto r2 = map.insert_or_assign(s5, std::move(se));
-  EXPECT_TRUE(r2.second);
-  EXPECT_EQ(map["5"], "e");
-  EXPECT_EQ(s5, "5");
-  EXPECT_TRUE(se.empty());
-
-  std::string s6 = "6";
-  std::string sf = "f";
-  auto r3 = map.insert_or_assign(std::move(s6), std::move(sf));
-  EXPECT_TRUE(r3.second);
-  EXPECT_EQ(map["6"], "f");
-  EXPECT_TRUE(s6.empty());
-  EXPECT_TRUE(sf.empty());
-
-  std::string s7 = "7";
-  std::string sg = "g";
-  auto r4 = map.insert_or_assign(std::move(s7), sg);
-  EXPECT_TRUE(r4.second);
-  EXPECT_EQ(map["7"], "g");
-  EXPECT_TRUE(s7.empty());
-  EXPECT_EQ(sg, "g");
-
-  EXPECT_EQ(map.size(), 7);
-}
-
-TEST(Structure_Array, SetInsert) {
-  OrderedFlatSet<std::string> set{"1", "2", "3"};
-  auto r = set.insert("3");
-  EXPECT_FALSE(r.second);
-  EXPECT_EQ(set.size(), 3);
-
-  auto r2 = set.insert("4");
-  EXPECT_TRUE(r2.second);
-  EXPECT_EQ(set.size(), 4);
-
-  std::string s5 = "5";
-  auto r3 = set.insert(std::move(s5));
-  EXPECT_TRUE(r3.second);
-  EXPECT_TRUE(s5.empty());
-
-  EXPECT_EQ(set.size(), 5);
-  EXPECT_TRUE(set.contains("1"));
-  EXPECT_TRUE(set.contains("2"));
-  EXPECT_TRUE(set.contains("3"));
-  EXPECT_TRUE(set.contains("4"));
-  EXPECT_TRUE(set.contains("5"));
-  EXPECT_FALSE(set.contains("6"));
-}
-
-TEST(Structure_Array, MapEmplace) {
-  OrderedFlatMap<std::string, std::string> map;
-  auto r = map.emplace(std::piecewise_construct,
-                       std::tuple<const char*, size_t>("123", 2),
-                       std::tuple<const char*, size_t>("abc", 2));
-  EXPECT_TRUE(r.second);
-  EXPECT_EQ(r.first->first, "12");
-  EXPECT_EQ(r.first->second, "ab");
-  auto r2 = map.emplace(std::piecewise_construct,
-                        std::tuple<const char*, size_t>("112", 2),
-                        std::tuple<const char*, size_t>("xyz", 2));
-  EXPECT_TRUE(r2.second);
-  EXPECT_EQ(r2.first->first, "11");
-  EXPECT_EQ(r2.first->second, "xy");
-
-  EXPECT_EQ(map.size(), 2);
-  EXPECT_EQ(map["12"], "ab");
-  EXPECT_EQ(map["11"], "xy");
-
-  auto r3 = map.emplace(std::piecewise_construct, std::forward_as_tuple("12"),
-                        std::tuple<const char*, size_t>("xyz", 2));
-  EXPECT_FALSE(r3.second);
-  EXPECT_EQ(r3.first->first, "12");
-  EXPECT_EQ(r3.first->second, "ab");
-
-  EXPECT_EQ(map.size(), 2);
-
-  auto r4 = map.try_emplace("11", "ab");
-  EXPECT_FALSE(r4.second);
-  EXPECT_EQ(r4.first->first, "11");
-  EXPECT_EQ(r4.first->second, "xy");
-
-  std::string s11 = "11";
-  std::string sXYZ = "xyz";
-  auto r5 = map.try_emplace(std::move(s11), std::move(sXYZ));
-  EXPECT_FALSE(r5.second);
-  EXPECT_EQ(r5.first->first, "11");
-  EXPECT_EQ(r5.first->second, "xy");
-  EXPECT_EQ(s11, "11");
-  EXPECT_EQ(sXYZ, "xyz");
-
-  std::string s13 = "13";
-  auto r6 = map.try_emplace(std::move(s13), std::move(sXYZ));
-  EXPECT_TRUE(r6.second);
-  EXPECT_EQ(r6.first->first, "13");
-  EXPECT_EQ(r6.first->second, "xyz");
-  EXPECT_TRUE(s13.empty());
-  EXPECT_TRUE(sXYZ.empty());
-
-  EXPECT_EQ(map.size(), 3);
-  EXPECT_EQ(map["12"], "ab");
-  EXPECT_EQ(map["11"], "xy");
-  EXPECT_EQ(map["13"], "xyz");
-
-  std::string s14 = "14";
-  std::string sUVW = "uvw";
-  auto r7 = map.try_emplace(s14, sUVW);
-  EXPECT_TRUE(r7.second);
-  EXPECT_EQ(r7.first->first, "14");
-  EXPECT_EQ(r7.first->second, "uvw");
-  EXPECT_EQ(s14, "14");
-  EXPECT_EQ(sUVW, "uvw");
-
-  EXPECT_EQ(map.size(), 4);
-  EXPECT_EQ(map["12"], "ab");
-  EXPECT_EQ(map["11"], "xy");
-  EXPECT_EQ(map["13"], "xyz");
-  EXPECT_EQ(map["14"], "uvw");
 }
 
 TEST(VectorIntTest, BasicOperations) {
@@ -3321,6 +2930,413 @@ TEST(VectorIntTest, EdgeCases) {
   v.insert(v.begin(), 0);
   EXPECT_GT(v.capacity(), 2);
   EXPECT_EQ(v, (Vector<int>{0, 1, 2}));
+}
+
+template <class SET>
+static void TestSet() {
+  auto to_s = [](SET& set) -> std::string {
+    std::string result;
+    for (auto& i : set) {
+      result += std::to_string(i);
+    }
+    return result;
+  };
+
+  SET set;
+  set.insert(1);
+  set.insert(5);
+  set.insert(3);
+  set.insert(7);
+  set.insert(6);
+  set.insert(2);
+  set.insert(4);
+  auto it = set.insert(8);
+  EXPECT_EQ(*it.first, 8);
+  EXPECT_TRUE(it.second);
+  EXPECT_FALSE(set.insert(3).second);
+  if (set.is_data_ordered()) {
+    EXPECT_EQ(to_s(set), "12345678");
+  } else {
+    EXPECT_EQ(to_s(set), "15376248");
+  }
+
+  EXPECT_EQ(set.size(), 8);
+
+  EXPECT_EQ(set.erase(5), 1);
+  set.erase(1);
+  EXPECT_EQ(set.size(), 6);
+  EXPECT_EQ(to_s(set), set.is_data_ordered() ? "234678" : "376248");
+
+  EXPECT_TRUE(set.contains(6));
+  EXPECT_FALSE(set.contains(1));
+  EXPECT_FALSE(set.contains(5));
+
+  auto find3 = set.find(3);
+  auto find1 = set.find(1);
+  EXPECT_EQ(*find3, 3);
+  EXPECT_TRUE(find1 == set.end());
+
+  EXPECT_EQ(to_s(set), set.is_data_ordered() ? "234678" : "376248");
+  EXPECT_EQ(*set.erase(find3), set.is_data_ordered() ? 4 : 7);
+  EXPECT_EQ(to_s(set), set.is_data_ordered() ? "24678" : "76248");
+
+  set.clear();
+  EXPECT_TRUE(set.empty());
+
+  // Check functionality after clear.
+  set.insert(1);
+  EXPECT_EQ(set.size(), 1);
+  EXPECT_TRUE(set.contains(1));
+  EXPECT_TRUE(set.find(1) != set.end());
+}
+
+TEST(Vector, OrderedFlatSet) {
+  TestSet<OrderedFlatSet<int>>();
+  TestSet<LinearFlatSet<int>>();
+}
+
+TEST(Vector, InlineOrderedFlatSet) {
+  TestSet<InlineOrderedFlatSet<int, 20>>();
+  TestSet<InlineLinearFlatSet<int, 20>>();
+}
+
+template <class MAP>
+static void TestMap1() {
+  auto to_s = [](MAP& map) -> std::string {
+    std::string result;
+    for (auto& i : map) {
+      result += i.second;
+    }
+    return result;
+  };
+
+  MAP map;
+  EXPECT_TRUE(map.empty());
+
+  map.insert({1, "1"});
+  map.insert({5, "5"});
+  map.insert({3, "3"});
+  map.insert({7, "7"});
+  map.insert({6, "6"});
+  map.insert({2, "2"});
+  map.insert({4, "4"});
+  auto it = map.insert({8, "8"});
+  EXPECT_EQ(it.first->first, 8);
+  EXPECT_EQ(it.first->second, "8");
+  EXPECT_TRUE(it.second);
+  EXPECT_FALSE(map.insert({3, "3"}).second);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "12345678" : "15376248");
+
+  EXPECT_EQ(map.size(), 8);
+
+  typename MAP::value_type pair{0, "0"};
+  map.insert(pair);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "012345678" : "153762480");
+
+  EXPECT_EQ(map.erase(5), 1);
+  map.erase(1);
+  map.erase(1024);
+  EXPECT_EQ(map.size(), 7);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "0234678" : "3762480");
+
+  EXPECT_TRUE(map.contains(0));
+  EXPECT_TRUE(map.contains(6));
+  EXPECT_FALSE(map.contains(1));
+  EXPECT_FALSE(map.contains(5));
+
+  auto find3 = map.find(3);
+  auto find1 = map.find(1);
+  EXPECT_TRUE(find1 == map.end());
+  EXPECT_EQ(find3->first, 3);
+  EXPECT_EQ(find3->second, "3");
+  find3->second = "333";
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "023334678" : "333762480");
+
+  EXPECT_EQ(map.erase(find3)->second, map.is_data_ordered() ? "4" : "7");
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "024678" : "762480");
+
+  EXPECT_EQ(map[1], "");
+  EXPECT_EQ(map.size(), 7);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "024678" : "762480");
+
+  map[1] = "1";
+  map[5] = "5";
+  map[8] = "888";
+  EXPECT_EQ(map.size(), 8);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "0124567888" : "7624888015");
+
+  {
+    auto result = map.insert_or_assign(5, "555");
+    auto result2 = map.insert_or_assign(9, "9");
+    EXPECT_EQ(result.first->first, 5);
+    EXPECT_EQ(result.first->second, "555");
+    EXPECT_FALSE(result.second);
+
+    EXPECT_EQ(result2.first->first, 9);
+    EXPECT_EQ(result2.first->second, "9");
+    EXPECT_TRUE(result2.second);
+  }
+  EXPECT_EQ(map.size(), 9);
+  EXPECT_EQ(to_s(map),
+            map.is_data_ordered() ? "0124555678889" : "7624888015559");
+
+  {
+    auto er = map.emplace(1, "1");
+    EXPECT_EQ(er.first->first, 1);
+    EXPECT_EQ(er.first->second, "1");
+    EXPECT_FALSE(er.second);
+    EXPECT_EQ(map.size(), 9);
+    EXPECT_EQ(to_s(map),
+              map.is_data_ordered() ? "0124555678889" : "7624888015559");
+  }
+
+  {
+    auto er = map.emplace(10, "abcdef", 3);
+    EXPECT_EQ(er.first->first, 10);
+    EXPECT_EQ(er.first->second, "abc");
+    EXPECT_TRUE(er.second);
+    EXPECT_EQ(map.size(), 10);
+    EXPECT_EQ(to_s(map),
+              map.is_data_ordered() ? "0124555678889abc" : "7624888015559abc");
+  }
+
+  map.clear();
+  EXPECT_TRUE(map.empty());
+
+  // Check functionality after clear.
+  map.insert({1, "1"});
+  EXPECT_EQ(map.size(), 1);
+  EXPECT_TRUE(map.contains(1));
+  EXPECT_TRUE(map.find(1) != map.end());
+}
+
+template <class MAP>
+static void TestMap2() {
+  auto to_s = [](MAP& map) -> std::string {
+    std::string result;
+    for (auto& i : map) {
+      result += std::to_string(i.second);
+    }
+    return result;
+  };
+
+  MAP map;
+  EXPECT_TRUE(map.empty());
+
+  map.insert({"1", 1});
+  map.insert({"5", 5});
+  map.insert({"3", 3});
+  map.insert({"7", 7});
+  map.insert({"6", 6});
+  map.insert({"2", 2});
+  map.insert({"4", 4});
+  auto it = map.insert({"8", 8});
+  EXPECT_EQ(it.first->first, "8");
+  EXPECT_EQ(it.first->second, 8);
+  EXPECT_TRUE(it.second);
+  EXPECT_FALSE(map.insert({"3", 3}).second);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "12345678" : "15376248");
+
+  EXPECT_EQ(map.size(), 8);
+
+  typename MAP::value_type pair{"0", 0};
+  map.insert(pair);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "012345678" : "153762480");
+
+  EXPECT_EQ(map.erase("5"), 1);
+  map.erase("1");
+  map.erase("abc");
+  EXPECT_EQ(map.size(), 7);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "0234678" : "3762480");
+
+  EXPECT_TRUE(map.contains("0"));
+  EXPECT_TRUE(map.contains("6"));
+  EXPECT_FALSE(map.contains("1"));
+  EXPECT_FALSE(map.contains("5"));
+
+  auto find3 = map.find("3");
+  auto find1 = map.find("1");
+  EXPECT_TRUE(find1 == map.end());
+  EXPECT_EQ(find3->first, "3");
+  EXPECT_EQ(find3->second, 3);
+  find3->second = 333;
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "023334678" : "333762480");
+
+  EXPECT_EQ(map.erase(find3)->second, map.is_data_ordered() ? 4 : 7);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "024678" : "762480");
+
+  EXPECT_EQ(map["1"], 0);  // key inserted
+  EXPECT_EQ(map.size(), 7);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "0024678" : "7624800");
+
+  map["1"] = 1;
+  map["5"] = 5;
+  map["8"] = 888;
+  EXPECT_EQ(map.size(), 8);
+  EXPECT_EQ(to_s(map), map.is_data_ordered() ? "0124567888" : "7624888015");
+
+  std::string key = "a";
+  map[std::move(key)] = 999;
+  EXPECT_EQ(to_s(map),
+            map.is_data_ordered() ? "0124567888999" : "7624888015999");
+  EXPECT_TRUE(key.empty());
+
+  map.clear();
+  EXPECT_TRUE(map.empty());
+
+  // Check functionality after clear.
+  map.insert({"1", 1});
+  EXPECT_EQ(map.size(), 1);
+  EXPECT_TRUE(map.contains("1"));
+  EXPECT_TRUE(map.find("1") != map.end());
+}
+
+TEST(Vector, OrderedFlatMap) {
+  TestMap1<OrderedFlatMap<int, std::string>>();
+  TestMap1<LinearFlatMap<int, std::string>>();
+  TestMap2<OrderedFlatMap<std::string, int>>();
+  TestMap2<LinearFlatMap<std::string, int>>();
+}
+
+TEST(Vector, InlineOrderedFlatMap) {
+  TestMap1<InlineOrderedFlatMap<int, std::string, 20>>();
+  TestMap1<InlineLinearFlatMap<int, std::string, 20>>();
+  TestMap2<InlineOrderedFlatMap<std::string, int, 20>>();
+  TestMap2<InlineLinearFlatMap<std::string, int, 20>>();
+}
+
+TEST(Vector, MapInsertOrAssign) {
+  InlineOrderedFlatMap<std::string, std::string, 5> map{
+      {"3", "c"}, {"2", "b"}, {"1", "a"}};
+  EXPECT_EQ(map.size(), 3);
+  EXPECT_EQ(map["1"], "a");
+  EXPECT_EQ(map["2"], "b");
+  EXPECT_EQ(map["3"], "c");
+  EXPECT_EQ(map["4"], "");
+
+  auto r = map.insert_or_assign("4", "d");
+  EXPECT_FALSE(r.second);
+  EXPECT_EQ(map["4"], "d");
+
+  std::string s5 = "5";
+  std::string se = "e";
+  auto r2 = map.insert_or_assign(s5, std::move(se));
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(map["5"], "e");
+  EXPECT_EQ(s5, "5");
+  EXPECT_TRUE(se.empty());
+
+  std::string s6 = "6";
+  std::string sf = "f";
+  auto r3 = map.insert_or_assign(std::move(s6), std::move(sf));
+  EXPECT_TRUE(r3.second);
+  EXPECT_EQ(map["6"], "f");
+  EXPECT_TRUE(s6.empty());
+  EXPECT_TRUE(sf.empty());
+
+  std::string s7 = "7";
+  std::string sg = "g";
+  auto r4 = map.insert_or_assign(std::move(s7), sg);
+  EXPECT_TRUE(r4.second);
+  EXPECT_EQ(map["7"], "g");
+  EXPECT_TRUE(s7.empty());
+  EXPECT_EQ(sg, "g");
+
+  EXPECT_EQ(map.size(), 7);
+}
+
+TEST(Vector, SetInsert) {
+  OrderedFlatSet<std::string> set{"1", "2", "3"};
+  auto r = set.insert("3");
+  EXPECT_FALSE(r.second);
+  EXPECT_EQ(set.size(), 3);
+
+  auto r2 = set.insert("4");
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(set.size(), 4);
+
+  std::string s5 = "5";
+  auto r3 = set.insert(std::move(s5));
+  EXPECT_TRUE(r3.second);
+  EXPECT_TRUE(s5.empty());
+
+  EXPECT_EQ(set.size(), 5);
+  EXPECT_TRUE(set.contains("1"));
+  EXPECT_TRUE(set.contains("2"));
+  EXPECT_TRUE(set.contains("3"));
+  EXPECT_TRUE(set.contains("4"));
+  EXPECT_TRUE(set.contains("5"));
+  EXPECT_FALSE(set.contains("6"));
+}
+
+TEST(Vector, MapEmplace) {
+  OrderedFlatMap<std::string, std::string> map;
+  auto r = map.emplace(std::piecewise_construct,
+                       std::tuple<const char*, size_t>("123", 2),
+                       std::tuple<const char*, size_t>("abc", 2));
+  EXPECT_TRUE(r.second);
+  EXPECT_EQ(r.first->first, "12");
+  EXPECT_EQ(r.first->second, "ab");
+  auto r2 = map.emplace(std::piecewise_construct,
+                        std::tuple<const char*, size_t>("112", 2),
+                        std::tuple<const char*, size_t>("xyz", 2));
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(r2.first->first, "11");
+  EXPECT_EQ(r2.first->second, "xy");
+
+  EXPECT_EQ(map.size(), 2);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+
+  auto r3 = map.emplace(std::piecewise_construct, std::forward_as_tuple("12"),
+                        std::tuple<const char*, size_t>("xyz", 2));
+  EXPECT_FALSE(r3.second);
+  EXPECT_EQ(r3.first->first, "12");
+  EXPECT_EQ(r3.first->second, "ab");
+
+  EXPECT_EQ(map.size(), 2);
+
+  auto r4 = map.try_emplace("11", "ab");
+  EXPECT_FALSE(r4.second);
+  EXPECT_EQ(r4.first->first, "11");
+  EXPECT_EQ(r4.first->second, "xy");
+
+  std::string s11 = "11";
+  std::string sXYZ = "xyz";
+  auto r5 = map.try_emplace(std::move(s11), std::move(sXYZ));
+  EXPECT_FALSE(r5.second);
+  EXPECT_EQ(r5.first->first, "11");
+  EXPECT_EQ(r5.first->second, "xy");
+  EXPECT_EQ(s11, "11");
+  EXPECT_EQ(sXYZ, "xyz");
+
+  std::string s13 = "13";
+  auto r6 = map.try_emplace(std::move(s13), std::move(sXYZ));
+  EXPECT_TRUE(r6.second);
+  EXPECT_EQ(r6.first->first, "13");
+  EXPECT_EQ(r6.first->second, "xyz");
+  EXPECT_TRUE(s13.empty());
+  EXPECT_TRUE(sXYZ.empty());
+
+  EXPECT_EQ(map.size(), 3);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+  EXPECT_EQ(map["13"], "xyz");
+
+  std::string s14 = "14";
+  std::string sUVW = "uvw";
+  auto r7 = map.try_emplace(s14, sUVW);
+  EXPECT_TRUE(r7.second);
+  EXPECT_EQ(r7.first->first, "14");
+  EXPECT_EQ(r7.first->second, "uvw");
+  EXPECT_EQ(s14, "14");
+  EXPECT_EQ(sUVW, "uvw");
+
+  EXPECT_EQ(map.size(), 4);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+  EXPECT_EQ(map["13"], "xyz");
+  EXPECT_EQ(map["14"], "uvw");
 }
 
 TEST(MapStringTest, BasicOperations) {
@@ -3505,6 +3521,321 @@ TEST(MapStringTest, EmplacePiecewise) {
   EXPECT_EQ(m["piece_key"], "XXXXX");
 }
 
+TEST(Vector, LinearMapInsertOrAssign) {
+  InlineLinearFlatMap<std::string, std::string, 5> map{
+      {"3", "c"}, {"2", "b"}, {"1", "a"}};
+  EXPECT_EQ(map.size(), 3);
+  EXPECT_EQ(map["1"], "a");
+  EXPECT_EQ(map["2"], "b");
+  EXPECT_EQ(map["3"], "c");
+  EXPECT_EQ(map["4"], "");
+
+  auto r = map.insert_or_assign("4", "d");
+  EXPECT_FALSE(r.second);
+  EXPECT_EQ(map["4"], "d");
+
+  std::string s5 = "5";
+  std::string se = "e";
+  auto r2 = map.insert_or_assign(s5, std::move(se));
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(map["5"], "e");
+  EXPECT_EQ(s5, "5");
+  EXPECT_TRUE(se.empty());
+
+  std::string s6 = "6";
+  std::string sf = "f";
+  auto r3 = map.insert_or_assign(std::move(s6), std::move(sf));
+  EXPECT_TRUE(r3.second);
+  EXPECT_EQ(map["6"], "f");
+  EXPECT_TRUE(s6.empty());
+  EXPECT_TRUE(sf.empty());
+
+  std::string s7 = "7";
+  std::string sg = "g";
+  auto r4 = map.insert_or_assign(std::move(s7), sg);
+  EXPECT_TRUE(r4.second);
+  EXPECT_EQ(map["7"], "g");
+  EXPECT_TRUE(s7.empty());
+  EXPECT_EQ(sg, "g");
+
+  EXPECT_EQ(map.size(), 7);
+}
+
+TEST(Vector, LinearSetInsert) {
+  LinearFlatSet<std::string> set{"1", "2", "3"};
+  auto r = set.insert("3");
+  EXPECT_FALSE(r.second);
+  EXPECT_EQ(set.size(), 3);
+
+  auto r2 = set.insert("4");
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(set.size(), 4);
+
+  std::string s5 = "5";
+  auto r3 = set.insert(std::move(s5));
+  EXPECT_TRUE(r3.second);
+  EXPECT_TRUE(s5.empty());
+
+  EXPECT_EQ(set.size(), 5);
+  EXPECT_TRUE(set.contains("1"));
+  EXPECT_TRUE(set.contains("2"));
+  EXPECT_TRUE(set.contains("3"));
+  EXPECT_TRUE(set.contains("4"));
+  EXPECT_TRUE(set.contains("5"));
+  EXPECT_FALSE(set.contains("6"));
+}
+
+TEST(Vector, LinearMapEmplace) {
+  LinearFlatMap<std::string, std::string> map;
+  auto r = map.emplace(std::piecewise_construct,
+                       std::tuple<const char*, size_t>("123", 2),
+                       std::tuple<const char*, size_t>("abc", 2));
+  EXPECT_TRUE(r.second);
+  EXPECT_EQ(r.first->first, "12");
+  EXPECT_EQ(r.first->second, "ab");
+  auto r2 = map.emplace(std::piecewise_construct,
+                        std::tuple<const char*, size_t>("112", 2),
+                        std::tuple<const char*, size_t>("xyz", 2));
+  EXPECT_TRUE(r2.second);
+  EXPECT_EQ(r2.first->first, "11");
+  EXPECT_EQ(r2.first->second, "xy");
+
+  EXPECT_EQ(map.size(), 2);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+
+  auto r3 = map.emplace(std::piecewise_construct, std::forward_as_tuple("12"),
+                        std::tuple<const char*, size_t>("xyz", 2));
+  EXPECT_FALSE(r3.second);
+  EXPECT_EQ(r3.first->first, "12");
+  EXPECT_EQ(r3.first->second, "ab");
+
+  EXPECT_EQ(map.size(), 2);
+
+  auto r4 = map.try_emplace("11", "ab");
+  EXPECT_FALSE(r4.second);
+  EXPECT_EQ(r4.first->first, "11");
+  EXPECT_EQ(r4.first->second, "xy");
+
+  std::string s11 = "11";
+  std::string sXYZ = "xyz";
+  auto r5 = map.try_emplace(std::move(s11), std::move(sXYZ));
+  EXPECT_FALSE(r5.second);
+  EXPECT_EQ(r5.first->first, "11");
+  EXPECT_EQ(r5.first->second, "xy");
+  EXPECT_EQ(s11, "11");
+  EXPECT_EQ(sXYZ, "xyz");
+
+  std::string s13 = "13";
+  auto r6 = map.try_emplace(std::move(s13), std::move(sXYZ));
+  EXPECT_TRUE(r6.second);
+  EXPECT_EQ(r6.first->first, "13");
+  EXPECT_EQ(r6.first->second, "xyz");
+  EXPECT_TRUE(s13.empty());
+  EXPECT_TRUE(sXYZ.empty());
+
+  EXPECT_EQ(map.size(), 3);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+  EXPECT_EQ(map["13"], "xyz");
+
+  std::string s14 = "14";
+  std::string sUVW = "uvw";
+  auto r7 = map.try_emplace(s14, sUVW);
+  EXPECT_TRUE(r7.second);
+  EXPECT_EQ(r7.first->first, "14");
+  EXPECT_EQ(r7.first->second, "uvw");
+  EXPECT_EQ(s14, "14");
+  EXPECT_EQ(sUVW, "uvw");
+
+  EXPECT_EQ(map.size(), 4);
+  EXPECT_EQ(map["12"], "ab");
+  EXPECT_EQ(map["11"], "xy");
+  EXPECT_EQ(map["13"], "xyz");
+  EXPECT_EQ(map["14"], "uvw");
+}
+
+TEST(MapStringTest, LinearBasicOperations) {
+  LinearFlatMap<std::string, std::string> m;
+
+  EXPECT_TRUE(m.empty());
+  EXPECT_EQ(m.size(), 0);
+
+  auto ret = m.insert({"apple", "red"});
+  ASSERT_TRUE(ret.second);
+  EXPECT_EQ(ret.first->first, "apple");
+  EXPECT_EQ(ret.first->second, "red");
+  EXPECT_EQ(m.size(), 1);
+}
+
+TEST(MapStringTest, LinearElementAccess) {
+  LinearFlatMap<std::string, std::string> m{{"apple", "red"},
+                                            {"banana", "yellow"}};
+
+  EXPECT_EQ(m["apple"], "red");
+
+  m["apple"] = "green";
+  EXPECT_EQ(m["apple"], "green");
+  EXPECT_EQ(m.at("apple"), "green");
+
+  EXPECT_EQ(m["grape"], "");
+  EXPECT_EQ(m.at("grape"), "");
+  EXPECT_EQ(m.size(), 3);
+}
+
+TEST(MapStringTest, LinearInsertUpdate) {
+  LinearFlatMap<std::string, std::string> m;
+
+  auto ret1 = m.insert({"fruit", "apple"});
+  EXPECT_TRUE(ret1.second);
+  auto ret2 = m.insert({"fruit", "banana"});
+  EXPECT_FALSE(ret2.second);
+  EXPECT_EQ(ret2.first->second, "apple");
+
+  auto emp_ret = m.emplace("color", "blue");
+  EXPECT_TRUE(emp_ret.second);
+  EXPECT_EQ(emp_ret.first->first, "color");
+
+  m["color"] = "red";
+  EXPECT_EQ(m["color"], "red");
+}
+
+TEST(MapStringTest, LinearEraseOperations) {
+  LinearFlatMap<std::string, std::string> m{{"A", "1"}, {"B", "2"}, {"C", "3"}};
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_EQ(m["A"], "1");
+  EXPECT_EQ(m["B"], "2");
+  EXPECT_EQ(m["C"], "3");
+
+  size_t cnt = m.erase("B");
+  EXPECT_EQ(cnt, 1);
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_FALSE(m.contains("B"));
+
+  auto it = m.find("A");
+  m.erase(it);
+  EXPECT_EQ(m.size(), 1);
+
+  EXPECT_EQ(m.erase("X"), 0);
+}
+
+TEST(SetStringTest, LinearIterators) {
+  InlineLinearFlatSet<std::string, 10> s{"a", "z", "c", "b",
+                                         "m", "g", "q", "h"};
+  std::string order;
+  for (auto it = s.begin(); it != s.end(); it++) {
+    order += *it;
+  }
+  EXPECT_EQ(order, s.is_data_ordered() ? "abcghmqz" : "azcbmgqh");
+
+  order = "";
+  for (auto it = s.rbegin(); it != s.rend(); it++) {
+    order += *it;
+  }
+  EXPECT_EQ(order, s.is_data_ordered() ? "zqmhgcba" : "hqgmbcza");
+}
+
+TEST(SetStringTest, LinearBasic) {
+  InlineLinearFlatSet<std::string, 10> s{"a", "z", "c", "b",
+                                         "m", "g", "q", "h"};
+  EXPECT_TRUE(s.is_static_buffer());
+  EXPECT_TRUE(s.contains("a"));
+  EXPECT_FALSE(s.contains("y"));
+  EXPECT_TRUE(s.find("c") != s.end());
+  EXPECT_TRUE(s.find("y") == s.end());
+  EXPECT_TRUE(s.count("q") == 1);
+  EXPECT_TRUE(s.count("y") == 0);
+  EXPECT_EQ(s.erase("y"), 0);
+  EXPECT_EQ(s.size(), 8);
+  EXPECT_EQ(s.erase("z"), 1);
+  EXPECT_EQ(s.size(), 7);
+  EXPECT_FALSE(s.contains("z"));
+  auto it = s.erase(s.find("g"));
+  EXPECT_EQ(s.size(), 6);
+  EXPECT_EQ(*it, s.is_data_ordered() ? "h" : "q");
+}
+
+TEST(MapStringTest, LinearIterators) {
+  LinearFlatMap<std::string, std::string> m{
+      {"Z", "26"}, {"A", "1"}, {"M", "13"}};
+
+  auto it = m.begin();
+  EXPECT_EQ(it->first, m.is_data_ordered() ? "A" : "Z");
+  ++it;
+  EXPECT_EQ(it->first, m.is_data_ordered() ? "M" : "A");
+  ++it;
+  EXPECT_EQ(it->first, m.is_data_ordered() ? "Z" : "M");
+  ++it;
+  EXPECT_EQ(it, m.end());
+
+  auto rit = m.rbegin();
+  EXPECT_EQ(rit->first, m.is_data_ordered() ? "Z" : "M");
+  ++rit;
+  EXPECT_EQ(rit->first, m.is_data_ordered() ? "M" : "A");
+  ++rit;
+  EXPECT_EQ(rit->first, m.is_data_ordered() ? "A" : "Z");
+  ++rit;
+  EXPECT_EQ(rit, m.rend());
+}
+
+TEST(MapStringTest, LinearEdgeCases) {
+  LinearFlatMap<std::string, std::string> m;
+
+  m[""] = "empty_key";
+  m.emplace("empty_value", "");
+  EXPECT_EQ(m[""], "empty_key");
+  EXPECT_EQ(m["empty_value"], "");
+
+  std::string big_key(1000, 'K');
+  std::string big_value(10000, 'V');
+  m[big_key] = big_value;
+  EXPECT_EQ(m[big_key].size(), 10000);
+}
+
+TEST(MapStringTest, LinearInsertOrAssign) {
+  LinearFlatMap<std::string, std::string> m;
+
+  {
+    auto [it, inserted] = m.insert_or_assign("fruit", "apple");
+    EXPECT_TRUE(inserted);
+    EXPECT_EQ(it->second, "apple");
+    EXPECT_EQ(m.size(), 1);
+  }
+
+  {
+    auto [it, inserted] = m.insert_or_assign("fruit", "banana");
+    EXPECT_FALSE(inserted);
+    EXPECT_EQ(it->second, "banana");
+    EXPECT_EQ(m.size(), 1);
+  }
+
+  m.insert_or_assign("empty", "");
+  EXPECT_EQ(m["empty"], "");
+
+  auto [it, _] = m.insert_or_assign("new_key", "value");
+  EXPECT_EQ(it->first, "new_key");  // 确保迭代器指向正确位置
+}
+
+TEST(MapStringTest, LinearEmplacePiecewise) {
+  LinearFlatMap<std::string, std::string> m;
+
+  auto emp_it =
+      m.emplace(std::piecewise_construct, std::forward_as_tuple("piece_key"),
+                std::forward_as_tuple(5, 'X'));
+  ASSERT_TRUE(emp_it.second);
+  EXPECT_EQ(emp_it.first->second, "XXXXX");
+
+  m.emplace(std::piecewise_construct, std::forward_as_tuple(3, 'K'),
+            std::forward_as_tuple(3, 'k'));
+  EXPECT_EQ(m["KKK"], "kkk");
+
+  auto emp_fail =
+      m.emplace(std::piecewise_construct, std::forward_as_tuple("piece_key"),
+                std::forward_as_tuple("new_value"));
+  EXPECT_FALSE(emp_fail.second);
+  EXPECT_EQ(m["piece_key"], "XXXXX");
+}
+
 namespace {
 template <class MapType>
 bool AssertMapContent_ABC_123(MapType& m) {
@@ -3630,6 +3961,123 @@ TEST(MapStringTest, MixedInlineSize) {
   EXPECT_TRUE(m_src2.empty());
 }
 
+TEST(MapStringTest, LinearMixedInlineSize) {
+  LinearFlatMap<std::string, std::string> m_src{
+      {"A", "1"}, {"B", "2"}, {"C", "3"}};
+  EXPECT_TRUE(AssertMapContent_ABC_123(m_src));
+  InlineLinearFlatMap<std::string, std::string, 3> m_src2{
+      {"A", "1"}, {"B", "2"}, {"C", "3"}};
+  EXPECT_TRUE(AssertMapContent_ABC_123(m_src2));
+  EXPECT_TRUE(m_src2.is_static_buffer());
+  EXPECT_TRUE(m_src == m_src2);
+
+  LinearFlatMap<std::string, std::string> m1(m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m1));
+  EXPECT_TRUE(m1 == m_src);
+  LinearFlatMap<std::string, std::string> m2(m_src2);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m2));
+  EXPECT_TRUE(m2 == m_src2);
+  InlineLinearFlatMap<std::string, std::string, 2> m3(m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m3));
+  EXPECT_FALSE(m3.is_static_buffer());
+  EXPECT_TRUE(m3 == m_src);
+  InlineLinearFlatMap<std::string, std::string, 2> m4(m_src2);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m4));
+  EXPECT_FALSE(m4.is_static_buffer());
+  EXPECT_TRUE(m4 == m_src2);
+  InlineLinearFlatMap<std::string, std::string, 5> m5(m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m5));
+  EXPECT_TRUE(m5.is_static_buffer());
+  EXPECT_TRUE(m5 == m_src);
+  InlineLinearFlatMap<std::string, std::string, 5> m6(m_src2);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m6));
+  EXPECT_TRUE(m6.is_static_buffer());
+  EXPECT_TRUE(m6 == m_src2);
+
+  LinearFlatMap<std::string, std::string> m7{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m7 == m_src);
+  EXPECT_TRUE(m7 != m_src);
+  m7 = m_src;
+  EXPECT_TRUE(m7 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m7));
+
+  InlineLinearFlatMap<std::string, std::string, 3> m8{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m8 == m_src);
+  EXPECT_TRUE(m8 != m_src);
+  m8 = m_src;
+  EXPECT_TRUE(m8 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m8));
+  EXPECT_TRUE(m8.is_static_buffer());
+
+  InlineLinearFlatMap<std::string, std::string, 2> m9{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m9 == m_src);
+  EXPECT_TRUE(m9 != m_src);
+  m9 = m_src;
+  EXPECT_TRUE(m9 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m9));
+  EXPECT_FALSE(m9.is_static_buffer());
+
+  InlineLinearFlatMap<std::string, std::string, 5> m10{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m10 == m_src);
+  EXPECT_TRUE(m10 != m_src);
+  m10 = m_src;
+  EXPECT_TRUE(m10 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m10));
+  EXPECT_TRUE(m10.is_static_buffer());
+
+  LinearFlatMap<std::string, std::string> m11(std::move(m7));
+  EXPECT_TRUE(m11 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m11));
+  EXPECT_TRUE(m7.empty());
+
+  InlineLinearFlatMap<std::string, std::string, 3> m12(std::move(m8));
+  EXPECT_TRUE(m12 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m12));
+  EXPECT_TRUE(m12.is_static_buffer());
+  EXPECT_TRUE(m8.empty());
+
+  InlineLinearFlatMap<std::string, std::string, 2> m13(std::move(m9));
+  EXPECT_TRUE(m13 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m13));
+  EXPECT_FALSE(m13.is_static_buffer());
+  EXPECT_TRUE(m9.empty());
+
+  InlineLinearFlatMap<std::string, std::string, 5> m14(std::move(m10));
+  EXPECT_TRUE(m14 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m14));
+  EXPECT_TRUE(m14.is_static_buffer());
+  EXPECT_TRUE(m10.empty());
+
+  LinearFlatMap<std::string, std::string> m15{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m15 == m_src);
+  EXPECT_TRUE(m15 != m_src);
+  m15 = std::move(m11);
+  EXPECT_TRUE(m15 == m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m15));
+  EXPECT_TRUE(m11.empty());
+
+  InlineLinearFlatMap<std::string, std::string, 3> m16{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m16 == m_src);
+  EXPECT_TRUE(m16 != m_src);
+  m16 = std::move(m_src);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m16));
+  EXPECT_TRUE(m_src.empty());
+
+  InlineLinearFlatMap<std::string, std::string, 2> m17{
+      {"A", "11"}, {"B", "22"}, {"C", "33"}};
+  EXPECT_FALSE(m17 == m_src);
+  EXPECT_TRUE(m17 != m_src);
+  m17 = std::move(m_src2);
+  EXPECT_TRUE(AssertMapContent_ABC_123(m17));
+  EXPECT_TRUE(m_src2.empty());
+}
+
 namespace {
 template <class SetType>
 bool AssertSetContent_ABC(const SetType& m) {
@@ -3738,6 +4186,114 @@ TEST(SetStringTest, MixedInlineSize) {
   EXPECT_TRUE(m_src.empty());
 
   InlineOrderedFlatSet<std::string, 2> m17{"a", "b", "c"};
+  EXPECT_FALSE(m17 == m_src);
+  EXPECT_TRUE(m17 != m_src);
+  m17 = std::move(m_src2);
+  EXPECT_TRUE(AssertSetContent_ABC(m17));
+  EXPECT_TRUE(m_src2.empty());
+}
+
+TEST(SetStringTest, LinearMixedInlineSize) {
+  LinearFlatSet<std::string> m_src{"A", "B", "C"};
+  EXPECT_TRUE(AssertSetContent_ABC(m_src));
+  InlineLinearFlatSet<std::string, 3> m_src2{"A", "B", "C"};
+  EXPECT_TRUE(AssertSetContent_ABC(m_src2));
+  EXPECT_TRUE(m_src2.is_static_buffer());
+  EXPECT_TRUE(m_src == m_src2);
+
+  LinearFlatSet<std::string> m1(m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m1));
+  EXPECT_TRUE(m1 == m_src);
+  LinearFlatSet<std::string> m2(m_src2);
+  EXPECT_TRUE(AssertSetContent_ABC(m2));
+  EXPECT_TRUE(m2 == m_src2);
+  InlineLinearFlatSet<std::string, 2> m3(m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m3));
+  EXPECT_FALSE(m3.is_static_buffer());
+  EXPECT_TRUE(m3 == m_src);
+  InlineLinearFlatSet<std::string, 2> m4(m_src2);
+  EXPECT_TRUE(AssertSetContent_ABC(m4));
+  EXPECT_FALSE(m4.is_static_buffer());
+  EXPECT_TRUE(m4 == m_src2);
+  InlineLinearFlatSet<std::string, 5> m5(m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m5));
+  EXPECT_TRUE(m5.is_static_buffer());
+  EXPECT_TRUE(m5 == m_src);
+  InlineLinearFlatSet<std::string, 5> m6(m_src2);
+  EXPECT_TRUE(AssertSetContent_ABC(m6));
+  EXPECT_TRUE(m6.is_static_buffer());
+  EXPECT_TRUE(m6 == m_src2);
+
+  LinearFlatSet<std::string> m7{"a", "b", "c"};
+  EXPECT_FALSE(m7 == m_src);
+  EXPECT_TRUE(m7 != m_src);
+  m7 = m_src;
+  EXPECT_TRUE(m7 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m7));
+
+  InlineLinearFlatSet<std::string, 3> m8{"a", "b", "c"};
+  EXPECT_FALSE(m8 == m_src);
+  EXPECT_TRUE(m8 != m_src);
+  m8 = m_src;
+  EXPECT_TRUE(m8 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m8));
+  EXPECT_TRUE(m8.is_static_buffer());
+
+  InlineLinearFlatSet<std::string, 2> m9{"a", "b", "c"};
+  EXPECT_FALSE(m9 == m_src);
+  EXPECT_TRUE(m9 != m_src);
+  m9 = m_src;
+  EXPECT_TRUE(m9 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m9));
+  EXPECT_FALSE(m9.is_static_buffer());
+
+  InlineLinearFlatSet<std::string, 5> m10{"a", "b", "c"};
+  EXPECT_FALSE(m10 == m_src);
+  EXPECT_TRUE(m10 != m_src);
+  m10 = m_src;
+  EXPECT_TRUE(m10 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m10));
+  EXPECT_TRUE(m10.is_static_buffer());
+
+  LinearFlatSet<std::string> m11(std::move(m7));
+  EXPECT_TRUE(m11 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m11));
+  EXPECT_TRUE(m7.empty());
+
+  InlineLinearFlatSet<std::string, 3> m12(std::move(m8));
+  EXPECT_TRUE(m12 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m12));
+  EXPECT_TRUE(m12.is_static_buffer());
+  EXPECT_TRUE(m8.empty());
+
+  InlineLinearFlatSet<std::string, 2> m13(std::move(m9));
+  EXPECT_TRUE(m13 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m13));
+  EXPECT_FALSE(m13.is_static_buffer());
+  EXPECT_TRUE(m9.empty());
+
+  InlineLinearFlatSet<std::string, 5> m14(std::move(m10));
+  EXPECT_TRUE(m14 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m14));
+  EXPECT_TRUE(m14.is_static_buffer());
+  EXPECT_TRUE(m10.empty());
+
+  LinearFlatSet<std::string> m15{"a", "b", "c"};
+  EXPECT_FALSE(m15 == m_src);
+  EXPECT_TRUE(m15 != m_src);
+  m15 = std::move(m11);
+  EXPECT_TRUE(m15 == m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m15));
+  EXPECT_TRUE(m11.empty());
+
+  InlineLinearFlatSet<std::string, 3> m16{"a", "b", "c"};
+  EXPECT_FALSE(m16 == m_src);
+  EXPECT_TRUE(m16 != m_src);
+  m16 = std::move(m_src);
+  EXPECT_TRUE(AssertSetContent_ABC(m16));
+  EXPECT_TRUE(m_src.empty());
+
+  InlineLinearFlatSet<std::string, 2> m17{"a", "b", "c"};
   EXPECT_FALSE(m17 == m_src);
   EXPECT_TRUE(m17 != m_src);
   m17 = std::move(m_src2);
