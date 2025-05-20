@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.4.0
+
+### Major Changes
+
+- Introduce <input> and <textarea>
+
 ## 3.3.4
 
 - Add typing for the runtime interfaces.

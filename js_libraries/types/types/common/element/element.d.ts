@@ -12,11 +12,15 @@ import { PageProps } from './page';
 import { ScrollViewProps, ScrollViewUIMethods } from './scroll-view';
 import { TextProps } from './text';
 import { ViewProps } from './view';
+import { InputProps, InputUIMethods } from './input';
+import { TextAreaProps, TextAreaUIMethods } from './textarea';
 
 export interface UIMethods {
   'list': ListUIMethods;
   'scroll-view': ScrollViewUIMethods;
   'image': ImageUIMethods;
+  'input': InputUIMethods;
+  'textarea': TextAreaUIMethods;
 }
 
 type LynxComponentProps = ComponentProps;
@@ -37,6 +41,8 @@ export interface IntrinsicElements {
   'text': TextProps;
   'view': ViewProps;
   'raw-text': StandardProps & { text: number | string };
+  'input': InputProps;
+  'textarea': TextAreaProps;
 }
 
 declare module 'react' {
@@ -57,6 +63,8 @@ declare module 'react' {
       'text': TextProps;
       'view': ViewProps;
       'raw-text': StandardProps & { text: number | string };
+      'input': InputProps;
+      'textarea': TextAreaProps;
     }
   }
 }

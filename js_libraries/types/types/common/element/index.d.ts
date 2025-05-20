@@ -10,6 +10,8 @@ export * from './page';
 export * from './scroll-view';
 export * from './text';
 export * from './view';
+export * from './input';
+export * from './textarea';
 export * from './element';
 export * from './methods';
 export * from './attributes';
