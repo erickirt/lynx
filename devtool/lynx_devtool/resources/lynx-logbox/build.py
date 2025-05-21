@@ -18,7 +18,7 @@ from tools.js_tools.pnpm_helper import run_pnpm_command
 
 # Define the distribution path
 dist_path = os.path.join(root_path, 'devtool', 'lynx_devtool', 'resources',
-                         'lynx-error-parser', 'dist', 'static', 'js')
+                         'lynx-logbox', 'dist')
 
 # Define the Android target path
 android_target_path = os.path.join(root_path, 'platform', 'android',
@@ -38,17 +38,31 @@ def build():
     os.makedirs(dist_path, exist_ok=True)
 
     # Run the pnpm build command
-    run_pnpm_command(['pnpm', '--filter', '@lynx-dev/lynx-error-parser', 'build'],
+    run_pnpm_command(['pnpm', '--filter', '@lynx-js/logbox', 'build'],
                      root_path)
+
+    # Remove the existing Android and iOS target directories
+    if os.path.exists(android_target_path):
+        shutil.rmtree(android_target_path)
+    if os.path.exists(ios_target_path):
+        shutil.rmtree(ios_target_path)
 
     # Create the Android and iOS target directories
     os.makedirs(android_target_path, exist_ok=True)
     os.makedirs(ios_target_path, exist_ok=True)
 
-    # Copy the file to the target directory
-    shutil.copy(os.path.join(dist_path, "lynx-error-parser.js"), android_target_path)
-    shutil.copy(os.path.join(dist_path, "lynx-error-parser.js"), ios_target_path)
-    
+    # Copy the contents of the distribution directory to the Android and iOS target directories
+    for item in os.listdir(dist_path):
+        s = os.path.join(dist_path, item)
+        d_android = os.path.join(android_target_path, item)
+        d_ios = os.path.join(ios_target_path, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d_android)
+            shutil.copytree(s, d_ios)
+        else:
+            shutil.copy2(s, d_android)
+            shutil.copy2(s, d_ios)
+
 
 if __name__ == "__main__":
     build()

@@ -2,7 +2,7 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import <Lynx/DevToolLogLevel.h>
+#import <Lynx/LynxBaseLogBoxProxy.h>
 #import <Lynx/LynxEnv.h>
 #import <Lynx/LynxLog.h>
 #import <Lynx/LynxRootUI.h>
@@ -82,7 +82,7 @@
                                          NSStringFromClass([otherGestureRecognizer.view class]),
                                          NSStringFromClass([otherGestureRecognizer class]),
                                          otherGestureRecognizer.state]
-                     withLevel:DevToolLogLevelWarning];
+                     withLevel:LynxLogBoxLevelWarning];
     }
   }
   return res;
@@ -372,7 +372,7 @@
           showMessageOnConsole:[NSString
                                    stringWithFormat:@"LynxEventHandler: fire tap for target %ld",
                                                     _touchRecognizer.preTarget.signature]
-                     withLevel:DevToolLogLevelInfo];
+                     withLevel:LynxLogBoxLevelInfo];
     }
     [_eventEmitter dispatchTouchEvent:event];
   } else {
@@ -382,7 +382,7 @@
                                                           @"[outside] %d [slide] %ld [props] %ld",
                                                           !touchInSideLynx, slideTargetSign,
                                                           propsTargetSign]
-                     withLevel:DevToolLogLevelWarning];
+                     withLevel:LynxLogBoxLevelWarning];
     }
   }
 
@@ -453,7 +453,7 @@
             showMessageOnConsole:[NSString
                                      stringWithFormat:@"LynxEventHandler: fire tap for target %ld",
                                                       _touchRecognizer.preTarget.signature]
-                       withLevel:DevToolLogLevelInfo];
+                       withLevel:LynxLogBoxLevelInfo];
       }
       [_eventEmitter dispatchTouchEvent:event];
       _longPressPoint = CGPointMake(-FLT_MAX, -FLT_MAX);
@@ -464,7 +464,7 @@
                                                             @"[move] %d [slide] %ld [props] %ld",
                                                             !touchInThreshold, slideTargetSign,
                                                             propsTargetSign]
-                       withLevel:DevToolLogLevelWarning];
+                       withLevel:LynxLogBoxLevelWarning];
       }
     }
   } else if (sender.state == UIGestureRecognizerStateCancelled ||

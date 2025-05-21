@@ -12,9 +12,9 @@ import com.lynx.tasm.service.IServiceProvider
 import com.lynx.devtool.LynxDevtoolEnv
 import com.lynx.devtool.LynxGlobalDebugBridge
 import com.lynx.devtool.LynxInspectorOwner
-import com.lynx.devtool.logbox.LynxLogBoxWrapper
+import com.lynx.devtool.logbox.LynxLogBoxProxy
 import com.lynx.devtoolwrapper.LynxBaseInspectorOwnerNG
-import com.lynx.devtoolwrapper.ILynxLogBox
+import com.lynx.devtoolwrapper.LynxBaseLogBoxProxy
 import com.lynx.devtoolwrapper.LynxDevtool
 import com.lynx.devtool.module.LynxDevToolSetModule
 import com.lynx.devtool.module.LynxTrailModule
@@ -53,14 +53,14 @@ class LynxDevToolService : ILynxDevToolService {
         }
     }
 
-    override fun createLogBox(devtool: LynxDevtool): ILynxLogBox? {
+    override fun createLogBoxProxy(devtool: LynxDevtool): LynxBaseLogBoxProxy? {
         try {
-            return LynxLogBoxWrapper(devtool)
+            return LynxLogBoxProxy(devtool)
         } catch (e: ClassNotFoundException) {
-            LLog.e(TAG, "createLogBox failed, ${e.message}")
+            LLog.e(TAG, "createLogBoxProxy failed, ${e.message}")
             return null
         } catch (e: NoClassDefFoundError) {
-            LLog.e(TAG, "createLogBox failed, ${e.message}")
+            LLog.e(TAG, "createLogBoxProxy failed, ${e.message}")
             return null
         }
     }

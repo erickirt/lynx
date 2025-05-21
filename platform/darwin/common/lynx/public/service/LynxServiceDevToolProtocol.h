@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class LynxView;
 
-@protocol LynxLogBoxProtocol;
+@protocol LynxBaseLogBoxProxy;
 @protocol LynxBaseInspectorOwner;
 @protocol LynxBasePerfMonitor;
 @protocol LynxContextModule;
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<LynxBaseInspectorOwner>)createInspectorOwnerWithLynxView:(LynxView *)lynxView;
 
-- (id<LynxLogBoxProtocol>)createLogBoxWithLynxView:(LynxView *)lynxView;
+- (id<LynxBaseLogBoxProxy>)createLogBoxProxyWithLynxView:(LynxView *)lynxView;
 
 - (Class<LynxContextModule>)devtoolSetModuleClass;
 

@@ -604,6 +604,19 @@ public class LynxBaselineShiftLayoutManager : NSLayoutManager {
   public instancetype LynxBaselineShiftLayoutManager::initWithVerticalAlign:(LynxVerticalAlign verticalAlign);
 }
 
+public protocol LynxBaseLogBoxProxy-p : <NSObject> {
+  public nonnull instancetype LynxBaseLogBoxProxy-p::initWithLynxView:(nullable LynxView *view);
+  public void LynxBaseLogBoxProxy-p::onMovedToWindow();
+  public void LynxBaseLogBoxProxy-p::setReloadHelper:(nullable LynxPageReloadHelper *reload_helper);
+  public void LynxBaseLogBoxProxy-p::showLogMessage:(LynxError *error);
+  public void LynxBaseLogBoxProxy-p::attachLynxView:(nonnull LynxView *lynxView);
+  public void LynxBaseLogBoxProxy-p::onLynxViewReload();
+  public void LynxBaseLogBoxProxy-p::setRuntimeId:(NSInteger runtimeId);
+  public void LynxBaseLogBoxProxy-p::showConsole();
+  public void LynxBaseLogBoxProxy-p::destroy();
+  public void LynxBaseLogBoxProxy-p::setLynxDevtool:(LynxDevtool *devtool);
+}
+
 public class LynxBaseTextShadowNode : LynxShadowNode {
   public LynxTextStyle* LynxBaseTextShadowNode::textStyle textStyle;
   public BOOL LynxBaseTextShadowNode::hasNonVirtualOffspring hasNonVirtualOffspring;
@@ -2303,14 +2316,6 @@ public class LynxLoadMeta : NSObject {
   public NSMutableDictionary<NSString*, id>* LynxLoadMeta::lynxViewConfig lynxViewConfig;
 }
 
-public protocol LynxLogBoxProtocol-p : <NSObject> {
-  public void LynxLogBoxProtocol-p::showLogMessage:(LynxError *error);
-  public void LynxLogBoxProtocol-p::onMovedToWindow();
-  public void LynxLogBoxProtocol-p::attachLynxView:(nonnull LynxView *lynxView);
-  public void LynxLogBoxProtocol-p::onLynxViewReload();
-  public void LynxLogBoxProtocol-p::destroy();
-}
-
 public class LynxLogObserver : NSObject {
   public LynxLogFunction LynxLogObserver::logFunction logFunction;
   public LynxLogLevel LynxLogObserver::minLogLevel minLogLevel;
@@ -2734,7 +2739,7 @@ public protocol LynxServiceContainerProtocol-p : <NSObject> {
 
 public protocol LynxServiceDevToolProtocol-p : <LynxServiceProtocol> {
   public id< LynxBaseInspectorOwner > LynxServiceDevToolProtocol-p::createInspectorOwnerWithLynxView:(LynxView *lynxView);
-  public id< LynxLogBoxProtocol > LynxServiceDevToolProtocol-p::createLogBoxWithLynxView:(LynxView *lynxView);
+  public id< LynxBaseLogBoxProxy > LynxServiceDevToolProtocol-p::createLogBoxProxyWithLynxView:(LynxView *lynxView);
   public Class< LynxContextModule > LynxServiceDevToolProtocol-p::devtoolSetModuleClass();
   public Class< LynxContextModule > LynxServiceDevToolProtocol-p::devtoolWebSocketModuleClass();
   public Class< LynxContextModule > LynxServiceDevToolProtocol-p::devtoolTrailModuleClass();
@@ -4873,9 +4878,9 @@ public interface UIViewController(LynxHeroTransition) {
 
   public const NSString* LYNX_TARGET_SDK_VERSION_1_5 LYNX_TARGET_SDK_VERSION_1_5;
 
-  public typedef NS_ENUM(NSInteger, DevToolLogLevel);
-
   public NS_ASSUME_NONNULL_BEGIN typedef void(^ CDPResultCallback) (NSString *result) CDPResultCallback;
+
+  public typedef NS_ENUM(NSInteger, LynxLogBoxLevel);
 
   public FOUNDATION_EXPORT int32_t const LynxTouchPseudoStateNone LynxTouchPseudoStateNone;
   public FOUNDATION_EXPORT int32_t const LynxTouchPseudoStateHover LynxTouchPseudoStateHover;

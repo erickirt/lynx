@@ -7,6 +7,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 
 #import <Lynx/LynxBaseInspectorOwner.h>
+#import <Lynx/LynxBaseLogBoxProxy.h>
 #import <Lynx/LynxContextModule.h>
 #import <Lynx/LynxDevtool+Internal.h>
 #import <Lynx/LynxEnv.h>
@@ -16,7 +17,6 @@
 #import <Lynx/LynxTraceEventDef.h>
 
 #import <Lynx/LynxError.h>
-#import <Lynx/LynxLogBoxProtocol.h>
 
 #include "base/trace/native/trace_event.h"
 #include "core/base/lynx_trace_categories.h"
@@ -27,7 +27,7 @@
 #pragma mark - LynxDevtool
 @implementation LynxDevtool {
   __weak LynxView *_lynxView;
-  id<LynxLogBoxProtocol> _logbox;
+  id<LynxBaseLogBoxProxy> _logBoxProxy;
 
   LynxPageReloadHelper *_reloader;
   id<LynxViewStateListener> _lynxViewStateListener;
@@ -51,13 +51,14 @@
     }
 
     if (LynxEnv.sharedInstance.logBoxEnabled && devtoolService) {
-      _logbox = [devtoolService createLogBoxWithLynxView:view];
+      _logBoxProxy = [devtoolService createLogBoxProxyWithLynxView:view];
+      [_logBoxProxy setLynxDevtool:self];
     } else {
-      _logbox = nil;
+      _logBoxProxy = nil;
     }
   }
 
-  if (_owner != nil) {
+  if (_owner != nil || _logBoxProxy != nil) {
     _reloader = [[LynxPageReloadHelper alloc] initWithLynxView:view];
   } else {
     _reloader = nil;
@@ -98,7 +99,7 @@
   if (_reloader != nil) {
     [_reloader loadFromLocalFile:tem withURL:url initData:data];
   }
-  [_logbox onLynxViewReload];
+  [_logBoxProxy onLynxViewReload];
 }
 
 - (void)onLoadFromURL:(NSString *)url
@@ -108,7 +109,7 @@
   if (_reloader != nil) {
     [_reloader loadFromURL:url initData:data];
   }
-  [_logbox onLynxViewReload];
+  [_logBoxProxy onLynxViewReload];
 }
 
 - (void)attachDebugBridge:(NSString *)url {
@@ -122,7 +123,7 @@
   if (_reloader != nil) {
     [_reloader loadFromBundle:bundle withURL:url initData:data];
   }
-  [_logbox onLynxViewReload];
+  [_logBoxProxy onLynxViewReload];
 }
 
 - (void)onStandaloneRuntimeLoadFromURL:(NSString *)url {
@@ -167,7 +168,7 @@
   if (_lynxViewStateListener) {
     [_lynxViewStateListener onMovedToWindow];
   }
-  [_logbox onMovedToWindow];
+  [_logBoxProxy onMovedToWindow];
 }
 
 - (void)onLoadFinished {
@@ -186,7 +187,7 @@
 }
 
 - (void)showErrorMessage:(LynxError *)error {
-  [_logbox showLogMessage:error];
+  [_logBoxProxy showLogMessage:error];
   [_owner showErrorMessageOnConsole:error];
 }
 
@@ -198,14 +199,14 @@
   if (_reloader != nil) {
     [_reloader attachLynxView:lynxView];
   }
-  [_logbox attachLynxView:lynxView];
+  [_logBoxProxy attachLynxView:lynxView];
 }
 
 - (void)dealloc {
   if (_lynxViewStateListener) {
     [_lynxViewStateListener onDestroy];
   }
-  [_logbox destroy];
+  [_logBoxProxy destroy];
 }
 
 - (void)onPageUpdate {
