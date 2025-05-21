@@ -35,17 +35,17 @@ TEST_F(PipelineContextManagerTest,
   EXPECT_EQ(context->GetVersion().GetMajor(), 0);
   EXPECT_EQ(context->GetVersion().GetMinor(), 1);
 
-  context->RequestResolve(true);
+  context->RequestResolve();
   EXPECT_TRUE(context->IsResolveRequested());
-  context->RequestResolve(false);
+  context->ResetResolveRequested();
   EXPECT_FALSE(context->IsResolveRequested());
-  context->RequestLayout(true);
+  context->RequestLayout();
   EXPECT_TRUE(context->IsLayoutRequested());
-  context->RequestLayout(false);
+  context->ResetLayoutRequested();
   EXPECT_FALSE(context->IsLayoutRequested());
-  context->RequestFlushUIOperation(true);
+  context->RequestFlushUIOperation();
   EXPECT_TRUE(context->IsFlushUIOperationRequested());
-  context->RequestFlushUIOperation(false);
+  context->ResetFlushUIOperationRequested();
   EXPECT_FALSE(context->IsFlushUIOperationRequested());
   context->MarkReload(true);
   EXPECT_TRUE(context->IsReload());

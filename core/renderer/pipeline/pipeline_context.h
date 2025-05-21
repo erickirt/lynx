@@ -36,9 +36,9 @@ class PipelineContext {
   bool IsLayoutRequested() const;
   bool IsFlushUIOperationRequested() const;
   bool IsReload() const;
-  void RequestResolve(bool resolve);
-  void RequestLayout(bool layout);
-  void RequestFlushUIOperation(bool flush);
+  void RequestResolve();
+  void RequestLayout();
+  void RequestFlushUIOperation();
   void MarkReload(bool reload);
 
   void ResetResolveRequested();

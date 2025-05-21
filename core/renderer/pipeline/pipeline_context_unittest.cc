@@ -69,9 +69,9 @@ TEST_F(PipelineContextTest, TestPipelineContextResolve) {
   EXPECT_NE(context, nullptr);
   context->SetOptions(options_);
   EXPECT_FALSE(context->IsResolveRequested());
-  context->RequestResolve(true);
+  context->RequestResolve();
   EXPECT_TRUE(context->IsResolveRequested());
-  context->RequestResolve(false);
+  context->ResetResolveRequested();
   EXPECT_FALSE(context->IsResolveRequested());
 }
 
@@ -80,9 +80,9 @@ TEST_F(PipelineContextTest, TestPipelineContextLayout) {
   EXPECT_NE(context, nullptr);
   context->SetOptions(options_);
   EXPECT_FALSE(context->IsLayoutRequested());
-  context->RequestLayout(true);
+  context->RequestLayout();
   EXPECT_TRUE(context->IsLayoutRequested());
-  context->RequestLayout(false);
+  context->ResetLayoutRequested();
   EXPECT_FALSE(context->IsLayoutRequested());
 }
 
@@ -91,9 +91,9 @@ TEST_F(PipelineContextTest, TestPipelineContextFlush) {
   EXPECT_NE(context, nullptr);
   context->SetOptions(options_);
   EXPECT_FALSE(context->IsFlushUIOperationRequested());
-  context->RequestFlushUIOperation(true);
+  context->RequestFlushUIOperation();
   EXPECT_TRUE(context->IsFlushUIOperationRequested());
-  context->RequestFlushUIOperation(false);
+  context->ResetFlushUIOperationRequested();
   EXPECT_FALSE(context->IsFlushUIOperationRequested());
 }
 

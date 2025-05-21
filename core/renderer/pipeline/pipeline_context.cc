@@ -56,28 +56,28 @@ bool PipelineContext::IsReload() const {
   return options_->reload;
 }
 
-void PipelineContext::RequestResolve(bool resolve) {
+void PipelineContext::RequestResolve() {
   if (!options_) {
     LOGE("options is nullptr");
     return;
   }
-  options_->resolve_requested = resolve;
+  options_->resolve_requested = true;
 }
 
-void PipelineContext::RequestLayout(bool layout) {
+void PipelineContext::RequestLayout() {
   if (!options_) {
     LOGE("options is nullptr");
     return;
   }
-  options_->layout_requested = layout;
+  options_->layout_requested = true;
 }
 
-void PipelineContext::RequestFlushUIOperation(bool flush) {
+void PipelineContext::RequestFlushUIOperation() {
   if (!options_) {
     LOGE("options is nullptr");
     return;
   }
-  options_->flush_ui_requested = flush;
+  options_->flush_ui_requested = true;
 }
 
 void PipelineContext::MarkReload(bool reload) {
