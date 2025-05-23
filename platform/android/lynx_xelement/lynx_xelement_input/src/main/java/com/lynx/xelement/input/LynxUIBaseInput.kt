@@ -124,13 +124,13 @@ open class LynxUIBaseInput(context: LynxContext) : LynxUI<LynxEditTextView>(cont
                     var parentUI: LynxBaseUI? = parentBaseUI
                     while (parentUI != null) {
                         if (parentUI.tagName == "x-overlay-ng") {
-                            parentUI.touchEventDispatcher.setFocusedUI(this@LynxUIBaseInput)
+                            parentUI.touchEventDispatcher?.setFocusedUI(this@LynxUIBaseInput)
                             break
                         }
                         parentUI = parentUI.parentBaseUI
                     }
 
-                    lynxContext.touchEventDispatcher.setFocusedUI(this@LynxUIBaseInput)
+                    lynxContext.touchEventDispatcher?.setFocusedUI(this@LynxUIBaseInput)
                 }
             }
 

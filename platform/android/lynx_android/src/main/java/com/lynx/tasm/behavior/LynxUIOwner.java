@@ -115,6 +115,8 @@ public class LynxUIOwner {
 
   private UIBodyView.attachLynxPageUICallback mAttachLynxPageUICallback;
 
+  private boolean mHasTouchPseudo;
+
   public LynxUIOwner(
       LynxContext context, BehaviorRegistry behaviorRegistry, @Nullable UIBodyView body) {
     TraceEvent.beginSection(TraceEventDef.UI_OWNER_INIT);
@@ -1154,6 +1156,14 @@ public class LynxUIOwner {
     }
     // call ui.uiOwnerDidPerformLayout() maybe add new ui to mCachedBoundingClientRectUI.
     didPerformLayout();
+  }
+
+  public void setHasTouchPseudo(boolean hasTouchPseudo) {
+    mHasTouchPseudo = hasTouchPseudo;
+  }
+
+  public boolean getHasTouchPseudo() {
+    return mHasTouchPseudo;
   }
 
   public int getRootWidth() {

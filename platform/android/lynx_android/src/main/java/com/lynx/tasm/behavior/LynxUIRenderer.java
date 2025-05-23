@@ -94,6 +94,11 @@ public class LynxUIRenderer implements ILynxUIRenderer {
   // static synchronization object to ensure thread-safe operations of screenshot
   private static final Object mSyncObject = new Object();
   private static HandlerThread mPixelCopyHandlerThread = null;
+  private boolean mIsUpdatedConfig;
+  private String mTapSlop;
+  private boolean mEnableMultiTouch;
+  private boolean mEnableFiberArc;
+  private boolean mEnableNewGesture;
 
   public static synchronized void startPixelCopyHandlerThreadIfNecessary() {
     if (mPixelCopyHandlerThread == null && LynxEnv.inst().isLynxDebugEnabled()) {
@@ -115,9 +120,6 @@ public class LynxUIRenderer implements ILynxUIRenderer {
       mLynxUIOwner.setContextFree(true);
     }
     lynxContext.setLynxUIOwner(mLynxUIOwner);
-    mEventDispatcher = new TouchEventDispatcher(mLynxUIOwner);
-    lynxContext.setTouchEventDispatcher(mEventDispatcher);
-
     mLynxContext = new WeakReference<>(lynxContext);
     mLongTaskMonitorEnabled = longTaskMonitorEnabled;
 
@@ -206,30 +208,11 @@ public class LynxUIRenderer implements ILynxUIRenderer {
 
   @Override
   public void onPageConfigDecoded(PageConfig config) {
-    if (mEventDispatcher != null) {
-      LynxContext lynxContext = (mLynxContext != null) ? mLynxContext.get() : null;
-      // c++ layer will send tapSlop = "50px" by default,
-      // and TouchEventDispatcher has default tapSlop = PixelUtils.dipToPx(50);
-      // which results the same float when calls toPxWithDisplayMetrics("50px")
-      // therefore add default value comparison to avoid redundant toPxWithDisplayMetrics call
-      if (config.getTapSlop() != null
-          && !config.getTapSlop().equals(mEventDispatcher.mTapSlopDefault)) {
-        mEventDispatcher.setTapSlop(
-            UnitUtils.toPxWithDisplayMetrics(config.getTapSlop(), 0, 0, 0, 0, 0, 0,
-                lynxContext != null ? lynxContext.getScreenMetrics()
-                                    : DisplayMetricsHolder.getScreenDisplayMetrics()));
-      }
-
-      // Enable touch pseudo if it is fiber arch.
-      mEventDispatcher.setHasTouchPseudo(config.getEnableFiberArc());
-      // Enable support multi-finger events.
-      mEventDispatcher.setEnableMultiTouch(config.getEnableMultiTouch());
-      // init if Enable new gesture in page config
-      if (config.isEnableNewGesture() && LynxLiteConfigs.enableNewGesture()) {
-        mLynxUIOwner.initGestureArenaManager(lynxContext);
-        mEventDispatcher.setGestureArenaManager(mLynxUIOwner.getGestureArenaManager());
-      }
-    }
+    mIsUpdatedConfig = true;
+    mTapSlop = config.getTapSlop();
+    mEnableMultiTouch = config.getEnableMultiTouch();
+    mEnableFiberArc = config.getEnableFiberArc();
+    mEnableNewGesture = config.isEnableNewGesture();
     if ((mLynxUIOwner != null) && (mLynxUIOwner.getRootUI() != null)) {
       mLynxUIOwner.getRootUI().onPageConfigDecoded(config);
     }
@@ -361,7 +344,48 @@ public class LynxUIRenderer implements ILynxUIRenderer {
 
   @Override
   public boolean onTouchEvent(MotionEvent ev, UIGroup rootUi) {
+    if (mEventDispatcher == null) {
+      initEventDispatcher();
+    }
     return (mEventDispatcher != null) ? mEventDispatcher.onTouchEvent(ev, rootUi) : false;
+  }
+
+  private void initEventDispatcher() {
+    if (mLynxUIOwner != null) {
+      mEventDispatcher = new TouchEventDispatcher(mLynxUIOwner);
+      mEventDispatcher.setHasTouchPseudo(mLynxUIOwner.getHasTouchPseudo());
+      if (mIsUpdatedConfig) {
+        mIsUpdatedConfig = false;
+        updateEventDispatcherConfig();
+      }
+    }
+  }
+
+  private void updateEventDispatcherConfig() {
+    if (mLynxUIOwner.getContext() != null) {
+      LynxContext lynxContext = mLynxUIOwner.getContext();
+      lynxContext.setTouchEventDispatcher(mEventDispatcher);
+
+      // c++ layer will send tapSlop = "50px" by default,
+      // and TouchEventDispatcher has default tapSlop = PixelUtils.dipToPx(50);
+      // which results the same float when calls toPxWithDisplayMetrics("50px")
+      // therefore add default value comparison to avoid redundant toPxWithDisplayMetrics call
+      String tapSlop = mTapSlop;
+      if (tapSlop != null && !tapSlop.equals(mEventDispatcher.mTapSlopDefault)) {
+        mEventDispatcher.setTapSlop(UnitUtils.toPxWithDisplayMetrics(
+            tapSlop, 0, 0, 0, 0, 0, 0, lynxContext.getScreenMetrics()));
+      }
+
+      // Enable touch pseudo if it is fiber arch.
+      mEventDispatcher.setHasTouchPseudo(mEnableFiberArc);
+      // Enable support multi-finger events.
+      mEventDispatcher.setEnableMultiTouch(mEnableMultiTouch);
+      // init if Enable new gesture in page config
+      if (mEnableNewGesture && LynxLiteConfigs.enableNewGesture()) {
+        mLynxUIOwner.initGestureArenaManager(lynxContext);
+        mEventDispatcher.setGestureArenaManager(mLynxUIOwner.getGestureArenaManager());
+      }
+    }
   }
 
   @Override

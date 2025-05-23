@@ -617,10 +617,7 @@ public final class PaintingContext {
 
   @CalledByNative
   public void updateEventInfo(boolean hasTouchPseudo) {
-    TouchEventDispatcher touchEventDispatcher = mUIOwner.getContext().getTouchEventDispatcher();
-    if (touchEventDispatcher != null) {
-      touchEventDispatcher.setHasTouchPseudo(hasTouchPseudo);
-    }
+    mUIOwner.setHasTouchPseudo(hasTouchPseudo);
   }
 
   @CalledByNative
