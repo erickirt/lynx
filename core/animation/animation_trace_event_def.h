@@ -39,6 +39,8 @@ static constexpr const char* const KEYFRAME_FILTER_ANIMATION_CURVE_GET_VALUE =
 static constexpr const char* const
     KEYFRAME_TRANSFORM_ANIMATION_CURVE_GET_VALUE =
         "KeyframedTransformAnimationCurve::GetValue";
+static constexpr const char* const ELEMENT_ANIMATE =
+    "RendererFunction::ElementAnimate";
 
 #endif  // #if ENABLE_TRACE_PERFETTO || ENABLE_TRACE_SYSTRACE
 

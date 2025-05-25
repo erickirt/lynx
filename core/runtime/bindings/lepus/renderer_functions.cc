@@ -20,6 +20,7 @@
 #include "base/include/string/string_number_convert.h"
 #include "base/include/string/string_utils.h"
 #include "base/trace/native/trace_event.h"
+#include "core/animation/animation_trace_event_def.h"
 #include "core/build/gen/lynx_sub_error_code.h"
 #include "core/renderer/css/css_style_sheet_manager.h"
 #include "core/renderer/css/css_utils.h"
@@ -6945,6 +6946,16 @@ RENDERER_FUNCTION_CC(IsProfileRecording) {
 #else
   return lepus::Value(false);
 #endif
+}
+
+RENDERER_FUNCTION_CC(ElementAnimate) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_ANIMATE);
+  CHECK_ARGC_GE(ElementAnimate, 2);
+  CONVERT_ARG_AND_CHECK_FOR_ELEMENT_API(arg0, 0, RefCounted, ElementAnimate);
+  auto element = fml::static_ref_ptr_cast<FiberElement>(arg0->RefCounted());
+  CONVERT_ARG_AND_CHECK_FOR_ELEMENT_API(arg1, 1, Object, ElementAnimate);
+  element->AnimateV2(arg1->ToLepusValue());
+  RETURN_UNDEFINED();
 }
 
 static void ParseSimpleStyleValueToMap(const lepus::Value& key,

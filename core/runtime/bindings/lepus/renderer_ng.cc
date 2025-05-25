@@ -391,6 +391,7 @@ void Renderer::RegisterNGBuiltinForFiber(lepus::Context* context) {
       {kCFunctionOnCleanUp, &RendererFunctions::FiberOnCleanUp},
       {kCFunctionUnTrack, &RendererFunctions::FiberUnTrack},
       {kCFunctionRunUpdates, &RendererFunctions::FiberRunUpdates},
+      {kCFunctionElementAnimate, &RendererFunctions::ElementAnimate},
       {kCFunctionCreateStyleObject, &RendererFunctions::CreateStyleObject},
       {kCFunctionSetStyleObject, &RendererFunctions::SetStyleObject},
       {kCFunctionUpdateStyleObject, &RendererFunctions::UpdateStyleObject}

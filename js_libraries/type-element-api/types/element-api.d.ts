@@ -30,6 +30,8 @@ export interface ForElementRef extends ElementRef {}
 
 export interface BlockElementRef extends ElementRef {}
 
+export interface StyleObjectRef extends ElementRef {}
+
 export type ElementInfo = Record<string, any>;
 
 export interface SelectorParams {
@@ -279,4 +281,12 @@ declare global {
   function __UpdateIfNodeIndex(node: IfElementRef, ifIndex: number): void;
 
   function __UpdateForChildCount(node: ForElementRef, childCount: number): void;
+
+  function __CreateStyleObject(styleObject: Object): StyleObjectRef;
+
+  function __SetStyleObject(elementRef: ElementRef, styleObjects: Array<Object>): void;
+  
+  function __UpdateStyleObject(styleObjectRef: StyleObjectRef, styleObject: Object): void;
+
+  function __ElementAnimate(node: ElementRef, animateArgs: Object): void;
 }
