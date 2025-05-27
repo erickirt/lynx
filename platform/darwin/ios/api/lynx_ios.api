@@ -129,6 +129,7 @@ public protocol LUIBodyView-p : <NSObject>, <LUIErrorHandling> {
   public BOOL LUIBodyView-p::enableTextNonContiguousLayout();
   public void LUIBodyView-p::setAttachLynxPageUICallback:(attachLynxPageUI _Nonnull callback);
   public LynxThreadStrategyForRender LUIBodyView-p::getThreadStrategyForRender();
+  public void LUIBodyView-p::runOnTasmThread:(dispatch_block_t _Nonnull task);
 }
 
 public protocol LUIConfig-p : <NSObject> {
@@ -944,18 +945,19 @@ public class LynxContext : NSObject {
   public nullable JSModule * LynxContext::getJSModule:(nonnull NSString *name);
   public nullable NSNumber * LynxContext::getLynxRuntimeId();
   public void LynxContext::reportModuleCustomError:(NSString *message);
+  public void LynxContext::reportLynxError:(LynxError *error);
   public nullable LynxView * LynxContext::getLynxView();
   public void LynxContext::runOnTasmThread:(dispatch_block_t task);
   public void LynxContext::runOnJSThread:(dispatch_block_t task);
   public void LynxContext::setExtensionModule:forKey:(nonnull id< LynxExtensionModule > extensionModule,[forKey] nonnull NSString *key);
   public nonnull id< LynxExtensionModule > LynxContext::getExtensionModuleByKey:(nonnull NSString *key);
-  public nonnull instancetype LynxContext()::initWithLynxView:(LynxView *_Nullable lynxView);
+  public nonnull instancetype LynxContext()::initWithContainerView:(id< LUIBodyView > _Nullable containerView);
   public void LynxContext()::setJSProxy:(const std::shared_ptr< lynx::shell::JSProxyDarwin > &proxy);
   public nullable NSDictionary * LynxContext()::extentionModules();
   public std::shared_ptr<lynx::shell::JSProxyDarwin> LynxContext()::proxy_ proxy_;
   public LynxUIOwner* _Nullable LynxContext()::uiOwner uiOwner;
   public LynxUIIntersectionObserverManager* _Nullable LynxContext()::intersectionManager intersectionManager;
-  public LynxView* _Nullable LynxContext()::lynxView lynxView;
+  public id<LUIBodyView> _Nullable LynxContext()::containerView containerView;
   public int32_t LynxContext()::instanceId instanceId;
 }
 
@@ -5192,6 +5194,8 @@ public interface UIViewController(LynxHeroTransition) {
 
   public typedef NS_ENUM(NSInteger, LynxTASMType);
 
+  typedef void(^ attachLynxPageUI) (__weak NSObject *_Nonnull ui)
+
   public NS_ASSUME_NONNULL_BEGIN typedef NS_ENUM(NSUInteger, LynxSizeValueType);
 
   public NS_ASSUME_NONNULL_BEGIN typedef NS_ENUM(UInt8, LynxFPSRecordState);
@@ -5392,8 +5396,6 @@ public interface UIViewController(LynxHeroTransition) {
 
   public typedef NS_ENUM(NSUInteger, LynxListScrollState);
   public typedef NS_ENUM(NSUInteger, LynxListScrollPosition);
-
-  typedef void(^ attachLynxPageUI) (__weak NSObject *_Nonnull ui)
 
   public LynxBasicShape *_Nullable LBSCreateBasicShapeFromArray(NSArray< NSNumber * > *array);
   public CGPathRef LBSCreatePathFromBasicShape(LynxBasicShape *shape, CGSize viewport);

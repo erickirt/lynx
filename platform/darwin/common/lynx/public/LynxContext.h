@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Lynx/JSModule.h>
+#import <Lynx/LynxError.h>
 #import <Lynx/LynxView.h>
 @protocol LynxExtensionModule;
 
@@ -21,6 +22,7 @@ FOUNDATION_EXPORT NSString *const kDefaultComponentID;
 - (nullable NSNumber *)getLynxRuntimeId;
 
 - (void)reportModuleCustomError:(NSString *)message;
+- (void)reportLynxError:(LynxError *)error;
 - (nullable LynxView *)getLynxView;
 
 - (void)runOnTasmThread:(dispatch_block_t)task;

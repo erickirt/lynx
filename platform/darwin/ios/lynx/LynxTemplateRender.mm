@@ -471,7 +471,7 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 }
 
 - (void)setUpLynxContextWithLastInstanceId:(int32_t)lastInstanceId {
-  _context = [[LynxContext alloc] initWithLynxView:_lynxView];
+  _context = [[LynxContext alloc] initWithContainerView:_lynxView];
   _context.instanceId = shell_->GetInstanceId();
   [_lynxUIRenderer setLynxContext:_context];
   [LynxEventReporter moveExtraParams:lastInstanceId toInstanceId:_context.instanceId];

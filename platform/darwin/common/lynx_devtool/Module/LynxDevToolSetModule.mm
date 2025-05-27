@@ -127,10 +127,10 @@
 #endif
 
 - (void)invokeCdp:(NSString *)message callback:(LynxCallbackBlock)callback {
-  if (context_ == nil || context_.lynxView == nil) {
+  if (context_ == nil || [context_ getLynxView] == nil) {
     return;
   }
-  id<LynxBaseInspectorOwner> owner = context_.lynxView.baseInspectorOwner;
+  id<LynxBaseInspectorOwner> owner = [context_ getLynxView].baseInspectorOwner;
   if (owner == nil) {
     return;
   }

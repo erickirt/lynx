@@ -63,4 +63,8 @@ typedef void (^attachLynxPageUI)(__weak NSObject* _Nonnull ui);
 @optional
 - (LynxThreadStrategyForRender)getThreadStrategyForRender;
 
+/// run a task on Engine Thread
+@required
+- (void)runOnTasmThread:(dispatch_block_t _Nonnull)task;
+
 @end

@@ -70,7 +70,7 @@ static NSInteger kDefaultMediaSize = 500 * 1024;
             fixSuggestion:@"Please check the parameters passed to Lynx resource prefetch module."
                     level:LynxErrorLevelError];
     [error addCustomInfo:(isCancel ? @"cancel" : @"request") forKey:@"actionType"];
-    [context_.lynxView.templateRender onErrorOccurred:error];
+    [context_ reportLynxError:error];
   } else {
     NSArray* array = data;
     NSMutableArray* resultArray = [[NSMutableArray alloc] init];
@@ -111,7 +111,7 @@ static NSInteger kDefaultMediaSize = 500 * 1024;
                         level:LynxErrorLevelError];
         [error addCustomInfo:(isCancel ? @"cancel" : @"request") forKey:@"actionType"];
         [error addCustomInfo:uri forKey:@"resourceUri"];
-        [context_.lynxView.templateRender onErrorOccurred:error];
+        [context_ reportLynxError:error];
       }
       result[kCodeKey] = @(code);
       result[kMsgKey] = msg;

@@ -20,9 +20,9 @@ NSString *const kDefaultComponentID = @"-1";
 
 @implementation LynxContext
 
-- (instancetype)initWithLynxView:(LynxView *)lynxView {
+- (instancetype)initWithContainerView:(id<LUIBodyView>)containerView {
   if (self = [super init]) {
-    _lynxView = lynxView;
+    _containerView = containerView;
     _instanceId = -1;
     _extentionModules = [[NSMutableDictionary alloc] init];
   }
@@ -68,11 +68,19 @@ NSString *const kDefaultComponentID = @"-1";
 
 // issue: #1510
 - (void)reportModuleCustomError:(NSString *)message {
-  [_lynxView.templateRender onErrorOccurred:ECLynxNativeModulesCustomError message:message];
+  [self reportLynxError:[LynxError lynxErrorWithCode:ECLynxNativeModulesCustomError
+                                         description:message]];
+}
+
+- (void)reportLynxError:(LynxError *)error {
+  [_containerView reportLynxError:error];
 }
 
 - (nullable LynxView *)getLynxView {
-  return _lynxView;
+  if ([_containerView isKindOfClass:[LynxView class]]) {
+    return (LynxView *)_containerView;
+  }
+  return nil;
 }
 
 - (void)dealloc {
@@ -80,7 +88,7 @@ NSString *const kDefaultComponentID = @"-1";
 }
 
 - (void)runOnTasmThread:(dispatch_block_t)task {
-  [_lynxView runOnTasmThread:task];
+  [_containerView runOnTasmThread:task];
 }
 
 - (void)runOnJSThread:(dispatch_block_t)task {

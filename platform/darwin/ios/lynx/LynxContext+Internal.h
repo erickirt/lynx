@@ -18,13 +18,13 @@
 
 @property(nonatomic, weak) LynxUIOwner* _Nullable uiOwner;
 @property(nonatomic, weak) LynxUIIntersectionObserverManager* _Nullable intersectionManager;
-@property(nonatomic, weak) LynxView* _Nullable lynxView;
+@property(nonatomic, weak) id<LUIBodyView> _Nullable containerView;
 
 // Generated in the LynxShell, id of template instance.
 // instanceId is a value greater than or equal to 0, the initial value is -1.
 @property(nonatomic, assign) int32_t instanceId;
 
-- (nonnull instancetype)initWithLynxView:(LynxView* _Nullable)lynxView;
+- (nonnull instancetype)initWithContainerView:(id<LUIBodyView> _Nullable)containerView;
 - (void)setJSProxy:(const std::shared_ptr<lynx::shell::JSProxyDarwin>&)proxy;
 
 - (nullable NSDictionary*)extentionModules;
