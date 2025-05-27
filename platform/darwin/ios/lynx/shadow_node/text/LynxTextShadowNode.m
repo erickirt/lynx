@@ -361,11 +361,12 @@ LYNX_REGISTER_SHADOW_NODE("text")
   NSString *textValue = [self.attrString string];
   // The average word in the English language is approximately 5 characters.
   // 10 words may be enough to distinguish text.
-  LYNX_TRACE_SECTION_WITH_INFO(
-      LYNX_TRACE_CATEGORY_WRAPPER, TEXT_SHADOW_NODE_MEASURE,
-      textValue.length > 50
-          ? @{@"first_fifty_characters" : [textValue substringWithRange:NSMakeRange(0, 50)]}
-          : @{@"characters" : textValue == nil ? @"" : textValue})
+  NSString *textPreview = textValue ?: @"";
+  if (textPreview.length > 50) {
+    textPreview = [textPreview substringWithRange:NSMakeRange(0, 50)];
+  }
+  LYNX_TRACE_SECTION_WITH_INFO(LYNX_TRACE_CATEGORY_WRAPPER, TEXT_SHADOW_NODE_MEASURE,
+                               @{@"preview_text" : textPreview})
 #endif
   LynxLayoutSpec *spec = [[LynxLayoutSpec alloc] initWithWidth:param.width
                                                         height:param.height

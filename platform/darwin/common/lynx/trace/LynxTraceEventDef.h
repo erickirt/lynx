@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 static NSString* const UI_EXPOSURE_HANDLER = @"LynxUIExposure.exposureHandler";
 /**
- * @trace_description:  Layout of <text> element's platform layout node, where the element's
- * characters are @args{characters} or the first 50 characters are @args{first_fifty_characters}.
+ * @trace_description:  Layout of <text> element's platform layout node, where the preview text
+ * are `@args{preview_text}`.
  * @history_name{text.TextShadowNode.measure}
  */
 static NSString* const TEXT_SHADOW_NODE_MEASURE = @"TextShadowNode.measure";

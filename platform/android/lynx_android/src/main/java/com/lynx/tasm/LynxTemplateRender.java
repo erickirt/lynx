@@ -1950,9 +1950,9 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     if (null == mClient) {
       return;
     }
-    onTraceEventBegin(TraceEventDef.CLIENT_ON_PAGE_START);
+    onTraceEventBegin(TraceEventDef.CLIENT_ON_LOAD_SUCCESS);
     mClient.onLoadSuccess();
-    onTraceEventEnd(TraceEventDef.CLIENT_ON_PAGE_START);
+    onTraceEventEnd(TraceEventDef.CLIENT_ON_LOAD_SUCCESS);
   }
 
   @Deprecated

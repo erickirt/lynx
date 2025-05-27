@@ -327,10 +327,9 @@ public class TextShadowNode extends BaseTextShadowNode implements CustomMeasureF
       // The average word in the English language is approximately 5 characters.
       // 10 words may be enough to distinguish text.
       if (string.length() > 50) {
-        args.put("first_fifty_characters", string.substring(0, 50));
-      } else {
-        args.put("characters", string);
+        string = string.substring(0, 50);
       }
+      args.put("preview_text", string);
       TraceEvent.beginSection(TraceEventDef.TEXT_SHADOW_NODE_MEASURE, args);
     }
     mRenderer = null;

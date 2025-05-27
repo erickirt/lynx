@@ -24,8 +24,8 @@ public class TraceEventDef {
   public static final String LYNX_TEMPLATE_RENDER_MEASURE = "LynxTemplateRender.Measure";
 
   /**
-   * @trace_description: Layout of <text> element's platform layout node, where the element's
-   * characters are @args{characters} or the first 50 characters are @args{first_fifty_characters}.
+   * @trace_description: Layout of <text> element's platform layout node, where the preview text
+   * are `@args{preview_text}`.
    * @history_name{text.TextShadowNode.measure}
    */
   public static final String TEXT_SHADOW_NODE_MEASURE = "TextShadowNode.measure";
