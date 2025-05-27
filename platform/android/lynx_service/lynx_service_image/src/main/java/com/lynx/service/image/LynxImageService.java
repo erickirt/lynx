@@ -333,6 +333,9 @@ public class LynxImageService implements ILynxImageService {
     return new BackgroundImageDrawable(context, url);
   }
 
+  @Override
+  public void onLynxEnvSetup() {}
+
   @Deprecated
   @Override
   public void setCustomImageDecoder(@NonNull Object builder) {}

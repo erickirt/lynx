@@ -58,6 +58,7 @@ import com.lynx.tasm.provider.ResProvider;
 import com.lynx.tasm.provider.ThemeResourceProvider;
 import com.lynx.tasm.service.ILynxDevToolService;
 import com.lynx.tasm.service.ILynxExtensionService;
+import com.lynx.tasm.service.ILynxImageService;
 import com.lynx.tasm.service.ILynxSystemInvokeService;
 import com.lynx.tasm.service.ILynxTrailService;
 import com.lynx.tasm.service.LynxServiceCenter;
@@ -325,6 +326,13 @@ public class LynxEnv {
       extensionService.onLynxEnvSetup();
     } else {
       LLog.w(TAG, "LynxEnv failed to get LynxExtensionService");
+    }
+
+    ILynxImageService imageService = LynxServiceCenter.inst().getService(ILynxImageService.class);
+    if (imageService != null) {
+      imageService.onLynxEnvSetup();
+    } else {
+      LLog.w(TAG, "LynxEnv failed to get LynxImageService");
     }
 
     // vsyncMonitor related

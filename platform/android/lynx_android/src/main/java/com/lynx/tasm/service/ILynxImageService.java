@@ -129,6 +129,11 @@ public interface ILynxImageService extends IServiceProvider {
       @NonNull Context context, @NonNull String url);
 
   /**
+   * notify onLynxEnvSetup
+   */
+  void onLynxEnvSetup();
+
+  /**
    * Deprecated and does not require implementation.
    *
    * @param builder The custom image decoder builder.
