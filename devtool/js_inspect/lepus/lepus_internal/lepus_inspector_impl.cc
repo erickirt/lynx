@@ -85,9 +85,10 @@ std::unique_ptr<LepusInspectorSessionNG> LepusInspectorNGImpl::Connect(
 }
 
 void LepusInspectorNGImpl::SetDebugInfo(const std::string& url,
-                                        const std::string& debug_info) {
+                                        const std::string& debug_info,
+                                        int debug_info_id) {
   if (context_ != nullptr) {
-    context_->SetDebugInfo(url, debug_info);
+    context_->SetDebugInfo(url, debug_info, debug_info_id);
   }
 }
 

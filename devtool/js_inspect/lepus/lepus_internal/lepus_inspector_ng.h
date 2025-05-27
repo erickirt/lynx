@@ -47,7 +47,8 @@ class LepusInspectorNG {
   virtual std::unique_ptr<LepusInspectorSessionNG> Connect(
       LepusChannel* channel) = 0;
   virtual void SetDebugInfo(const std::string& url,
-                            const std::string& debug_info) = 0;
+                            const std::string& debug_info,
+                            int debug_info_id) = 0;
 };
 
 }  // namespace lepus_inspector

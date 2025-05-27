@@ -48,11 +48,20 @@ void LepusInspectorManagerImpl::SetDebugInfo(const std::string& debug_info_url,
     return;
   }
 
+  static int cur_debug_info_id = 0;
   std::string debug_info;
-  if (sp->IsDebugEnabled()) {
-    debug_info = sp->GetDebugInfo(debug_info_url);
+  int debug_info_id = -1;
+  auto it = debug_info_url_to_id_.find(debug_info_url);
+  if (it == debug_info_url_to_id_.end()) {
+    debug_info_id = cur_debug_info_id++;
+    debug_info_url_to_id_[debug_info_url] = debug_info_id;
+    if (sp->IsDebugEnabled()) {
+      debug_info = sp->GetDebugInfo(debug_info_url);
+    }
+  } else {
+    debug_info_id = it->second;
   }
-  inspector_client_->SetDebugInfo(file_name, debug_info);
+  inspector_client_->SetDebugInfo(file_name, debug_info, debug_info_id);
   sp->PrepareForScriptEval(inspector_name_);
 }
 

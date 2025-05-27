@@ -9,6 +9,22 @@
 
 namespace lynx {
 namespace debug {
+
+namespace {
+constexpr char kKeyFunctionNumber[] = "function_number";
+constexpr char kKeyFunctionInfo[] = "function_info";
+constexpr char kKeyFunctionId[] = "function_id";
+constexpr char kKeyFileName[] = "file_name";
+constexpr char kKeyLineNumber[] = "line_number";
+constexpr char kKeyColumnNumber[] = "column_number";
+constexpr char kKeyPc2LineLen[] = "pc2line_len";
+constexpr char kKeyPc2LineBuf[] = "pc2line_buf";
+constexpr char kKeyFunctionSource[] = "function_source";
+constexpr char kKeyFunctionSourceLen[] = "function_source_len";
+constexpr char kKeyEndLineNumber[] = "end_line_num";
+constexpr char kKeyLepusNGDebugInfo[] = "lepusNG_debug_info";
+}  // namespace
+
 LepusNGDebugger::LepusNGDebugger(
     lepus_inspector::LepusNGInspectedContextImpl* context,
     lepus_inspector::LepusInspectorNGImpl* inspector, const std::string& name)
@@ -31,19 +47,25 @@ void LepusNGDebugger::DebuggerSendResponse(int32_t message_id,
 }
 
 void LepusNGDebugger::SetDebugInfo(const std::string& url,
-                                   const std::string& debug_info) {
-  debug_info_[url] = {false, debug_info};
+                                   const std::string& debug_info_str,
+                                   int debug_info_id) {
+  auto it = debug_info_details_map_.find(debug_info_id);
+  if (it == debug_info_details_map_.end()) {
+    DebugInfoDetail item = {debug_info_id, debug_info_str};
+    it = debug_info_details_map_.emplace(debug_info_id, item).first;
+  }
+  it->second.url_parsed_pairs_.emplace_back(url, false);
 }
 
-static void FillFunctionBytecodeDebugInfo(
-    LEPUSContext* ctx, LEPUSFunctionBytecode* b,
-    rapidjson::Document::Object& debug_info) {
-  uint32_t func_num = debug_info["function_number"].GetUint();
+static void FillFunctionBytecodeDebugInfo(LEPUSContext* ctx,
+                                          LEPUSFunctionBytecode* b,
+                                          rapidjson::Value& debug_info) {
+  uint32_t func_num = debug_info[kKeyFunctionNumber].GetUint();
   uint32_t function_id = GetFunctionDebugId(b);
   uint32_t func_index = 0;
   for (; func_index < func_num; func_index++) {
-    auto each_func = debug_info["function_info"][func_index].GetObject();
-    auto each_func_id = each_func["function_id"].GetUint();
+    auto each_func = debug_info[kKeyFunctionInfo][func_index].GetObject();
+    auto each_func_id = each_func[kKeyFunctionId].GetUint();
     // find the corresponding function domain for this function
     if (each_func_id == function_id) {
       break;
@@ -54,11 +76,11 @@ static void FillFunctionBytecodeDebugInfo(
     return;
   }
 
-  auto func_info = debug_info["function_info"][func_index].GetObject();
+  auto func_info = debug_info[kKeyFunctionInfo][func_index].GetObject();
 
   // filename
-  if (func_info.HasMember("file_name")) {
-    std::string function_file_name = func_info["file_name"].GetString();
+  if (func_info.HasMember(kKeyFileName)) {
+    std::string function_file_name = func_info[kKeyFileName].GetString();
     SetFunctionDebugFileName(ctx, b, function_file_name.c_str(),
                              static_cast<int>(function_file_name.length()));
   } else {
@@ -66,36 +88,36 @@ static void FillFunctionBytecodeDebugInfo(
   }
 
   // line number
-  int32_t debug_line_num = func_info["line_number"].GetInt();
+  int32_t debug_line_num = func_info[kKeyLineNumber].GetInt();
   SetFunctionDebugLineNum(b, debug_line_num);
 
   // column number
-  int64_t debug_column_num = func_info["column_number"].GetInt64();
+  int64_t debug_column_num = func_info[kKeyColumnNumber].GetInt64();
   SetFunctionDebugColumnNum(b, debug_column_num);
 
   // pc2line_len
-  int32_t pc2line_len = func_info["pc2line_len"].GetInt();
+  int32_t pc2line_len = func_info[kKeyPc2LineLen].GetInt();
 
   // pc2line_buf
-  if (func_info.HasMember("pc2line_buf")) {
+  if (func_info.HasMember(kKeyPc2LineBuf)) {
     uint8_t* buf = static_cast<uint8_t*>(lepus_malloc(
         ctx, sizeof(uint8_t) * pc2line_len, ALLOC_TAG_WITHOUT_PTR));
+    LepusNGDebugger::Scope scope(ctx, buf);
     if (buf) {
       for (int32_t i = 0; i < pc2line_len; i++) {
-        buf[i] = func_info["pc2line_buf"][i].GetUint();
+        buf[i] = func_info[kKeyPc2LineBuf][i].GetUint();
       }
     }
     SetFunctionDebugPC2LineBufLen(ctx, b, buf, pc2line_len);
-    if (!LEPUS_IsGCMode(ctx)) lepus_free(ctx, buf);
   } else {
     SetFunctionDebugPC2LineBufLen(ctx, b, nullptr, 0);
   }
 
   // child function source
-  if (func_info.HasMember("function_source") &&
-      func_info.HasMember("function_source_len")) {
-    int32_t function_source_len = func_info["function_source_len"].GetInt();
-    std::string function_source = func_info["function_source"].GetString();
+  if (func_info.HasMember(kKeyFunctionSource) &&
+      func_info.HasMember(kKeyFunctionSourceLen)) {
+    int32_t function_source_len = func_info[kKeyFunctionSourceLen].GetInt();
+    std::string function_source = func_info[kKeyFunctionSource].GetString();
     SetFunctionDebugSource(ctx, b, function_source.c_str(),
                            function_source_len);
   } else {
@@ -103,44 +125,47 @@ static void FillFunctionBytecodeDebugInfo(
   }
 }
 
-static void SetTemplateDebugInfo(LEPUSContext* ctx, const std::string& url,
-                                 const std::string& debug_info_json,
-                                 LEPUSValue obj) {
-  if (LEPUS_IsUndefined(obj)) {
+void LepusNGDebugger::ParseDebugInfo(const LEPUSValue& top_level_function,
+                                     const std::string& url,
+                                     const std::string& debug_info,
+                                     bool is_default) {
+  if (LEPUS_IsUndefined(top_level_function)) {
     return;
   }
+
   rapidjson::Document document;
-  document.Parse(debug_info_json.c_str());
-  if (!document.HasMember("lepusNG_debug_info")) {
+  document.Parse(debug_info.c_str());
+  if (document.HasParseError()) {
+    LOGE("lepusng debug: failed to parse debug info, "
+         << document.GetParseErrorMsg());
     return;
   }
 
   uint32_t func_size = 0;
+  LEPUSContext* ctx = context_->GetLepusContext();
   LEPUSFunctionBytecode** function_list =
-      GetDebuggerAllFunction(ctx, obj, &func_size);
+      GetDebuggerAllFunction(ctx, top_level_function, &func_size);
   if (function_list == nullptr) {
-    LOGE("lepusng debug: get all function fail");
+    LOGE("lepusng debug: failed to get all functions");
     return;
   }
 
-  auto debug_info = document["lepusNG_debug_info"].GetObject();
-  bool has_function_info = debug_info.HasMember("function_number");
-  if (has_function_info) {
-    uint32_t function_num = debug_info["function_number"].GetUint();
-    if (function_num != func_size) {
-      LOGE("error in set lepusNG debuginfo");
-      if (!LEPUS_IsGCMode(ctx)) lepus_free(ctx, function_list);
-      return;
-    }
+  Scope scope(ctx, function_list);
+  rapidjson::Value debug_info_entry;
+  bool has_function_info = false;
+  bool res = GetDebugInfoEntry(document, url, func_size, is_default,
+                               debug_info_entry, has_function_info);
+  if (!res) {
+    return;
   }
 
   LEPUSScriptSource* script = nullptr;
-  if (debug_info.HasMember("function_source") &&
-      debug_info.HasMember("end_line_num")) {
-    std::string source = debug_info["function_source"].GetString();
+  if (debug_info_entry.HasMember(kKeyFunctionSource) &&
+      debug_info_entry.HasMember(kKeyEndLineNumber)) {
+    std::string source = debug_info_entry[kKeyFunctionSource].GetString();
     char* source_str = const_cast<char*>(source.c_str());
     SetDebuggerSourceCode(ctx, source_str);
-    int32_t end_line_num = debug_info["end_line_num"].GetInt();
+    int32_t end_line_num = debug_info_entry[kKeyEndLineNumber].GetInt();
     SetDebuggerEndLineNum(ctx, end_line_num);
     script =
         AddDebuggerScript(ctx, source_str, const_cast<char*>(url.c_str()),
@@ -148,8 +173,7 @@ static void SetTemplateDebugInfo(LEPUSContext* ctx, const std::string& url,
   }
 
   if (script == nullptr) {
-    LOGE("lepusng debug: parse function_source error");
-    if (!LEPUS_IsGCMode(ctx)) lepus_free(ctx, function_list);
+    LOGE("lepusng debug: failed to parse function_source");
     return;
   }
 
@@ -157,14 +181,52 @@ static void SetTemplateDebugInfo(LEPUSContext* ctx, const std::string& url,
     auto* b = function_list[i];
     if (b) {
       if (has_function_info) {
-        FillFunctionBytecodeDebugInfo(ctx, b, debug_info);
+        FillFunctionBytecodeDebugInfo(ctx, b, debug_info_entry);
       }
       SetFunctionScript(b, script);
     }
   }
   InitDebuggerScript(ctx, script);
+}
 
-  if (!LEPUS_IsGCMode(ctx)) lepus_free(ctx, function_list);
+bool LepusNGDebugger::GetDebugInfoEntry(rapidjson::Document& document,
+                                        const std::string& url,
+                                        uint32_t func_size, bool is_default,
+                                        rapidjson::Value& entry,
+                                        bool& has_function_info) {
+  uint32_t function_num = 0;
+  if (is_default) {
+    if (document.HasMember(kKeyLepusNGDebugInfo)) {
+      entry = document[kKeyLepusNGDebugInfo].GetObject();
+      has_function_info = entry.HasMember(kKeyFunctionNumber);
+      if (has_function_info) {
+        function_num = entry[kKeyFunctionNumber].GetUint();
+      }
+    }
+  } else {
+    for (auto it = document.MemberBegin(); it != document.MemberEnd(); it++) {
+      std::string name = it->name.GetString();
+      auto value = it->value.GetObject();
+      bool item_has_function_info = value.HasMember(kKeyFunctionNumber);
+      if (item_has_function_info) {
+        function_num = value[kKeyFunctionNumber].GetUint() - function_num;
+      }
+      if (url.find(name) != std::string::npos) {
+        entry = value;
+        has_function_info = item_has_function_info;
+        break;
+      }
+    }
+  }
+  if (entry.Empty()) {
+    LOGE("lepusng debug: cannot find target entry in debug info, url: " << url);
+    return false;
+  }
+  if (has_function_info && function_num != func_size) {
+    LOGE("lepusng debug: function number error");
+    return false;
+  }
+  return true;
 }
 
 void LepusNGDebugger::PrepareDebugInfo() {
@@ -173,10 +235,15 @@ void LepusNGDebugger::PrepareDebugInfo() {
   if (LEPUS_IsUndefined(top_level_function)) {
     return;
   }
-  for (auto& item : debug_info_) {
-    if (!item.second.first) {
-      item.second.first = true;
-      PrepareDebugInfo(top_level_function, item.first, item.second.second);
+  for (auto& debug_info : debug_info_details_map_) {
+    auto& vec = debug_info.second.url_parsed_pairs_;
+    auto it = std::find_if(vec.begin(), vec.end(),
+                           [](const auto& pair) { return !pair.second; });
+    if (it != vec.end()) {
+      it->second = true;
+      PrepareDebugInfo(top_level_function, it->first,
+                       debug_info.second.debug_info_str_, it == vec.begin());
+      break;
     }
   }
 }
@@ -223,7 +290,8 @@ void LepusNGDebugger::DebuggerSendScriptFailToParseMessage(
 
 void LepusNGDebugger::PrepareDebugInfo(const LEPUSValue& top_level_function,
                                        const std::string& url,
-                                       const std::string& debug_info) {
+                                       const std::string& debug_info,
+                                       bool is_default) {
   if (debug_info.empty()) {
     const std::string source = "debug-info.json download fail, please check!";
     AddDebuggerScript(context_->GetLepusContext(),
@@ -233,8 +301,7 @@ void LepusNGDebugger::PrepareDebugInfo(const LEPUSValue& top_level_function,
     return;
   }
 
-  SetTemplateDebugInfo(context_->GetLepusContext(), url, debug_info,
-                       top_level_function);
+  ParseDebugInfo(top_level_function, url, debug_info, is_default);
 }
 
 }  // namespace debug

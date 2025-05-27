@@ -574,9 +574,13 @@ bool TemplateEntry::LoadLepusChunk(const std::string& entry_path,
   }
 
   if (lepus_chunk_opt) {
+    std::stringstream ss;
+    ss << name_ << '/' << entry_path;
+    std::string file_name = GenerateLepusJSFileName(ss.str());
+    vm_context_->SetDebugInfoURL(compile_options().template_debug_url_,
+                                 file_name);
     GetVm()->DeSerialize(*lepus_chunk_opt->get(), true,
-                         &lepus_chunk_eval_result,
-                         GenerateLepusJSFileName(entry_path).c_str());
+                         &lepus_chunk_eval_result, file_name.c_str());
     return true;
   }
   return false;

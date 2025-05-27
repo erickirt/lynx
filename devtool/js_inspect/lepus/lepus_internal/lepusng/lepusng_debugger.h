@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "core/runtime/vm/lepus/context.h"
 #include "third_party/rapidjson/document.h"
@@ -31,16 +32,39 @@ class Context;
 };  // namespace lepus
 
 namespace debug {  // TODO(lqy): change namespace to lepus_inspector
+
+struct DebugInfoDetail {
+  int id_{-1};
+  std::string debug_info_str_;
+  // file name -> has been parsed
+  std::vector<std::pair<std::string, bool>> url_parsed_pairs_;
+};
+
 // for lepusNG debugger
 class LepusNGDebugger {
  public:
+  class Scope {
+   public:
+    Scope(LEPUSContext* context, void* ptr) : context_(context), ptr_(ptr) {}
+    ~Scope() {
+      if (ptr_ && !LEPUS_IsGCMode(context_)) {
+        lepus_free(context_, ptr_);
+      }
+    }
+
+   private:
+    LEPUSContext* context_;
+    void* ptr_;
+  };
+
   LepusNGDebugger(lepus_inspector::LepusNGInspectedContextImpl* context,
                   lepus_inspector::LepusInspectorNGImpl* inspector,
                   const std::string& name);
   ~LepusNGDebugger();
 
   // get debugger info for lepusNG
-  void SetDebugInfo(const std::string& url, const std::string& debug_info);
+  void SetDebugInfo(const std::string& url, const std::string& debug_info_str,
+                    int debug_info_id);
 
   void PrepareDebugInfo();
 
@@ -71,12 +95,18 @@ class LepusNGDebugger {
 
  private:
   void PrepareDebugInfo(const LEPUSValue& top_level_function,
-                        const std::string& url, const std::string& debug_info);
+                        const std::string& url, const std::string& debug_info,
+                        bool is_default);
+  void ParseDebugInfo(const LEPUSValue& top_level_function,
+                      const std::string& url, const std::string& debug_info,
+                      bool is_default);
+  bool GetDebugInfoEntry(rapidjson::Document& document, const std::string& url,
+                         uint32_t func_size, bool is_default,
+                         rapidjson::Value& entry, bool& has_function_info);
 
   lepus_inspector::LepusNGInspectedContextImpl* context_;
   lepus_inspector::LepusInspectorNGImpl* inspector_;
-  std::unordered_map<std::string, std::pair<bool, std::string>>
-      debug_info_;  // url -> (is_prepared, debug info)
+  std::unordered_map<int, DebugInfoDetail> debug_info_details_map_;
 };
 }  // namespace debug
 }  // namespace lynx

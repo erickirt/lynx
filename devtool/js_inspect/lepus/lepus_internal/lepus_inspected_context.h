@@ -19,7 +19,8 @@ class LepusInspectedContext
   virtual void Init() = 0;
 
   virtual void SetDebugInfo(const std::string& url,
-                            const std::string& debug_info) = 0;
+                            const std::string& debug_info,
+                            int debug_info_id) = 0;
   virtual void ProcessMessage(const std::string& message) = 0;
 };
 

@@ -5,6 +5,8 @@
 #ifndef DEVTOOL_LYNX_DEVTOOL_JS_DEBUG_LEPUS_MANAGER_LEPUS_INSPECTOR_MANAGER_IMPL_H_
 #define DEVTOOL_LYNX_DEVTOOL_JS_DEBUG_LEPUS_MANAGER_LEPUS_INSPECTOR_MANAGER_IMPL_H_
 
+#include <unordered_map>
+
 #include "core/inspector/lepus_inspector_manager.h"
 #include "devtool/js_inspect/lepus/lepus_inspector_client_impl.h"
 
@@ -32,7 +34,11 @@ class LepusInspectorManagerImpl : public LepusInspectorManager {
   std::weak_ptr<InspectorLepusObserver> observer_wp_;
 
   std::string inspector_name_;
-  std::string debug_info_url_;
+  // MTS chunk shares debug-info.json with the main entry or lazy components,
+  // eliminating the need for redownloading. We maintain a map to record URLs
+  // that have already been downloaded and assign an ID to each debug info. If a
+  // URL is found in the map, we retrieve the ID directly.
+  std::unordered_map<std::string, int> debug_info_url_to_id_;
 };
 
 }  // namespace lepus

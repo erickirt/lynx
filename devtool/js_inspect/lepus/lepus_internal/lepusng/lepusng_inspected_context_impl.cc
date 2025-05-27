@@ -24,8 +24,9 @@ void LepusNGInspectedContextImpl::Init() {
 }
 
 void LepusNGInspectedContextImpl::SetDebugInfo(const std::string& url,
-                                               const std::string& debug_info) {
-  debugger_->SetDebugInfo(url, debug_info);
+                                               const std::string& debug_info,
+                                               int debug_info_id) {
+  debugger_->SetDebugInfo(url, debug_info, debug_info_id);
 }
 
 void LepusNGInspectedContextImpl::ProcessMessage(const std::string& message) {
