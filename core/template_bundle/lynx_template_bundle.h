@@ -128,8 +128,6 @@ class LynxTemplateBundle final {
 
   std::optional<Elements> TryGetElements(const std::string &key);
 
-  bool EnableFiberArch() const { return compile_options_.enable_fiber_arch_; }
-
  private:
   void EnsureParseTaskScheduler();
 

@@ -62,9 +62,6 @@ class TemplateEntryHolder {
   void SetEnableQueryComponentSync(bool enable);
 
  private:
-  void TryPostJSBundle(const std::string& url,
-                       const LynxTemplateBundle& bundle);
-
   std::unordered_map<std::string, std::shared_ptr<TemplateEntry>>
       template_entries_;
 
