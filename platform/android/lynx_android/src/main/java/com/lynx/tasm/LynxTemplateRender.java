@@ -172,7 +172,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
 
   private LynxInfoReportHelper mReportHelper = new LynxInfoReportHelper();
 
-  private TimingCollector mTimingCollector;
+  private TimingCollector mTimingCollector = new TimingCollector();
 
   // LynxView render phase consts
   @Retention(RetentionPolicy.SOURCE)
@@ -398,6 +398,9 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     mClient.addClient(LynxEnv.inst().getLynxViewClient());
     mClient.addClient(new LogLynxViewClient());
     mInitEnd = System.currentTimeMillis();
+    if (mNativePtr != 0) {
+      nativeSetInitTiming(mNativePtr, mNativeLifecycle, mInitStart, mInitEnd);
+    }
     setMsTiming(TimingHandler.CREATE_LYNX_START, mInitStart, null);
     setMsTiming(TimingHandler.CREATE_LYNX_END, mInitEnd, null);
     LLog.i(TAG, formatLynxMessage("create"));
@@ -475,18 +478,13 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
   }
 
   private void setMsTiming(final String key, final long msTimestamp, final String pipelineID) {
-    if (mTimingCollector == null) {
-      return;
-    }
     mTimingCollector.setMsTiming(key, msTimestamp, pipelineID);
   }
 
   public void setExtraTiming(TimingHandler.ExtraTimingInfo extraTiming) {
     String eventName = "LynxTemplateRender.setExtraTiming";
     onTraceEventBegin(eventName);
-    if (mTimingCollector != null) {
-      mTimingCollector.setExtraTiming(extraTiming);
-    }
+    mTimingCollector.setExtraTiming(extraTiming);
     onTraceEventEnd(eventName);
   }
 
@@ -639,10 +637,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     if (!mIsDestroyed.compareAndSet(true, false)) {
       return;
     }
-    if (mLynxContext.enableTiming()) {
-      mTimingCollector = new TimingCollector();
-      mTimingCollector.init();
-    }
+    mTimingCollector.init();
 
     TraceEvent.beginSection(TraceEventDef.TEMPLATE_RENDER_CREATE_TASM);
     // recreate
@@ -3597,6 +3592,9 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
 
   private static native void nativeUpdateI18nResource(
       long ptr, long lifecycle, String key, String bytes, int status);
+
+  private static native void nativeSetInitTiming(
+      long ptr, long lifecycle, long initStart, long initEnd);
 
   private static native void nativeMarkDirty(long ptr, long lifecycle);
 

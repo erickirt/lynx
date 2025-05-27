@@ -1175,6 +1175,16 @@ void UpdateI18nResource(JNIEnv* env, jclass jcaller, jlong ptr, jlong lifecycle,
   AtomicLifecycle::TryFree(lifecycle_ptr);
 }
 
+void SetInitTiming(JNIEnv* env, jclass jcaller, jlong ptr, jlong lifecycle,
+                   jlong initStart, jlong initEnd) {
+  AtomicLifecycle* lifecycle_ptr =
+      reinterpret_cast<AtomicLifecycle*>(lifecycle);
+  if (!AtomicLifecycle::TryLock(lifecycle_ptr)) {
+    return;
+  }
+  AtomicLifecycle::TryFree(lifecycle_ptr);
+}
+
 void MarkDirty(JNIEnv* env, jclass jcaller, jlong ptr, jlong lifecycle) {
   AtomicLifecycle* lifecycle_ptr =
       reinterpret_cast<AtomicLifecycle*>(lifecycle);
