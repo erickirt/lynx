@@ -21,6 +21,8 @@ import com.lynx.tasm.image.model.DiskCacheChoice;
 import com.lynx.tasm.image.model.ImageRequestInfo;
 
 public class ImageUtils {
+  private static CacheKeyFactory sCacheKeyFactory = null;
+
   public static ResizeOptions getResizeOptions(
       int width, int height, int lastWidth, int lastHeight) {
     if (lastWidth <= 0 || lastHeight <= 0 || Math.abs(width - lastWidth) > 1
@@ -46,7 +48,8 @@ public class ImageUtils {
         builder.setResizeOptions(resizeOptions);
       }
     }
-    if (DiskCacheChoice.SMALL_DISK == imageRequestInfo.getDiskCacheChoice()) {
+    if (imageRequestInfo.getDiskCacheChoice() != null
+        && DiskCacheChoice.SMALL_DISK == imageRequestInfo.getDiskCacheChoice()) {
       builder.setCacheChoice(ImageRequest.CacheChoice.SMALL);
     }
     if (imageRequestInfo.isEnableAsyncRequest()) {
@@ -75,13 +78,15 @@ public class ImageUtils {
   }
 
   public static CacheKey getCacheKey(ImageRequest imageRequest, Object callerContext) {
-    final CacheKeyFactory cacheKeyFactory = Fresco.getImagePipeline().getCacheKeyFactory();
     CacheKey cacheKey = null;
-    if (cacheKeyFactory != null && imageRequest != null) {
+    if (sCacheKeyFactory == null) {
+      sCacheKeyFactory = Fresco.getImagePipeline().getCacheKeyFactory();
+    }
+    if (sCacheKeyFactory != null && imageRequest != null) {
       if (imageRequest.getPostprocessor() != null) {
-        cacheKey = cacheKeyFactory.getPostprocessedBitmapCacheKey(imageRequest, callerContext);
+        cacheKey = sCacheKeyFactory.getPostprocessedBitmapCacheKey(imageRequest, callerContext);
       } else {
-        cacheKey = cacheKeyFactory.getBitmapCacheKey(imageRequest, callerContext);
+        cacheKey = sCacheKeyFactory.getBitmapCacheKey(imageRequest, callerContext);
       }
     }
     return cacheKey;
