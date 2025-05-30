@@ -136,7 +136,10 @@ void LayoutMediator::OnLayoutAfter(
       HandlePendingLayoutTask(queue, catalyzer, options, page_options);
       HandleListOrComponentUpdated(node_manager, options);
 
-      if (options->has_layout) {
+      // In EmbeddedMode, we're still exploring new client callback approaches.
+      // For performance considerations, we'll temporarily disable triggering
+      // the OnPageChanged callback.
+      if (options->has_layout && !page_options.IsEmbeddedModeOn()) {
         // TODO(heshan): now trigger onFirstScreen when first layout,
         // but it is inconsistent with options->is_first_screen.
         facade_actor->Act([is_first_screen = is_first_layout](auto &facade) {
@@ -159,7 +162,10 @@ void LayoutMediator::OnLayoutAfter(
                                   &operations);
           HandleListOrComponentUpdated(node_manager, options);
 
-          if (options->has_layout) {
+          // In EmbeddedMode, we're still exploring new client callback
+          // approaches. For performance considerations, we'll temporarily
+          // disable triggering the OnPageChanged callback.
+          if (options->has_layout && !page_options.IsEmbeddedModeOn()) {
             // TODO(klaxxi): now trigger onFirstScreen when first layout,
             // but it is inconsistent with options->is_first_screen.
             facade_actor->Act(

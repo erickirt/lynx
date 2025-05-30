@@ -49,10 +49,22 @@ void TasmMediator::OnDataUpdated() {
 }
 
 void TasmMediator::OnTasmFinishByNative() {
+  // In EmbeddedMode, we're still exploring new client callback approaches. For
+  // performance considerations, we'll temporarily disable triggering the
+  // OnPageChanged callback.
+  if (IsEmbeddedModeOn()) {
+    return;
+  }
   facade_actor_->Act([](auto& facade) { facade->OnTasmFinishByNative(); });
 }
 
 void TasmMediator::OnTemplateLoaded(const std::string& url) {
+  // In EmbeddedMode, we're still exploring new client callback approaches. For
+  // performance considerations, we'll temporarily disable triggering the
+  // OnPageChanged callback.
+  if (IsEmbeddedModeOn()) {
+    return;
+  }
   facade_actor_->Act([url](auto& facade) { facade->OnTemplateLoaded(url); });
 }
 

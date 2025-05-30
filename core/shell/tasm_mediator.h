@@ -245,7 +245,12 @@ class TasmMediator : public LynxEngine::Delegate {
   virtual void OnEventFire(long target_id, bool is_stop,
                            int64_t event_id) override;
 
+  void SetPageOptions(const tasm::PageOptions& options) {
+    page_options_ = options;
+  }
+
  private:
+  bool IsEmbeddedModeOn() const { return page_options_.IsEmbeddedModeOn(); }
   std::shared_ptr<LynxActor<NativeFacade>> facade_actor_;
 
   std::shared_ptr<LynxActor<runtime::LynxRuntime>> runtime_actor_;
@@ -265,6 +270,8 @@ class TasmMediator : public LynxEngine::Delegate {
   std::shared_ptr<tasm::PropBundleCreator> prop_bundle_creator_;
 
   std::unique_ptr<TasmPlatformInvoker> tasm_platform_invoker_;
+
+  tasm::PageOptions page_options_;
 };
 
 }  // namespace shell

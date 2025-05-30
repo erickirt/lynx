@@ -247,6 +247,7 @@ LynxShell* LynxShellBuilder::build() {
       shell->facade_actor_, shell->card_cached_data_mgr_, vsync_monitor,
       shell->layout_actor_, std::move(tasm_platform_invoker_),
       shell->timing_actor_);
+  tasm_mediator->SetPageOptions(shell_option_.page_options_);
   shell->tasm_mediator_ = tasm_mediator.get();
   shell->engine_actor_ = std::make_shared<LynxActor<LynxEngine>>(
       CreateLynxEngine(std::move(tasm_mediator), shell->runners_,
