@@ -307,7 +307,9 @@ public class TextRenderer {
             || (mKey.getAttributes().getMaxLineCount() == 1
                 && mKey.getAttributes().getTextOverflow() == TEXTOVERFLOW_ELLIPSIS)
             || mKey.widthMode == MeasureMode.UNDEFINED)
-        && (span.length() == 0 || span.getSpans(0, 1, CustomBaselineShiftSpan.class).length == 0);
+        && (span.length() == 0
+            || (span.getSpans(0, span.length(), CustomBaselineShiftSpan.class).length == 0
+                && span.getSpans(0, span.length(), InlineTextBaselineShiftSpan.class).length == 0));
   }
 
   private boolean isInlineElementAtChar(int charIndex, SpannableStringBuilder spannableString) {
