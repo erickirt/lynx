@@ -4,8 +4,8 @@
 
 #import <Foundation/Foundation.h>
 #include <Lynx/LynxView.h>
+#import <LynxDevtool/TestBenchActionManager.h>
 #import <UIKit/UIKit.h>
-#import "TestBenchActionManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

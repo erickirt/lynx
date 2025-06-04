@@ -2,12 +2,12 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import "TestBenchEntranceViewController.h"
+#import <LynxDevtool/TestBenchActionManager.h>
+#import <LynxDevtool/TestBenchEntranceViewController.h>
+#import <LynxDevtool/TestBenchEnv.h>
 #import <LynxDevtool/TestBenchTraceProfileHelper.h>
-#import "TestBenchActionManager.h"
-#import "TestBenchEnv.h"
-#import "TestBenchUIHelper.h"
-#import "TestBenchViewController.h"
+#import <LynxDevtool/TestBenchUIHelper.h>
+#import <LynxDevtool/TestBenchViewController.h>
 
 static NSInteger kSTOPTRACESECOND = 20;
 NSString *const TESTBENCH_ASSETS_SCHEME = @"asset://";

@@ -5,10 +5,10 @@
 #import <Foundation/Foundation.h>
 #import <Lynx/LynxGroup.h>
 #import <Lynx/LynxView.h>
+#import <LynxDevtool/TestBenchReplayConfig.h>
+#import <LynxDevtool/TestBenchStateReplayView.h>
+#import <LynxDevtool/TestBenchTouchHelper.h>
 #import <UIKit/UIKit.h>
-#import "TestBenchReplayConfig.h"
-#import "TestBenchStateReplayView.h"
-#import "TestBenchTouchHelper.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -2,21 +2,21 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import "TestBenchActionManager.h"
 #import <Lynx/LynxComponentRegistry.h>
 #import <Lynx/LynxProviderRegistry.h>
 #import <Lynx/LynxResourceProvider.h>
 #import <Lynx/LynxTemplateBundle.h>
 #import <Lynx/LynxTemplateBundleOption.h>
 #import <LynxDevtool/LynxInspectorOwner.h>
+#import <LynxDevtool/TestBenchActionManager.h>
+#import <LynxDevtool/TestBenchDynamicComponentFetcher.h>
+#import <LynxDevtool/TestBenchEntranceViewController.h>
+#import <LynxDevtool/TestBenchEnv.h>
+#import <LynxDevtool/TestBenchOpenUrlModule.h>
+#import <LynxDevtool/TestBenchReplayConfig.h>
+#import <LynxDevtool/TestBenchReplayDataModule.h>
+#import <LynxDevtool/TestBenchViewClient.h>
 #import <third_party/zlib/zlib.h>
-#import "TestBenchDynamicComponentFetcher.h"
-#import "TestBenchEntranceViewController.h"
-#import "TestBenchEnv.h"
-#import "TestBenchOpenUrlModule.h"
-#import "TestBenchReplayConfig.h"
-#import "TestBenchReplayDataModule.h"
-#import "TestBenchViewClient.h"
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 #define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
@@ -408,8 +408,10 @@ static const int kVirtual = 1 << 2;
 }
 
 - (NSString*)replayTimeEnvJScript {
-  NSString* jsonPath = [[NSBundle mainBundle] pathForResource:@"Resource/testBench/testBench"
-                                                       ofType:@"js"];
+  NSString* bundlePath = [[NSBundle mainBundle] pathForResource:@"LynxDebugResources"
+                                                         ofType:@"bundle"];
+  NSBundle* resourceBundle = [NSBundle bundleWithPath:bundlePath];
+  NSString* jsonPath = [resourceBundle pathForResource:@"testBench" ofType:@"js"];
   NSData* data = [NSData dataWithContentsOfFile:jsonPath];
   NSString* script = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 

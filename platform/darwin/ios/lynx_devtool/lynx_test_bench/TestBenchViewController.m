@@ -2,15 +2,15 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import "TestBenchViewController.h"
 #import <Lynx/LynxUI.h>
 #import <Lynx/LynxView.h>
-#import "TestBenchActionManager.h"
-#import "TestBenchPageManager.h"
-#import "TestBenchReplayConfig.h"
-#import "TestBenchStateReplayView.h"
-#import "TestBenchURLAnalyzer.h"
-#import "TestBenchView.h"
+#import <LynxDevtool/TestBenchActionManager.h>
+#import <LynxDevtool/TestBenchPageManager.h>
+#import <LynxDevtool/TestBenchReplayConfig.h>
+#import <LynxDevtool/TestBenchStateReplayView.h>
+#import <LynxDevtool/TestBenchURLAnalyzer.h>
+#import <LynxDevtool/TestBenchView.h>
+#import <LynxDevtool/TestBenchViewController.h>
 
 @interface TestBenchViewController ()
 @property LynxView *lynxView;

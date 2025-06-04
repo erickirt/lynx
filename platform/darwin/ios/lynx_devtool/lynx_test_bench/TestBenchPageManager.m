@@ -2,11 +2,11 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import "TestBenchPageManager.h"
-#import "TestBenchActionManager.h"
-#import "TestBenchUIHelper.h"
-#import "TestBenchURLAnalyzer.h"
-#import "TestBenchViewController.h"
+#import <LynxDevtool/TestBenchActionManager.h>
+#import <LynxDevtool/TestBenchPageManager.h>
+#import <LynxDevtool/TestBenchUIHelper.h>
+#import <LynxDevtool/TestBenchURLAnalyzer.h>
+#import <LynxDevtool/TestBenchViewController.h>
 
 @interface Counter : NSObject
 @property(atomic, assign) NSInteger count;

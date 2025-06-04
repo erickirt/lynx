@@ -2,9 +2,9 @@
 // Licensed under the Apache License Version 2.0 that can be found in the
 // LICENSE file in the root directory of this source tree.
 
-#import "TestBenchReplayConfig.h"
 #import <Foundation/Foundation.h>
-#import "TestBenchURLAnalyzer.h"
+#import <LynxDevtool/TestBenchReplayConfig.h>
+#import <LynxDevtool/TestBenchURLAnalyzer.h>
 
 @implementation TestBenchReplayConfig
 
