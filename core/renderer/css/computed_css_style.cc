@@ -217,9 +217,11 @@ lepus_value LayoutAnimationTimingFunctionToLepusHelper(
 bool SetBackgroundOrMaskImage(base::flex_optional<BackgroundData>& data,
                               const tasm::CSSValue& value, bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->image;
-  data->image_count = DefaultComputedStyle::DEFAULT_LONG;
-  data->image = lepus::Value();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->image;
+  image_data->image_count = DefaultComputedStyle::DEFAULT_LONG;
+  image_data->image = lepus::Value();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -228,12 +230,12 @@ bool SetBackgroundOrMaskImage(base::flex_optional<BackgroundData>& data,
     for (size_t i = 0; i < array->size(); i++) {
       const auto& img = array->get(i);
       if (img.IsNumber()) {
-        ++data->image_count;
+        ++image_data->image_count;
       }
     }
-    data->image = value.GetValue();
+    image_data->image = value.GetValue();
   }
-  return old_value != data->image;
+  return old_value != image_data->image;
 }
 
 bool SetBackgroundOrMaskPosition(base::flex_optional<BackgroundData>& data,
@@ -241,8 +243,10 @@ bool SetBackgroundOrMaskPosition(base::flex_optional<BackgroundData>& data,
                                  const tasm::CSSParserConfigs& configs,
                                  const tasm::CSSValue& value, bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->position;
-  data->position.clear();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->position;
+  image_data->position.clear();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -255,16 +259,17 @@ bool SetBackgroundOrMaskPosition(base::flex_optional<BackgroundData>& data,
       // position x
       if (pos_x_type ==
           static_cast<uint32_t>(BackgroundPositionType::kCenter)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(50.f));
+        image_data->position.emplace_back(NLength::MakePercentageNLength(50.f));
       } else if (pos_x_type ==
                  static_cast<uint32_t>(BackgroundPositionType::kLeft)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(0.f));
+        image_data->position.emplace_back(NLength::MakePercentageNLength(0.f));
       } else if (pos_x_type ==
                  static_cast<uint32_t>(BackgroundPositionType::kRight)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(100.f));
+        image_data->position.emplace_back(
+            NLength::MakePercentageNLength(100.f));
       } else {
         auto pattern = static_cast<uint32_t>(array->get(0).Number());
-        data->position.emplace_back(
+        image_data->position.emplace_back(
             CSSStyleUtils::ToLength(
                 tasm::CSSValue{array->get(1),
                                static_cast<CSSValuePattern>(pattern)},
@@ -275,16 +280,17 @@ bool SetBackgroundOrMaskPosition(base::flex_optional<BackgroundData>& data,
       // position y
       if (pos_y_type ==
           static_cast<uint32_t>(BackgroundPositionType::kCenter)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(50.f));
+        image_data->position.emplace_back(NLength::MakePercentageNLength(50.f));
       } else if (pos_y_type ==
                  static_cast<uint32_t>(BackgroundPositionType::kTop)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(0.f));
+        image_data->position.emplace_back(NLength::MakePercentageNLength(0.f));
       } else if (pos_y_type ==
                  static_cast<uint32_t>(BackgroundPositionType::kBottom)) {
-        data->position.emplace_back(NLength::MakePercentageNLength(100.f));
+        image_data->position.emplace_back(
+            NLength::MakePercentageNLength(100.f));
       } else {
         auto pattern = static_cast<uint32_t>(array->get(2).Number());
-        data->position.emplace_back(
+        image_data->position.emplace_back(
             CSSStyleUtils::ToLength(
                 tasm::CSSValue{array->get(3),
                                static_cast<CSSValuePattern>(pattern)},
@@ -293,7 +299,7 @@ bool SetBackgroundOrMaskPosition(base::flex_optional<BackgroundData>& data,
       }
     }
   }
-  return old_value != data->position;
+  return old_value != image_data->position;
 }
 
 bool SetBackgroundOrMaskSize(base::flex_optional<BackgroundData>& data,
@@ -301,8 +307,10 @@ bool SetBackgroundOrMaskSize(base::flex_optional<BackgroundData>& data,
                              const tasm::CSSParserConfigs& configs,
                              const tasm::CSSValue& value, bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->size;
-  data->size.clear();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->size;
+  image_data->size.clear();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -311,14 +319,14 @@ bool SetBackgroundOrMaskSize(base::flex_optional<BackgroundData>& data,
     for (size_t i = 0; i != size_arr->size(); ++i) {
       auto array = size_arr->get(i).Array();
       auto pattern = static_cast<uint32_t>(array->get(0).Number());
-      data->size.emplace_back(
+      image_data->size.emplace_back(
           CSSStyleUtils::ToLength(
               tasm::CSSValue(array->get(1),
                              static_cast<CSSValuePattern>(pattern)),
               context, configs)
               .first);
       pattern = static_cast<uint32_t>(array->get(2).Number());
-      data->size.emplace_back(
+      image_data->size.emplace_back(
           CSSStyleUtils::ToLength(
               tasm::CSSValue(array->get(3),
                              static_cast<CSSValuePattern>(pattern)),
@@ -326,14 +334,16 @@ bool SetBackgroundOrMaskSize(base::flex_optional<BackgroundData>& data,
               .first);
     }
   }
-  return old_value != data->size;
+  return old_value != image_data->size;
 }
 
 bool SetBackgroundOrMaskClip(base::flex_optional<BackgroundData>& data,
                              const tasm::CSSValue& value, bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->clip;
-  data->clip.clear();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->clip;
+  image_data->clip.clear();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -341,17 +351,19 @@ bool SetBackgroundOrMaskClip(base::flex_optional<BackgroundData>& data,
     auto clip_arr = value.GetValue().Array();
     for (size_t i = 0; i < clip_arr->size(); i++) {
       auto clip_type = static_cast<uint32_t>(clip_arr->get(i).Number());
-      data->clip.emplace_back(static_cast<BackgroundClipType>(clip_type));
+      image_data->clip.emplace_back(static_cast<BackgroundClipType>(clip_type));
     }
   }
-  return old_value != data->clip;
+  return old_value != image_data->clip;
 }
 
 bool SetBackgroundOrMaskOrigin(base::flex_optional<BackgroundData>& data,
                                const tasm::CSSValue& value, const bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->origin;
-  data->origin.clear();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->origin;
+  image_data->origin.clear();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -359,17 +371,20 @@ bool SetBackgroundOrMaskOrigin(base::flex_optional<BackgroundData>& data,
     auto origin_arr = value.GetValue().Array();
     for (size_t i = 0; i < origin_arr->size(); i++) {
       auto origin_type = static_cast<uint32_t>(origin_arr->get(i).Number());
-      data->origin.emplace_back(static_cast<BackgroundOriginType>(origin_type));
+      image_data->origin.emplace_back(
+          static_cast<BackgroundOriginType>(origin_type));
     }
   }
-  return old_value != data->origin;
+  return old_value != image_data->origin;
 }
 
 bool SetBackgroundOrMaskRepeat(base::flex_optional<BackgroundData>& data,
                                const tasm::CSSValue& value, const bool reset) {
   CSSStyleUtils::PrepareOptional(data);
-  auto old_value = data->repeat;
-  data->repeat.clear();
+  CSSStyleUtils::PrepareOptional(data->image_data);
+  auto& image_data = data->image_data;
+  auto old_value = image_data->repeat;
+  image_data->repeat.clear();
   if (!reset) {
     if (!value.IsArray()) {
       return false;
@@ -378,22 +393,24 @@ bool SetBackgroundOrMaskRepeat(base::flex_optional<BackgroundData>& data,
     for (size_t i = 0; i < repeat_arr->size(); i++) {
       auto repeat_type =
           static_cast<uint32_t>(repeat_arr->get(i).Array()->get(0).Number());
-      data->repeat.emplace_back(static_cast<BackgroundRepeatType>(repeat_type));
+      image_data->repeat.emplace_back(
+          static_cast<BackgroundRepeatType>(repeat_type));
       repeat_type =
           static_cast<uint32_t>(repeat_arr->get(i).Array()->get(1).Number());
-      data->repeat.emplace_back(static_cast<BackgroundRepeatType>(repeat_type));
+      image_data->repeat.emplace_back(
+          static_cast<BackgroundRepeatType>(repeat_type));
     }
   }
-  return old_value != data->repeat;
+  return old_value != image_data->repeat;
 }
 
 }  // namespace
 
 lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskClipToLepus(
     const base::flex_optional<BackgroundData>& data) {
-  if (data && !data->clip.empty()) {
+  if (data && data->image_data && !data->image_data->clip.empty()) {
     auto array = lepus::CArray::Create();
-    for (const auto& clip : data->clip) {
+    for (const auto& clip : data->image_data->clip) {
       array->emplace_back(static_cast<int32_t>(clip));
     }
     return lepus::Value{std::move(array)};
@@ -406,8 +423,8 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskImageToLepus(
     const base::flex_optional<BackgroundData>& data,
     const tasm::CssMeasureContext& context,
     const tasm::CSSParserConfigs& configs) {
-  if (data && data->image.IsArray()) {
-    auto array = data->image.Array();
+  if (data && data->image_data && data->image_data->image.IsArray()) {
+    auto array = data->image_data->image.Array();
     for (size_t i = 0; i < array->size(); i++) {
       const auto& img = array->get(i);
       if (!img.IsNumber()) {
@@ -421,7 +438,7 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskImageToLepus(
         CSSStyleUtils::ComputeRadialGradient(gradient_data, context, configs);
       }
     }
-    return data->image;
+    return data->image_data->image;
   } else {
     return lepus::Value{lepus::CArray::Create()};
   }
@@ -429,9 +446,9 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskImageToLepus(
 
 lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskOriginToLepus(
     const base::flex_optional<BackgroundData>& data) {
-  if (data && !data->origin.empty()) {
+  if (data && data->image_data && !data->image_data->origin.empty()) {
     auto array = lepus::CArray::Create();
-    for (const auto& origin : data->origin) {
+    for (const auto& origin : data->image_data->origin) {
       array->emplace_back(static_cast<int32_t>(origin));
     }
     return lepus::Value{std::move(array)};
@@ -442,9 +459,9 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskOriginToLepus(
 
 lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskPositionToLepus(
     const base::flex_optional<BackgroundData>& data) {
-  if (data && !data->position.empty()) {
+  if (data && data->image_data && !data->image_data->position.empty()) {
     auto array = lepus::CArray::Create();
-    for (const auto& pos : data->position) {
+    for (const auto& pos : data->image_data->position) {
       CSSStyleUtils::AddLengthToArray(array, pos);
     }
     return lepus::Value{std::move(array)};
@@ -454,9 +471,9 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskPositionToLepus(
 
 lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskRepeatToLepus(
     const base::flex_optional<BackgroundData>& data) {
-  if (data && !data->repeat.empty()) {
+  if (data && data->image_data && !data->image_data->repeat.empty()) {
     auto array = lepus::CArray::Create();
-    for (const auto& repeat : data->repeat) {
+    for (const auto& repeat : data->image_data->repeat) {
       array->emplace_back(static_cast<int32_t>(repeat));
     }
     return lepus_value{std::move(array)};
@@ -467,9 +484,9 @@ lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskRepeatToLepus(
 
 lepus::Value ComputedCSSStyleUtilsMethod::BackgroundOrMaskSizeToLepus(
     const base::flex_optional<BackgroundData>& data) {
-  if (data && !data->size.empty()) {
+  if (data && data->image_data && !data->image_data->size.empty()) {
     auto array = lepus::CArray::Create();
-    for (const auto& size : data->size) {
+    for (const auto& size : data->image_data->size) {
       CSSStyleUtils::AddLengthToArray(array, size);
     }
     return lepus::Value{std::move(array)};

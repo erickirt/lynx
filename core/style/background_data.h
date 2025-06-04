@@ -8,31 +8,32 @@
 #include <array>
 #include <vector>
 
+#include "base/include/flex_optional.h"
 #include "core/renderer/starlight/style/css_type.h"
 #include "core/renderer/starlight/types/nlength.h"
 #include "core/runtime/vm/lepus/lepus_value.h"
+#include "core/style/color.h"
+#include "core/style/default_computed_style.h"
 
 namespace lynx {
 namespace starlight {
 
 struct BackgroundData {
-  BackgroundData();
+  struct BackgroundImageData {
+    uint32_t image_count{DefaultComputedStyle::DEFAULT_LONG};
+    lepus::Value image;
+    base::InlineVector<NLength, 1> position;
+    base::InlineVector<NLength, 1> size;
+    base::InlineVector<BackgroundRepeatType, 1> repeat;
+    base::InlineVector<BackgroundOriginType, 1> origin;
+    base::InlineVector<BackgroundClipType, 1> clip;
+  };
+
+  BackgroundData() = default;
   ~BackgroundData() = default;
-  unsigned int color;
-  unsigned int image_count;
-  lepus::Value image;
-  std::vector<NLength> position;
-  std::vector<NLength> size;
-  std::vector<BackgroundRepeatType> repeat;
-  std::vector<BackgroundOriginType> origin;
-  std::vector<BackgroundClipType> clip;
-  bool HasBackground() const;
-  bool operator==(const BackgroundData& rhs) const {
-    return std::tie(color, image, image_count, position, size, repeat, origin,
-                    clip) == std::tie(rhs.color, rhs.image, rhs.image_count,
-                                      rhs.position, rhs.size, rhs.repeat,
-                                      rhs.origin, rhs.clip);
-  }
+
+  uint32_t color{DefaultColor::DEFAULT_COLOR};
+  base::flex_optional<BackgroundImageData> image_data;
 };
 }  // namespace starlight
 }  // namespace lynx

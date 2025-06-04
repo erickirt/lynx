@@ -199,40 +199,41 @@ TEST_F(PropBundleStyleWriterTest, TestStyleWriter) {
   FOREACH_PLATFORM_PROPERTY(TEST_SPECIFIC_STYLE_WRITER);
 
   style_.background_data_ = starlight::BackgroundData();
-  style_.background_data_->clip.emplace_back(
+  style_.background_data_->image_data.emplace();
+  style_.background_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kPaddingBox);
-  style_.background_data_->clip.emplace_back(
+  style_.background_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kBorderBox);
-  style_.background_data_->clip.emplace_back(
+  style_.background_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kContentBox);
-  style_.background_data_->clip.emplace_back(
+  style_.background_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kText);
   TEST_SPECIFIC_STYLE_WRITER(BackgroundClip);
 
   style_.background_data_->color = 200;
   TEST_SPECIFIC_STYLE_WRITER(BackgroundColor);
 
-  style_.background_data_->origin.emplace_back(
+  style_.background_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kPaddingBox);
-  style_.background_data_->origin.emplace_back(
+  style_.background_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kBorderBox);
-  style_.background_data_->origin.emplace_back(
+  style_.background_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kContentBox);
-  style_.background_data_->origin.emplace_back(
+  style_.background_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kBorderBox);
   TEST_SPECIFIC_STYLE_WRITER(BackgroundOrigin);
 
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeat);
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kNoRepeat);
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeatX);
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeatY);
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRound);
-  style_.background_data_->repeat.emplace_back(
+  style_.background_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kSpace);
   TEST_SPECIFIC_STYLE_WRITER(BackgroundRepeat);
 
@@ -243,36 +244,38 @@ TEST_F(PropBundleStyleWriterTest, TestStyleWriter) {
   FOREACH_PLATFORM_PROPERTY(TEST_SPECIFIC_STYLE_WRITER);
 
   style_.mask_data_ = starlight::BackgroundData();
-  style_.mask_data_->clip.emplace_back(
+  style_.mask_data_->image_data.emplace();
+  style_.mask_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kPaddingBox);
-  style_.mask_data_->clip.emplace_back(
+  style_.mask_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kBorderBox);
-  style_.mask_data_->clip.emplace_back(
+  style_.mask_data_->image_data->clip.emplace_back(
       starlight::BackgroundClipType::kContentBox);
-  style_.mask_data_->clip.emplace_back(starlight::BackgroundClipType::kText);
+  style_.mask_data_->image_data->clip.emplace_back(
+      starlight::BackgroundClipType::kText);
   TEST_SPECIFIC_STYLE_WRITER(MaskClip);
 
-  style_.mask_data_->origin.emplace_back(
+  style_.mask_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kPaddingBox);
-  style_.mask_data_->origin.emplace_back(
+  style_.mask_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kBorderBox);
-  style_.mask_data_->origin.emplace_back(
+  style_.mask_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kContentBox);
-  style_.mask_data_->origin.emplace_back(
+  style_.mask_data_->image_data->origin.emplace_back(
       starlight::BackgroundOriginType::kBorderBox);
   TEST_SPECIFIC_STYLE_WRITER(MaskOrigin);
 
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeat);
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kNoRepeat);
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeatX);
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRepeatY);
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kRound);
-  style_.mask_data_->repeat.emplace_back(
+  style_.mask_data_->image_data->repeat.emplace_back(
       starlight::BackgroundRepeatType::kSpace);
   TEST_SPECIFIC_STYLE_WRITER(MaskRepeat);
 

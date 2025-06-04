@@ -8,16 +8,5 @@
 #include "core/style/default_computed_style.h"
 
 namespace lynx {
-namespace starlight {
-
-BackgroundData::BackgroundData()
-    : color(DefaultColor::DEFAULT_COLOR),
-      image_count(DefaultComputedStyle::DEFAULT_LONG) {}
-
-bool BackgroundData::HasBackground() const {
-  return color != DefaultColor::DEFAULT_COLOR ||
-         image_count != DefaultComputedStyle::DEFAULT_LONG;
-}
-
-}  // namespace starlight
+namespace starlight {}  // namespace starlight
 }  // namespace lynx
