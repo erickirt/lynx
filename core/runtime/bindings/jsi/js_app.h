@@ -222,8 +222,9 @@ class App : public std::enable_shared_from_this<App> {
   std::shared_ptr<ContextProxyInJS> GetContextProxy(
       runtime::ContextProxy::Type type);
 
-  std::shared_ptr<JSIObjectWrapperManager> jsi_object_wrapper_manager() {
-    return jsi_object_wrapper_manager_;
+  JSIObjectWrapperManager* jsi_object_wrapper_manager() {
+    return jsi_object_wrapper_manager_ ? jsi_object_wrapper_manager_.get()
+                                       : nullptr;
   }
 
   void PauseGcSuppressionMode();
