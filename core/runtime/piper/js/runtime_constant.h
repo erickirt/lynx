@@ -73,7 +73,13 @@ constexpr const char kMessageEventUnSubscribeSessionStorage[] =
     "__UnSubscribeSessionStorage";
 constexpr const char kMessageEventTypeOnBTSConsoleEvent[] =
     "__OnBTSConsoleEvent";
-constexpr const char kMessageEventTypeGlobalEvent[] = "GlobalEvent";
+constexpr const char kMessageEventTypeDestroyLifetime[] = "__DestroyLifetime";
+constexpr const char kMessageEventTypeGlobalEvent[] = "__GlobalEvent";
+constexpr const char kMessageEventTypeRenderPage[] = "__RenderPage";
+constexpr const char kMessageEventTypeUpdatePage[] = "__UpdatePage";
+constexpr const char kMessageEventTypeUpdateGlobalProps[] =
+    "__UpdateGlobalProps";
+constexpr const char kMessageEventTypeRemoveComponents[] = "__RemoveComponents";
 
 /**
  * @name: enableMicrotaskPromisePolyfill

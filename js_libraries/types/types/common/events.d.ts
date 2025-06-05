@@ -460,3 +460,73 @@ export interface ITouchEvent extends BaseTouchEvent<Target> {}
 export interface IMouseEvent extends BaseMouseEvent<Target> {}
 export interface IWheelEvent extends BaseWheelEvent<Target> {}
 export interface IKeyEvent extends BaseKeyEvent<Target> {}
+
+interface LynxMessageEvents {
+  // from native context
+  __GlobalEvent: {
+    data: [
+      // name
+      string,
+      // params
+      any,
+    ];
+    origin: 'NATIVE';
+  };
+  __DestroyLifetime: {
+    data: [
+      // appGUID
+      number,
+    ];
+    origin: 'NATIVE';
+  }
+
+  // from engine context
+  __RenderPage: {
+    data: [
+      // data
+      object,
+      // renderOptions
+      object,
+    ];
+    origin: 'ENGINE';
+  };
+  __UpdatePage: {
+    data: [
+      // data
+      object,
+      // updateOptions
+      object,
+    ];
+    origin: 'ENGINE';
+  };
+  __UpdateGlobalProps: {
+    data: [
+      // data
+      Object
+    ];
+    origin: 'ENGINE';
+  };
+  __RemoveComponents: {
+    data: [];
+    origin: 'ENGINE';
+  };
+  __SSRHydrate: {
+    data: [
+      // customHydrateInfo
+      string,
+      // listIDs
+      number[],
+    ];
+    origin: 'ENGINE';
+  };
+}
+
+type LynxMessageEventType = keyof LynxMessageEvents;
+
+type LynxMessageEventsWithType = {
+  [k in LynxMessageEventType]: LynxMessageEvents[k] & {
+    type: k;
+  };
+};
+
+export type LynxMessageEvent = LynxMessageEventsWithType[LynxMessageEventType];

@@ -172,6 +172,20 @@ void LynxShell::Destroy() {
   }
 
   engine_actor_->Act([instance_id = instance_id_](auto& engine) {
+    auto tasm = engine->GetTasm();
+    auto native_context_proxy =
+        tasm ? tasm->GetContextProxy(runtime::ContextProxy::Type::kNative)
+             : nullptr;
+    if (native_context_proxy != nullptr &&
+        native_context_proxy->HasEventListener(
+            runtime::kMessageEventTypeDestroyLifetime)) {
+      runtime::MessageEvent coreContextEvent(
+          runtime::kMessageEventTypeDestroyLifetime,
+          runtime::ContextProxy::Type::kNative,
+          runtime::ContextProxy::Type::kCoreContext,
+          std::make_unique<pub::ValueImplLepus>(lepus::Value(instance_id)));
+      native_context_proxy->DispatchEvent(coreContextEvent);
+    }
     engine = nullptr;
     tasm::report::FeatureCounter::Instance()->ClearAndReport(instance_id);
     DecrementAsyncDestroyCounter(async_destroy_counter);

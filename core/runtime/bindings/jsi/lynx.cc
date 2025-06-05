@@ -280,8 +280,7 @@ Value LynxProxy::get(lynx::piper::Runtime *rt,
       methodName == runtime::kGetCoreContext ||
       methodName == runtime::kGetJSContext ||
       methodName == runtime::kGetUIContext ||
-      methodName == runtime::kGetNativeContext ||
-      methodName == runtime::kGetEngineContext) {
+      methodName == runtime::kGetNative || methodName == runtime::kGetEngine) {
     return Function::createFromHostFunction(
         *rt, PropNameID::forAscii(*rt, methodName), 0,
         [this, methodName = std::move(methodName)](
@@ -303,10 +302,10 @@ Value LynxProxy::get(lynx::piper::Runtime *rt,
             type = runtime::ContextProxy::Type::kCoreContext;
           } else if (methodName == runtime::kGetUIContext) {
             type = runtime::ContextProxy::Type::kUIContext;
-          } else if (methodName == runtime::kGetNativeContext) {
-            type = runtime::ContextProxy::Type::kNativeContext;
-          } else if (methodName == runtime::kGetEngineContext) {
-            type = runtime::ContextProxy::Type::kEngineContext;
+          } else if (methodName == runtime::kGetNative) {
+            type = runtime::ContextProxy::Type::kNative;
+          } else if (methodName == runtime::kGetEngine) {
+            type = runtime::ContextProxy::Type::kEngine;
           }
 
           auto proxy = app->GetContextProxy(type);
@@ -409,8 +408,8 @@ std::vector<PropNameID> LynxProxy::getPropertyNames(Runtime &rt) {
       runtime::kGetJSContext,
       runtime::kGetCoreContext,
       runtime::kGetUIContext,
-      runtime::kGetNativeContext,
-      runtime::kGetEngineContext,
+      runtime::kGetNative,
+      runtime::kGetEngine,
       runtime::kGetCustomSectionSync,
       runtime::kQueueMicrotask,
   };

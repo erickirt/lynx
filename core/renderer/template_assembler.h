@@ -850,6 +850,37 @@ class TemplateAssembler final
 
   void OnNativeAppReady();
 
+  template <
+      class... Args,
+      class = std::enable_if_t<
+          (std::is_same_v<lepus::Value,
+                          std::remove_cv_t<std::remove_reference_t<Args>>> &&
+           ...)>>
+  void DispatchEventFromEngineToCoreContext(
+      const std::shared_ptr<lepus::Context>& context,
+      const std::string& func_name, const std::string& event_name,
+      const Args&... args) {
+    auto engine_context_proxy =
+        GetContextProxy(runtime::ContextProxy::Type::kEngine);
+    if (engine_context_proxy != nullptr &&
+        engine_context_proxy->HasEventListener(event_name)) {
+      constexpr auto n_args = sizeof...(args);
+      const lepus::Value* p_args[n_args] = {&args...};
+      auto event_args = lepus::CArray::Create();
+      for (size_t i = 0; i < n_args; ++i) {
+        event_args->push_back(*(p_args[i]));
+      }
+      runtime::MessageEvent event(event_name,
+                                  runtime::ContextProxy::Type::kEngine,
+                                  runtime::ContextProxy::Type::kCoreContext,
+                                  std::make_unique<pub::ValueImplLepus>(
+                                      lepus::Value(std::move(event_args))));
+      engine_context_proxy->DispatchEvent(event);
+    } else {
+      context->Call(func_name, args...);
+    }
+  }
+
   bool default_use_lepus_ng_ = false;
 
   PageProxy page_proxy_;

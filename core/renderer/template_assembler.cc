@@ -256,7 +256,9 @@ void TemplateAssembler::UpdateGlobalProps(
       LOGE("TemplateAssembler::UpdateGlobalProps since the context is null!!");
       return;
     }
-    context->Call(BASE_STATIC_STRING(kUpdateGlobalProps), data);
+    DispatchEventFromEngineToCoreContext(
+        context, kUpdateGlobalProps,
+        runtime::kMessageEventTypeUpdateGlobalProps, data);
   } else {
     // Update `__globalProps` for LazyBundle, used only in Radon.
     ForEachEntry([card_entry = this->FindEntry(DEFAULT_ENTRY_NAME).get(),
@@ -592,10 +594,10 @@ void TemplateAssembler::UpdateTemplate(
                           lepus::Value(data.PreprocessorName()));
     }
 
-    FindEntry(tasm::DEFAULT_ENTRY_NAME)
-        ->GetVm()
-        ->Call(BASE_STATIC_STRING(kUpdatePage), data.GetValue(),
-               std::move(options));
+    auto& context = FindEntry(tasm::DEFAULT_ENTRY_NAME)->GetVm();
+    DispatchEventFromEngineToCoreContext(context, kUpdatePage,
+                                         runtime::kMessageEventTypeUpdatePage,
+                                         data.GetValue(), std::move(options));
 
     if (!update_page_option.reload_template &&
         pipeline_options->need_timestamps) {
@@ -660,8 +662,10 @@ void TemplateAssembler::RenderTemplateForFiber(
 
   // No need to re-render nodes during SSR
   if (!page_proxy_.IsWaitingSSRHydrate()) {
-    card->GetVm()->Call(BASE_STATIC_STRING(kRenderPage), data.GetValue(),
-                        std::move(render_options));
+    auto& context = card->GetVm();
+    DispatchEventFromEngineToCoreContext(
+        context, kRenderPage, runtime::kMessageEventTypeRenderPage,
+        data.GetValue(), std::move(render_options));
   } else {
     // When Hydrating SSR page, the extreme_parsed_style flag has to be cleared
     // to make element do full CSS resolving when the classes is updated after
@@ -1090,7 +1094,10 @@ void TemplateAssembler::ReloadTemplate(
   // destroy old components
   if (EnableFiberArch()) {
     if (card && card->GetVm()) {
-      card->GetVm()->Call(BASE_STATIC_STRING(kRemoveComponents));
+      auto& context = card->GetVm();
+      DispatchEventFromEngineToCoreContext(
+          context, kRemoveComponents,
+          runtime::kMessageEventTypeRemoveComponents);
     }
   } else {
     page_proxy_.RemoveOldComponentBeforeReload();
@@ -1159,7 +1166,10 @@ void TemplateAssembler::ReloadFromJS(
   // destroy old components
   if (EnableFiberArch()) {
     if (card && card->GetVm()) {
-      card->GetVm()->Call(BASE_STATIC_STRING(kRemoveComponents));
+      auto& context = card->GetVm();
+      DispatchEventFromEngineToCoreContext(
+          context, kRemoveComponents,
+          runtime::kMessageEventTypeRemoveComponents);
     }
   } else {
     // trigger old components's unmount lifecycle;

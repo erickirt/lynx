@@ -936,23 +936,23 @@ RENDERER_FUNCTION_CC(GetUIContext) {
              ->GetBinding(LEPUS_CONTEXT()));
 }
 
-RENDERER_FUNCTION_CC(GetNativeContext) {
+RENDERER_FUNCTION_CC(GetNative) {
   auto* tasm = GET_TASM_POINTER();
   if (tasm == nullptr) {
     RETURN_UNDEFINED();
   }
 
-  RETURN(tasm->GetContextProxy(runtime::ContextProxy::Type::kNativeContext)
+  RETURN(tasm->GetContextProxy(runtime::ContextProxy::Type::kNative)
              ->GetBinding(LEPUS_CONTEXT()));
 }
 
-RENDERER_FUNCTION_CC(GetEngineContext) {
+RENDERER_FUNCTION_CC(GetEngine) {
   auto* tasm = GET_TASM_POINTER();
   if (tasm == nullptr) {
     RETURN_UNDEFINED();
   }
 
-  RETURN(tasm->GetContextProxy(runtime::ContextProxy::Type::kEngineContext)
+  RETURN(tasm->GetContextProxy(runtime::ContextProxy::Type::kEngine)
              ->GetBinding(LEPUS_CONTEXT()));
 }
 

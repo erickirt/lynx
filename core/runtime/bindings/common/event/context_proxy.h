@@ -34,8 +34,8 @@ class ContextProxy : public event::EventTarget {
     kCoreContext,
     kUIContext,
     kDevTool,
-    kNativeContext,
-    kEngineContext,
+    kNative,
+    kEngine,
     kUnknown
   };
 

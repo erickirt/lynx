@@ -35,8 +35,8 @@ export interface NativeLynxProxy extends BackgroundLynx {
   getCoreContext(): ContextProxy;
   getJSContext(): ContextProxy;
   getUIContext(): ContextProxy;
-  getNativeContext(): ContextProxy;
-  getEngineContext(): ContextProxy;
+  getNative(): ContextProxy;
+  getEngine(): ContextProxy;
 
   getCustomSectionSync<T = any>(key: string): T;
   reload(value: object, callback: () => void): void;
@@ -68,8 +68,8 @@ export const enum ContextProxyType {
   DevTool,
   JSContext,
   UIContext,
-  NativeContext,
-  EngineContext,
+  Native,
+  Engine,
 }
 
 export const enum MessageEventType {

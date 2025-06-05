@@ -265,8 +265,8 @@ export class Lynx {
   getCoreContext = this.getNativeLynx().getCoreContext;
   getJSContext = this.getNativeLynx().getJSContext;
   getUIContext = this.getNativeLynx().getUIContext;
-  getNativeContext = this.getNativeLynx().getNativeContext;
-  getEngineContext = this.getNativeLynx().getEngineContext;
+  getNative = this.getNativeLynx().getNative;
+  getEngine = this.getNativeLynx().getEngine;
 
   getCustomSectionSync = this.getNativeLynx().getCustomSectionSync;
 

@@ -71,8 +71,8 @@ void Utils::RegisterNGMethodToLynx(lepus::Context* context, lepus::Value& lynx,
         {runtime::kGetCoreContext, &RendererFunctions::GetCoreContext},
         {runtime::kGetJSContext, &RendererFunctions::GetJSContext},
         {runtime::kGetUIContext, &RendererFunctions::GetUIContext},
-        {runtime::kGetNativeContext, &RendererFunctions::GetNativeContext},
-        {runtime::kGetEngineContext, &RendererFunctions::GetEngineContext},
+        {runtime::kGetNative, &RendererFunctions::GetNative},
+        {runtime::kGetEngine, &RendererFunctions::GetEngine},
         // Reserved to ensure compatibility.Use global's instead.
         {kRequestAnimationFrame, &RendererFunctions::RequestAnimationFrame},
         // Reserved to ensure compatibility.Use global's instead.

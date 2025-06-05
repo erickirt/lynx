@@ -23,6 +23,10 @@ std::string ContextProxy::ConvertContextTypeToString(ContextProxy::Type type) {
     return kUIContext;
   } else if (type == ContextProxy::Type::kDevTool) {
     return kDevTool;
+  } else if (type == ContextProxy::Type::kNative) {
+    return kNative;
+  } else if (type == ContextProxy::Type::kEngine) {
+    return kEngine;
   }
   return kUnknown;
 }
@@ -37,10 +41,10 @@ ContextProxy::Type ContextProxy::ConvertStringToContextType(
     return ContextProxy::Type::kUIContext;
   } else if (type_str == kDevTool) {
     return ContextProxy::Type::kDevTool;
-  } else if (type_str == kNativeContext) {
-    return ContextProxy::Type::kNativeContext;
-  } else if (type_str == kEngineContext) {
-    return ContextProxy::Type::kEngineContext;
+  } else if (type_str == kNative) {
+    return ContextProxy::Type::kNative;
+  } else if (type_str == kEngine) {
+    return ContextProxy::Type::kEngine;
   }
   return ContextProxy::Type::kUnknown;
 }

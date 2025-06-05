@@ -569,23 +569,23 @@ void LynxRuntime::CallFunction(const std::string& module_id,
   }
 #endif
   auto native_context_proxy =
-      app_->GetContextProxy(runtime::ContextProxy::Type::kNativeContext);
+      app_->GetContextProxy(runtime::ContextProxy::Type::kNative);
   if (native_context_proxy != nullptr &&
       native_context_proxy->HasEventListener(kMessageEventTypeGlobalEvent) &&
       module_id == "GlobalEventEmitter" && method_id == "emit") {
     auto js_runtime = GetJSRuntime();
     MessageEvent jsContextEvent(
-        kMessageEventTypeGlobalEvent, ContextProxy::Type::kNativeContext,
+        kMessageEventTypeGlobalEvent, ContextProxy::Type::kNative,
         ContextProxy::Type::kJSContext,
         std::make_unique<pub::ValueImplPiper>(
             *js_runtime, piper::Value(*js_runtime, arguments)));
     native_context_proxy->DispatchEvent(jsContextEvent);
     MessageEvent coreContextEvent(
-        kMessageEventTypeGlobalEvent, ContextProxy::Type::kNativeContext,
+        kMessageEventTypeGlobalEvent, ContextProxy::Type::kNative,
         ContextProxy::Type::kCoreContext,
         std::make_unique<pub::ValueImplLepus>(*app_->ParseJSValueToLepusValue(
-            piper::Value(*js_runtime, arguments), PAGE_GROUP_ID)));
-    native_context_proxy->DispatchEvent(coreContextEvent);
+            piper::Value(*js_runtime, std::move(arguments)), PAGE_GROUP_ID)));
+    delegate_->DispatchMessageEvent(std::move(coreContextEvent));
     return;
   }
   app_->CallFunction(module_id, method_id, std::move(arguments));
@@ -705,7 +705,23 @@ bool LynxRuntime::TryToDestroy() {
   // the JSRuntime in case it is release by its shell owner or other Lynx
   // instance.
   if (js_executor_->GetJSRuntime() && js_executor_->GetJSRuntime()->Valid()) {
-    app_->CallDestroyLifetimeFun();
+    auto native_context_proxy =
+        app_->GetContextProxy(runtime::ContextProxy::Type::kNative);
+    if (native_context_proxy != nullptr &&
+        native_context_proxy->HasEventListener(
+            kMessageEventTypeDestroyLifetime)) {
+      auto js_runtime = GetJSRuntime();
+      MessageEvent jsContextEvent(
+          kMessageEventTypeDestroyLifetime, ContextProxy::Type::kNative,
+          ContextProxy::Type::kJSContext,
+          std::make_unique<pub::ValueImplPiper>(
+              *js_runtime,
+              piper::Value(*js_runtime, piper::String::createFromUtf8(
+                                            *js_runtime, app_->getAppGUID()))));
+      native_context_proxy->DispatchEvent(jsContextEvent);
+    } else {
+      app_->CallDestroyLifetimeFun();
+    }
     // After reloading, the old LynxRuntime may be destroyed later than the new
     // LynxRuntime is created, and the inspector-related object
     // InspectorClientNG is a thread-local singleton, in this case, the members

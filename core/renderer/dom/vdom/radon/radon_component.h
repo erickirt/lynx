@@ -114,6 +114,8 @@ class RadonComponent : public RadonNode, public BaseComponent {
   // Only when a lazy bundle is loaded async, it could be empty.
   bool IsEmpty() const { return context_ == nullptr; }
 
+  lepus::Context* GetContext() { return context_; }
+
   std::shared_ptr<ComponentConfig> GetComponentConfig() const {
     if (mould_) {
       return mould_->GetComponentConfig();
