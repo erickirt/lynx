@@ -324,6 +324,7 @@ subspec_target("zlib") {
     "-Wno-comma",
     "-Wno-unused-function",
     "-Wno-sign-compare",
+    "-Wno-macro-redefined",
   ]
   deps = [ "//third_party/zlib" ]
   libraries = [ "stdc++" ]
