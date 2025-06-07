@@ -1082,24 +1082,22 @@ bool TouchEventHandler::HandleEventInternal(
         continue;
       }
       const auto &set = cur_target->GlobalBindTarget();
-      if (set.empty()) {
+      if (!set.has_value() || set->empty()) {
         // if set is empty, means the target is all other elements
         operation.append(
             std::move(TouchEventHandler::push_global_bind_operation_f_(
                 event_name, cur_target, target)));
       } else {
-        if (set.size() > 0) {
-          if (option.bubbles_) {
-            for (const auto &target : response_chain) {
-              operation.append(
-                  std::move(TouchEventHandler::get_global_bind_operations_f_(
-                      event_name, cur_target, target, set)));
-            }
-          } else {
+        if (option.bubbles_) {
+          for (const auto &target : response_chain) {
             operation.append(
                 std::move(TouchEventHandler::get_global_bind_operations_f_(
-                    event_name, cur_target, target, set)));
+                    event_name, cur_target, target, *set)));
           }
+        } else {
+          operation.append(
+              std::move(TouchEventHandler::get_global_bind_operations_f_(
+                  event_name, cur_target, target, *set)));
         }
       }
     }
@@ -1511,24 +1509,22 @@ void TouchEventHandler::HandleGlobalBindAndTriggerEvent(TemplateAssembler *tasm,
       for (const auto &id : manager->GetGlobalBindElementIds(event_name)) {
         Element *cur_target = node_manager_->Get(id);
         const auto &set = cur_target->GlobalBindTarget();
-        if (set.empty()) {
+        if (!set.has_value() || set->empty()) {
           // if set is empty, means the target is all other elements
           event_ops.append(
               std::move(TouchEventHandler::push_global_bind_operation_f_(
                   event_name, cur_target, target)));
         } else {
-          if (set.size() > 0) {
-            if (event_option.bubbles_) {
-              for (const auto &target : event_chain) {
-                event_ops.append(
-                    std::move(TouchEventHandler::get_global_bind_operations_f_(
-                        event_name, cur_target, target, set)));
-              }
-            } else {
+          if (event_option.bubbles_) {
+            for (const auto &target : event_chain) {
               event_ops.append(
                   std::move(TouchEventHandler::get_global_bind_operations_f_(
-                      event_name, cur_target, target, set)));
+                      event_name, cur_target, target, *set)));
             }
+          } else {
+            event_ops.append(
+                std::move(TouchEventHandler::get_global_bind_operations_f_(
+                    event_name, cur_target, target, *set)));
           }
         }
       }

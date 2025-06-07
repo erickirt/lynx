@@ -90,7 +90,7 @@ TEST_F(BlockElementTest, InsertNode) {
   EXPECT_EQ(static_cast<int>(parent->GetChildCount()), 1);
 
   EXPECT_EQ(parent->GetChildAt(0), child1.get());
-  EXPECT_EQ(parent->scoped_virtual_children_[0].get(), block1.get());
+  EXPECT_EQ((*parent->scoped_virtual_children_)[0].get(), block1.get());
 
   auto block2 = CreateBlockNode("block");
   auto child2 = manager->CreateFiberNode("view");
@@ -98,10 +98,10 @@ TEST_F(BlockElementTest, InsertNode) {
   block1->InsertNode(block2);
   block2->InsertNode(child2);
   EXPECT_EQ(static_cast<int>(parent->GetChildCount()), 2);
-  EXPECT_EQ(static_cast<int>(parent->scoped_virtual_children_.size()), 2);
+  EXPECT_EQ(static_cast<int>(parent->scoped_virtual_children_->size()), 2);
 
   EXPECT_EQ(parent->GetChildAt(1), child2.get());
-  EXPECT_EQ(parent->scoped_virtual_children_[1].get(), block2.get());
+  EXPECT_EQ((*parent->scoped_virtual_children_)[1].get(), block2.get());
 
   EXPECT_EQ(static_cast<int>(block1->block_children_.size()), 2);
   EXPECT_EQ(block1->block_children_[0].get(), child1.get());

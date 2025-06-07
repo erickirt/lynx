@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/include/auto_create_optional.h"
 #include "base/include/base_export.h"
 #include "base/include/no_destructor.h"
 #include "base/include/vector.h"
@@ -413,10 +414,11 @@ class Element : public lepus::RefCounted {
   // APIs related to Sticky
   inline bool is_sticky() { return is_sticky_; }
   inline void set_is_sticky(bool is_sticky) { is_sticky_ = is_sticky; }
-  inline const std::array<float, 4>& sticky_positions() {
-    return sticky_positions_;
+  inline const std::array<float, 4>& sticky_positions() const {
+    return *sticky_positions_;
   }
 
+  // Check has_value() before usage to avoid unintentional construction.
   inline const auto& keyframes_map() { return keyframes_map_; }
 
   bool ShouldAvoidFlattenForView();
@@ -783,8 +785,10 @@ class Element : public lepus::RefCounted {
   std::array<float, 4> borders_{};
   std::array<float, 4> margins_{};
   std::array<float, 4> paddings_{};
-  std::array<float, 4> sticky_positions_{};
+  base::auto_create_optional<std::array<float, 4>> sticky_positions_;
   float max_height_{starlight::DefaultLayoutStyle::kDefaultMaxSize};
+
+  float record_parent_font_size_ = -1;
 
   std::unique_ptr<ContentData> content_data_;
 
@@ -802,7 +806,6 @@ class Element : public lepus::RefCounted {
 
   // relevant to hierarchy
   Element* parent_{nullptr};
-  ElementChildrenArray children_;
 
   std::unique_ptr<starlight::ComputedCSSStyle> platform_css_style_;
 
@@ -810,26 +813,26 @@ class Element : public lepus::RefCounted {
   std::unique_ptr<animation::CSSKeyframeManager> css_keyframe_manager_;
   std::unique_ptr<animation::CSSTransitionManager> css_transition_manager_;
   // Saves the css style that the all animation applied to the element.
-  StyleMap final_animator_map_;
+  base::auto_create_optional<StyleMap> final_animator_map_;
   // Save the keyframes of the Animate API.
-  tasm::CSSKeyframesTokenMap keyframes_map_;
+  base::auto_create_optional<CSSKeyframesTokenMap> keyframes_map_;
   // Save increase key of the Animate API.
   base::String will_removed_keyframe_name_;
   // for global-bind event
-  base::LinearFlatSet<std::string> global_bind_target_set_;
+  base::auto_create_optional<base::LinearFlatSet<std::string>>
+      global_bind_target_set_;
 
   // Using to record some previous element styles which New Animator needs.
-  std::unordered_map<tasm::CSSPropertyID, CSSValue> animation_previous_styles_;
+  base::LinearFlatMap<tasm::CSSPropertyID, CSSValue> animation_previous_styles_;
 
   // Used to record all layout-related styles of the element only when we
   // enable dump element tree. In the copied element, we will use these styles
   // to initialize the layout node.
-  std::unordered_map<tasm::CSSPropertyID, CSSValue> layout_styles_;
+  base::auto_create_optional<base::LinearFlatMap<tasm::CSSPropertyID, CSSValue>>
+      layout_styles_;
 
   // for devtool
   std::unique_ptr<InspectorAttribute> inspector_attribute_;
-
-  float record_parent_font_size_ = -1;
 };
 
 }  // namespace tasm

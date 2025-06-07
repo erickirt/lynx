@@ -42,7 +42,7 @@ PseudoElement::PseudoElement(PseudoState state, FiberElement* holder_element)
       *holder_element->computed_css_style());
 }
 
-void PseudoElement::UpdateStyleMap(StyleMap& new_style_map) {
+void PseudoElement::UpdateStyleMap(const StyleMap& new_style_map) {
   StyleMap update_map;
   for (const auto& [key, value] : new_style_map) {
     auto iter_old_map = style_map_.find(key);
@@ -66,7 +66,7 @@ void PseudoElement::UpdateStyleMap(StyleMap& new_style_map) {
   style_map_ = new_style_map;
 }
 
-void PseudoElement::UpdatePropertyFromStyleMap(StyleMap& style_map) {
+void PseudoElement::UpdatePropertyFromStyleMap(const StyleMap& style_map) {
   for (const auto& [key, value] : style_map) {
     if (key == kPropertyIDFontSize) {
       // Font size need to be resolved independently.

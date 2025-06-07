@@ -311,7 +311,7 @@ TEST_F(RadonNodeTest, FlushInlineStyleForFiber) {
   auto val = radon_node->raw_inline_styles().find(
       CSSPropertyID::kPropertyIDBackgroundColor);
   EXPECT_TRUE(val->second == lepus::Value("black"));
-  const auto& fiber_inline_styles = fiber_element->current_raw_inline_styles_;
+  const auto& fiber_inline_styles = *fiber_element->current_raw_inline_styles_;
   EXPECT_TRUE(fiber_inline_styles.empty());
   radon_node->DispatchFirstTime();
   EXPECT_FALSE(fiber_inline_styles.empty());
@@ -371,7 +371,7 @@ TEST_F(RadonNodeTest, DiffAttributeEmptyForFiber) {
   radon_node1->SetStaticAttribute("123", lepus::Value("black"));
   const auto* fiber_element =
       static_cast<FiberElement*>(radon_node2->element());
-  const auto& fiber_attribute = fiber_element->reset_attr_vec_;
+  const auto& fiber_attribute = *fiber_element->reset_attr_vec_;
   EXPECT_TRUE(fiber_attribute.empty());
   radon_node2->ShouldFlushAttr(radon_node1.get());
   EXPECT_FALSE(fiber_attribute.empty());
@@ -411,7 +411,7 @@ TEST_F(RadonNodeTest, DiffStylesForFiber) {
   DispatchOption option(page_proxy.get());
   const auto* fiber_element =
       static_cast<FiberElement*>(radon_node1->element());
-  const auto& fiber_inline_styles = fiber_element->current_raw_inline_styles_;
+  const auto& fiber_inline_styles = *fiber_element->current_raw_inline_styles_;
   EXPECT_TRUE(fiber_inline_styles.empty());
   EXPECT_TRUE(radon_node1->ShouldFlushStyle(radon_node2.get(), option));
 

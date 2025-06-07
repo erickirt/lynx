@@ -18,7 +18,7 @@ class PseudoElement {
  public:
   PseudoElement(PseudoState state, FiberElement* holder_element);
 
-  void UpdateStyleMap(StyleMap& new_style_map);
+  void UpdateStyleMap(const StyleMap& new_style_map);
 
   starlight::ComputedCSSStyle* ComputedCSSStyle() {
     return platform_css_style_.get();
@@ -30,7 +30,7 @@ class PseudoElement {
   void SetPseudoStylesInternal(
       CSSPropertyID id,
       const std::unordered_map<CSSPropertyID, const char*>& map);
-  void UpdatePropertyFromStyleMap(StyleMap& style_map);
+  void UpdatePropertyFromStyleMap(const StyleMap& style_map);
 
   PseudoState state_;
   FiberElement* holder_element_;

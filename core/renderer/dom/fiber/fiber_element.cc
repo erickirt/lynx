@@ -109,9 +109,9 @@ FiberElement::FiberElement(const FiberElement &element,
       inherited_styles_(element.inherited_styles_),
       reset_inherited_ids_(element.reset_inherited_ids_),
       updated_attr_map_(element.updated_attr_map_),
+      builtin_attr_map_(element.builtin_attr_map_),
       reset_attr_vec_(element.reset_attr_vec_),
-      part_id_(element.part_id_),
-      builtin_attr_map_(element.builtin_attr_map_) {
+      part_id_(element.part_id_) {
   SetAttributeHolder(
       fml::MakeRefCounted<AttributeHolder>(*element.data_model()));
   data_model_->set_css_variables_map(element.data_model()->css_variables_map());
@@ -166,8 +166,10 @@ void FiberElement::AttachToElementManager(
   InitLayoutBundle();
   UpdateLayoutNodeFontSize(GetFontSize(), GetRecordedRootFontSize());
 
-  for (auto &layout_style : layout_styles_) {
-    UpdateLayoutNodeStyle(layout_style.first, layout_style.second);
+  if (layout_styles_.has_value()) {
+    for (auto &layout_style : *layout_styles_) {
+      UpdateLayoutNodeStyle(layout_style.first, layout_style.second);
+    }
   }
 
   SetFontSizeForAllElement(GetFontSize(), GetRecordedRootFontSize());
@@ -235,8 +237,8 @@ void FiberElement::RequireFlush() {
 }
 
 const FiberElement::InheritedProperty FiberElement::GetInheritedProperty() {
-  return {children_propagate_inherited_styles_flag_, &inherited_styles_,
-          &reset_inherited_ids_};
+  return {children_propagate_inherited_styles_flag_, inherited_styles_.get(),
+          reset_inherited_ids_.get()};
 }
 
 const FiberElement::InheritedProperty
@@ -361,17 +363,21 @@ int32_t FiberElement::GetCSSID() const {
 }
 
 size_t FiberElement::CountInlineStyles() {
-  return CSSProperty::GetTotalParsedStyleCountFromMap(
-      current_raw_inline_styles_);
+  return current_raw_inline_styles_.has_value()
+             ? CSSProperty::GetTotalParsedStyleCountFromMap(
+                   *current_raw_inline_styles_)
+             : 0;
 }
 
 void FiberElement::MergeInlineStyles(StyleMap &new_styles) {
   // Styles stored by full_raw_inline_style_ had already been parsed to
   // current_raw_inline_styles_. So we only handle current_raw_inline_styles_
   // here.
-  auto &configs = element_manager_->GetCSSParserConfigs();
-  for (const auto &style : current_raw_inline_styles_) {
-    UnitHandler::Process(style.first, style.second, new_styles, configs);
+  if (current_raw_inline_styles_.has_value()) {
+    auto &configs = element_manager_->GetCSSParserConfigs();
+    for (const auto &style : *current_raw_inline_styles_) {
+      UnitHandler::Process(style.first, style.second, new_styles, configs);
+    }
   }
 }
 
@@ -457,7 +463,7 @@ void FiberElement::InsertNode(const fml::RefPtr<Element> &raw_child,
   if (element_manager() && element_manager()->IsAirModeFiberEnabled() &&
       child->is_block()) {
     child->set_parent(this);
-    scoped_virtual_children_.push_back(child);
+    scoped_virtual_children_->push_back(child);
     return;
   }
   // ref_node: nullptr: means to append this node to the end
@@ -614,7 +620,7 @@ void FiberElement::SetClasses(ClassList &&classes) {
 
   // clear ssr parsed style
   if (has_extreme_parsed_styles_) {
-    extreme_parsed_styles_.clear();
+    extreme_parsed_styles_.reset();
     has_extreme_parsed_styles_ = false;
   }
 }
@@ -635,16 +641,16 @@ void FiberElement::SetStyle(CSSPropertyID id, const lepus::Value &value) {
   ProcessFullRawInlineStyle();
 
   if (!value.IsEmpty()) {
-    current_raw_inline_styles_.insert_or_assign(id, value);
-  } else {
-    current_raw_inline_styles_.erase(id);
+    current_raw_inline_styles_->insert_or_assign(id, value);
+  } else if (current_raw_inline_styles_.has_value()) {
+    current_raw_inline_styles_->erase(id);
   }
 
   MarkDirty(kDirtyStyle);
 
   if (has_extreme_parsed_styles_ && !only_selector_extreme_parsed_styles_) {
     has_extreme_parsed_styles_ = false;
-    extreme_parsed_styles_.clear();
+    extreme_parsed_styles_.reset();
   }
 
   // Only exec the following expr when ENABLE_INSPECTOR, such that devtool can
@@ -690,10 +696,6 @@ const base::String &FiberElement::GetRawInlineStyles() {
   return full_raw_inline_style_;
 }
 
-const RawLepusStyleMap &FiberElement::GetCurrentRawInlineStyles() const {
-  return current_raw_inline_styles_;
-}
-
 void FiberElement::SetRawInlineStyles(base::String value) {
   full_raw_inline_style_ = std::move(value);
   MarkDirty(kDirtyStyle);
@@ -703,8 +705,9 @@ void FiberElement::RemoveAllInlineStyles() {
   // Only exec the following expr when ENABLE_INSPECTOR, such that devtool can
   // get element's inline style.
   EXEC_EXPR_FOR_INSPECTOR({
-    if (element_manager_->IsDomTreeEnabled()) {
-      for (const auto &pair : current_raw_inline_styles_) {
+    if (element_manager_->IsDomTreeEnabled() &&
+        current_raw_inline_styles_.has_value()) {
+      for (const auto &pair : *current_raw_inline_styles_) {
         const static base::String kNull;
         data_model()->SetInlineStyle(pair.first, kNull,
                                      element_manager_->GetCSSParserConfigs());
@@ -713,7 +716,7 @@ void FiberElement::RemoveAllInlineStyles() {
   });
 
   full_raw_inline_style_ = base::String();
-  current_raw_inline_styles_.clear();
+  current_raw_inline_styles_.reset();
   MarkDirty(kDirtyStyle);
 }
 
@@ -744,7 +747,7 @@ void FiberElement::SetBuiltinAttribute(ElementBuiltInAttributeEnum key,
       break;
   }
   if (key_is_legal) {
-    builtin_attr_map_.try_emplace(static_cast<uint32_t>(key), value);
+    builtin_attr_map_->try_emplace(static_cast<uint32_t>(key), value);
   }
 }
 
@@ -768,7 +771,7 @@ void FiberElement::SetAttribute(const base::String &key,
       data_model_->SetStaticAttribute(key, value);
     }
   } else {
-    reset_attr_vec_.emplace_back(key);
+    reset_attr_vec_->emplace_back(key);
     if (need_update_data_model) {
       data_model_->RemoveAttribute(key);
     }
@@ -874,7 +877,7 @@ void FiberElement::ResetDirectionAwareProperty(const CSSPropertyID &id,
                            ? direction_mapping.rtl_property_
                            : direction_mapping.ltr_property_;
     ResetCSSValue(tran_css_id);
-    pending_updated_direction_related_styles_[css_id] = {
+    (*pending_updated_direction_related_styles_)[css_id] = {
         value, direction_mapping.is_logic_};
   }
 }
@@ -897,7 +900,7 @@ void FiberElement::HandleKeyframePropsChange(bool need_animation_props) {
 
 void FiberElement::HandleDelayTask(base::MoveOnlyClosure<void> operation) {
   if (this->parallel_flush_) {
-    parallel_reduce_tasks_.emplace_back(std::move(operation));
+    parallel_reduce_tasks_->emplace_back(std::move(operation));
   } else {
     operation();
   }
@@ -906,7 +909,7 @@ void FiberElement::HandleDelayTask(base::MoveOnlyClosure<void> operation) {
 void FiberElement::HandleBeforeFlushActionsTask(
     base::MoveOnlyClosure<void> operation) {
   if (this->parallel_flush_) {
-    parallel_before_flush_action_tasks_.emplace_back(std::move(operation));
+    parallel_before_flush_action_tasks_->emplace_back(std::move(operation));
   } else {
     operation();
   }
@@ -986,12 +989,13 @@ ParallelFlushReturn FiberElement::PrepareForCreateOrUpdate() {
       // there are two status:
       // 1. parent inherited style deleted; 2.parent inherited style changed;
       // #1 parent inherited style deleted
-      if (inherited_property.reset_inherited_ids_) {
+      if (inherited_property.reset_inherited_ids_ &&
+          updated_inherited_styles_.has_value()) {
         for (const auto reset_id : *(inherited_property.reset_inherited_ids_)) {
           auto it = parsed_styles_map_.find(reset_id);
           if (it == parsed_styles_map_.end()) {
-            if (updated_inherited_styles_.find(reset_id) !=
-                updated_inherited_styles_.end()) {
+            if (updated_inherited_styles_->find(reset_id) !=
+                updated_inherited_styles_->end()) {
               reset_style_ids.push_back(reset_id);
             }
           }
@@ -1001,13 +1005,14 @@ ParallelFlushReturn FiberElement::PrepareForCreateOrUpdate() {
       // #2.parent inherited style changed
       //  merge the inherited styles, but they have lower priority
       if (inherited_property.inherited_styles_) {
-        updated_inherited_styles_.clear();
-        updated_inherited_styles_.reserve(
+        updated_inherited_styles_->clear();
+        updated_inherited_styles_->reserve(
             inherited_property.inherited_styles_->size());
         for (auto &pair : *(inherited_property.inherited_styles_)) {
           auto it = parsed_styles_map_.find(pair.first);
           if (it == parsed_styles_map_.end()) {
-            updated_inherited_styles_.insert_or_assign(pair.first, pair.second);
+            updated_inherited_styles_->insert_or_assign(pair.first,
+                                                        pair.second);
             need_update = true;
           }
         }
@@ -1118,13 +1123,15 @@ ParallelFlushReturn FiberElement::PrepareForCreateOrUpdate() {
                                 static_cast<starlight::DirectionType>(
                                     update_map_it->second.GetValue().Number()));
         }
-        auto updated_inherited_map_it =
-            updated_inherited_map.find(CSSPropertyID::kPropertyIDDirection);
-        if (updated_inherited_map_it != updated_inherited_map.end()) {
-          return std::make_pair(
-              updated_inherited_map_it->second,
-              static_cast<starlight::DirectionType>(
-                  updated_inherited_map_it->second.GetValue().Number()));
+        if (updated_inherited_map.has_value()) {
+          auto updated_inherited_map_it =
+              updated_inherited_map->find(CSSPropertyID::kPropertyIDDirection);
+          if (updated_inherited_map_it != updated_inherited_map->end()) {
+            return std::make_pair(
+                updated_inherited_map_it->second,
+                static_cast<starlight::DirectionType>(
+                    updated_inherited_map_it->second.GetValue().Number()));
+          }
         }
         return std::make_pair(CSSValue::Empty(), pre_direction);
       };
@@ -1138,8 +1145,10 @@ ParallelFlushReturn FiberElement::PrepareForCreateOrUpdate() {
       // Reset all direction related styles when not switching between normal
       // and ltr
       if (IsAnyRTL(new_direction.second) || IsAnyRTL(direction_)) {
-        for (const auto &css_pair : updated_inherited_styles_) {
-          ResetDirectionAwareProperty(css_pair.first, css_pair.second);
+        if (updated_inherited_styles_.has_value()) {
+          for (const auto &css_pair : *updated_inherited_styles_) {
+            ResetDirectionAwareProperty(css_pair.first, css_pair.second);
+          }
         }
         for (const auto &css_pair : parsed_styles_map_) {
           ResetDirectionAwareProperty(css_pair.first, css_pair.second);
@@ -1168,27 +1177,30 @@ ParallelFlushReturn FiberElement::PrepareForCreateOrUpdate() {
   }
 
   // set updated Styles to element in the end
-  if (!update_map.empty() || !updated_inherited_styles_.empty() ||
-      !styles_from_attributes_.empty()) {
+  if (!update_map.empty() ||
+      (updated_inherited_styles_.has_value() &&
+       !updated_inherited_styles_->empty()) ||
+      (styles_from_attributes_.has_value() &&
+       !styles_from_attributes_->empty())) {
     TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ELEMENT_HANDLE_SET_STYLE,
                 [this](lynx::perfetto::EventContext ctx) {
                   UpdateTraceDebugInfo(ctx.event());
                 });
     // if kDirtyPropagateInherited, need to delay to SetStyle in inherit process
     ConsumeStyle(update_map, IsCSSInheritanceEnabled()
-                                 ? &updated_inherited_styles_
+                                 ? updated_inherited_styles_.get()
                                  : nullptr);
     need_update = true;
   }
 
   // direction change: we always handle direction change after all styles
   // resolved
-  if (!pending_updated_direction_related_styles_.empty()) {
-    for (const auto &style_pair : pending_updated_direction_related_styles_) {
+  if (pending_updated_direction_related_styles_.has_value()) {
+    for (const auto &style_pair : *pending_updated_direction_related_styles_) {
       TryDoDirectionRelatedCSSChange(style_pair.first, style_pair.second.first,
                                      style_pair.second.second);
     }
-    pending_updated_direction_related_styles_.clear();
+    pending_updated_direction_related_styles_.reset();
   }
 
   // Handle font size change
@@ -1444,10 +1456,12 @@ void FiberElement::FlushSelf() {
               [this](lynx::perfetto::EventContext ctx) {
                 UpdateTraceDebugInfo(ctx.event());
               });
-  for (const auto &task : parallel_before_flush_action_tasks_) {
-    task();
+  if (parallel_before_flush_action_tasks_.has_value()) {
+    for (const auto &task : *parallel_before_flush_action_tasks_) {
+      task();
+    }
+    parallel_before_flush_action_tasks_.reset();
   }
-  parallel_before_flush_action_tasks_.clear();
 
   if ((dirty_ & ~kDirtyTree) != 0) {
     // create or update Platform Op
@@ -1494,7 +1508,7 @@ void FiberElement::FlushActions() {
   }
   // below flags should be delayed until children flushed
   children_propagate_inherited_styles_flag_ = false;
-  reset_inherited_ids_.clear_and_shrink();
+  reset_inherited_ids_.reset();
 
   flush_required_ = false;
 }
@@ -1915,16 +1929,18 @@ void FiberElement::MarkPlatformNodeDestroyed() {
       child->render_parent_ = nullptr;
     }
   }
-  for (size_t i = 0; i < scoped_virtual_children_.size(); ++i) {
-    auto *virtual_child =
-        static_cast<FiberElement *>(scoped_virtual_children_[i].get());
-    if (virtual_child->parent_ == this) {
-      virtual_child->parent_ = nullptr;
+  if (scoped_virtual_children_.has_value()) {
+    for (size_t i = 0; i < scoped_virtual_children_->size(); ++i) {
+      auto *virtual_child =
+          static_cast<FiberElement *>((*scoped_virtual_children_)[i].get());
+      if (virtual_child->parent_ == this) {
+        virtual_child->parent_ = nullptr;
+      }
     }
   }
   // clear element's children only in radon or radon compatible mode.
   scoped_children_.clear();
-  scoped_virtual_children_.clear();
+  scoped_virtual_children_.reset();
 }
 
 bool FiberElement::InComponent() const {
@@ -2045,19 +2061,16 @@ void FiberElement::ConsumeStyleInternal(
   // Handle font-size first. Other css may use this to calc rem or em.
   SetFontSize();
 
-  inherited_styles_.reserve(styles.size() +
-                            (inherit_styles ? inherit_styles->size() : 0));
-
   auto consume_func = [this, should_skip = std::move(should_skip)](
                           const StyleMap &styles, bool process_inherit) {
     for (const auto &style : styles) {
       bool is_inherit_style = false;
       if (!is_raw_text() && IsInheritable(style.first)) {
         is_inherit_style = true;
-        auto iter = inherited_styles_.find(style.first);
-        if (iter == inherited_styles_.end() || iter->second != style.second) {
+        auto iter = inherited_styles_->find(style.first);
+        if (iter == inherited_styles_->end() || iter->second != style.second) {
           // save the css value to inherited styles map
-          inherited_styles_.insert_or_assign(style.first, style.second);
+          inherited_styles_->insert_or_assign(style.first, style.second);
           children_propagate_inherited_styles_flag_ = true;
         }
       }
@@ -2117,16 +2130,18 @@ bool FiberElement::ConsumeAllAttributes() {
       SetAttributeInternal(attr.first, attr.second);
       need_update = true;
     }
-    for (const auto &attr : reset_attr_vec_) {
-      ResetAttribute(attr);
-      need_update = true;
+    if (reset_attr_vec_.has_value()) {
+      for (const auto &attr : *reset_attr_vec_) {
+        ResetAttribute(attr);
+        need_update = true;
+      }
+      reset_attr_vec_.reset();
     }
     if (updated_attr_map_.size() > 0) {
       PropsUpdateFinish();
+      updated_attr_map_.clear();
     }
 
-    updated_attr_map_.clear();
-    reset_attr_vec_.clear_and_shrink();
     dirty_ &= ~kDirtyAttr;
   }
   return need_update;
@@ -2165,10 +2180,12 @@ ParallelFlushReturn FiberElement::CreateParallelTaskHandler() {
   return [this]() {
     TRACE_EVENT(LYNX_TRACE_CATEGORY,
                 FIBER_ELEMENT_HANDLE_PARALLEL_REDUCE_TASKS);
-    for (const auto &task : parallel_reduce_tasks_) {
-      task();
+    if (parallel_reduce_tasks_.has_value()) {
+      for (const auto &task : *parallel_reduce_tasks_) {
+        task();
+      }
+      parallel_reduce_tasks_.reset();
     }
-    parallel_reduce_tasks_.clear();
     // Executing task in parallel_reduce_tasks_ may produce prop_bundle_,
     // need to consume newly created prop_bundle_
     if (prop_bundle_) {
@@ -2183,26 +2200,29 @@ ParallelFlushReturn FiberElement::CreateParallelTaskHandler() {
 
 void FiberElement::CacheStyleFromAttributes(CSSPropertyID id,
                                             CSSValue &&value) {
-  styles_from_attributes_.insert_or_assign(id, std::move(value));
+  styles_from_attributes_->insert_or_assign(id, std::move(value));
 }
 
 void FiberElement::CacheStyleFromAttributes(CSSPropertyID id,
                                             const lepus::Value &value) {
-  UnitHandler::Process(id, value, styles_from_attributes_,
+  UnitHandler::Process(id, value, *styles_from_attributes_,
                        element_manager()->GetCSSParserConfigs());
 }
 
 void FiberElement::DidConsumeStyle() {
-  if (styles_from_attributes_.empty()) {
+  if (!styles_from_attributes_.has_value()) {
+    return;
+  }
+  if (styles_from_attributes_->empty()) {
     return;
   }
 
-  ConsumeStyleInternal(styles_from_attributes_, nullptr,
+  ConsumeStyleInternal(*styles_from_attributes_, nullptr,
                        [](auto id, const auto &value) {
                          // Do not skip any style here.
                          return false;
                        });
-  styles_from_attributes_.clear();
+  styles_from_attributes_.reset();
 }
 
 void FiberElement::MarkHasLayoutOnlyPropsIfNecessary(
@@ -2398,7 +2418,7 @@ void FiberElement::SetParsedStyles(const ParsedStyles &parsed_styles,
   }
 
   has_extreme_parsed_styles_ = true;
-  extreme_parsed_styles_ = parsed_styles.first;
+  *extreme_parsed_styles_ = parsed_styles.first;
   data_model()->set_css_variables_map(parsed_styles.second);
   MarkDirty(kDirtyStyle);
 }
@@ -2408,7 +2428,7 @@ void FiberElement::SetParsedStyles(StyleMap &&parsed_styles,
   TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ELEMENT_SET_PARSED_STYLES);
   has_extreme_parsed_styles_ = true;
   only_selector_extreme_parsed_styles_ = false;
-  extreme_parsed_styles_ = std::move(parsed_styles);
+  *extreme_parsed_styles_ = std::move(parsed_styles);
   data_model()->set_css_variables_map(std::move(css_var));
   MarkDirty(kDirtyStyle);
 }
@@ -2863,7 +2883,7 @@ void FiberElement::ParseRawInlineStyles(StyleMap *parsed_styles) {
           if (parsed_styles != nullptr) {
             UnitHandler::Process(id, value, *parsed_styles, configs);
           }
-          current_raw_inline_styles_.insert_or_assign(id, std::move(value));
+          current_raw_inline_styles_->insert_or_assign(id, std::move(value));
         }
 
         // DevTool needs to get InlineStyle information from DataModel's
@@ -2944,7 +2964,7 @@ bool FiberElement::RefreshStyle(StyleMap &parsed_styles,
   } else {
     // if extreme_parsed_styles_ has set, we should ignore any class&inline
     // styles
-    parsed_styles_map_ = extreme_parsed_styles_;
+    parsed_styles_map_ = *extreme_parsed_styles_;
     if (only_selector_extreme_parsed_styles_) {
       ProcessFullRawInlineStyle();
       MergeInlineStyles(parsed_styles_map_);
@@ -3139,11 +3159,13 @@ void FiberElement::WillResetCSSValue(CSSPropertyID &css_id) {
   }
 
   // remove self inherit properties if needed
-  auto it = inherited_styles_.find(css_id);
-  if (it != inherited_styles_.end()) {
-    inherited_styles_.erase(it);
-    reset_inherited_ids_.emplace_back(css_id);
-    children_propagate_inherited_styles_flag_ = true;
+  if (inherited_styles_.has_value()) {
+    auto it = inherited_styles_->find(css_id);
+    if (it != inherited_styles_->end()) {
+      inherited_styles_->erase(it);
+      reset_inherited_ids_->emplace_back(css_id);
+      children_propagate_inherited_styles_flag_ = true;
+    }
   }
 }
 
@@ -3336,13 +3358,16 @@ void FiberElement::FlushAnimatedStyleInternal(tasm::CSSPropertyID id,
 std::optional<CSSValue> FiberElement::GetElementStyle(
     tasm::CSSPropertyID css_id) {
   auto iter = parsed_styles_map_.find(css_id);
-  if (iter == parsed_styles_map_.end()) {
-    iter = updated_inherited_styles_.find(css_id);
-    if (iter == updated_inherited_styles_.end()) {
-      return std::optional<CSSValue>();
+  if (iter != parsed_styles_map_.end()) {
+    return iter->second;
+  }
+  if (updated_inherited_styles_.has_value()) {
+    iter = updated_inherited_styles_->find(css_id);
+    if (iter != updated_inherited_styles_->end()) {
+      return iter->second;
     }
   }
-  return iter->second;
+  return {};
 }
 
 void FiberElement::UpdateDynamicElementStyleRecursively(uint32_t style,
@@ -3416,7 +3441,7 @@ void FiberElement::UpdateDynamicElementStyleRecursively(uint32_t style,
             return false;
           });
 
-      if (!inherited_styles_.empty()) {
+      if (inherited_styles_.has_value() && !inherited_styles_->empty()) {
         inner_force_update |= true;
       }
 
@@ -3484,7 +3509,8 @@ void FiberElement::ResetSheetRecursively(
 void FiberElement::PrepareOrUpdatePseudoElement(PseudoState state,
                                                 StyleMap &style_map) {
   if (style_map.empty() &&
-      pseudo_elements_.find(state) == pseudo_elements_.end()) {
+      (!pseudo_elements_.has_value() ||
+       pseudo_elements_->find(state) == pseudo_elements_->end())) {
     return;
   }
 
@@ -3493,15 +3519,17 @@ void FiberElement::PrepareOrUpdatePseudoElement(PseudoState state,
 }
 
 PseudoElement *FiberElement::CreatePseudoElementIfNeed(PseudoState state) {
-  auto it = pseudo_elements_.find(state);
-  if (it == pseudo_elements_.end()) {
-    auto new_pseudo_element = std::make_unique<PseudoElement>(state, this);
-    auto result = new_pseudo_element.get();
-    pseudo_elements_[state] = std::move(new_pseudo_element);
-    return result;
-  } else {
-    return it->second.get();
+  if (pseudo_elements_.has_value()) {
+    auto it = pseudo_elements_->find(state);
+    if (it != pseudo_elements_->end()) {
+      return it->second.get();
+    }
   }
+
+  auto new_pseudo_element = std::make_unique<PseudoElement>(state, this);
+  auto result = new_pseudo_element.get();
+  (*pseudo_elements_)[state] = std::move(new_pseudo_element);
+  return result;
 }
 
 void FiberElement::RecursivelyMarkRenderRootElement(FiberElement *render_root) {
@@ -3546,8 +3574,10 @@ void FiberElement::SetFontSizeForAllElement(double cur_node_font_size,
                                             double root_node_font_size) {
   computed_css_style()->SetFontSize(cur_node_font_size, root_node_font_size);
 
-  for (const auto &[key, pseudo_element] : pseudo_elements_) {
-    pseudo_element->SetFontSize(cur_node_font_size, root_node_font_size);
+  if (pseudo_elements_.has_value()) {
+    for (const auto &[key, pseudo_element] : *pseudo_elements_) {
+      pseudo_element->SetFontSize(cur_node_font_size, root_node_font_size);
+    }
   }
 }
 
@@ -3558,15 +3588,17 @@ void FiberElement::UpdateLengthContextValueForAllElement(
   computed_css_style()->SetViewportHeight(env_config.ViewportHeight());
   computed_css_style()->SetScreenWidth(env_config.ScreenWidth());
 
-  for (const auto &[key, pseudo_element] : pseudo_elements_) {
-    pseudo_element.get()->ComputedCSSStyle()->SetFontScale(
-        env_config.FontScale());
-    pseudo_element.get()->ComputedCSSStyle()->SetViewportWidth(
-        env_config.ViewportWidth());
-    pseudo_element.get()->ComputedCSSStyle()->SetViewportHeight(
-        env_config.ViewportHeight());
-    pseudo_element.get()->ComputedCSSStyle()->SetScreenWidth(
-        env_config.ScreenWidth());
+  if (pseudo_elements_.has_value()) {
+    for (const auto &[key, pseudo_element] : *pseudo_elements_) {
+      pseudo_element.get()->ComputedCSSStyle()->SetFontScale(
+          env_config.FontScale());
+      pseudo_element.get()->ComputedCSSStyle()->SetViewportWidth(
+          env_config.ViewportWidth());
+      pseudo_element.get()->ComputedCSSStyle()->SetViewportHeight(
+          env_config.ViewportHeight());
+      pseudo_element.get()->ComputedCSSStyle()->SetScreenWidth(
+          env_config.ScreenWidth());
+    }
   }
 }
 
@@ -3609,7 +3641,7 @@ void FiberElement::AsyncResolveSubtreeProperty() {
         auto task_info_ptr =
             fml::MakeRefCounted<base::OnceTask<ParallelFlushReturn>>(
                 [promise = std::move(promise),
-                 scheduler = scheduler_adapter_]() mutable {
+                 scheduler = scheduler_adapter_.get()]() mutable {
                   promise.set_value(
                       scheduler->GenerateReduceTaskForResolveProperty());
                 },
@@ -3632,7 +3664,7 @@ void FiberElement::CreateListItemScheduler(
     element_context_delegate_ = element_context_delegate_ptr.get();
     parent_context->OnChildElementContextAdded(element_context_delegate_ptr);
   } else {
-    scheduler_adapter_ = std::make_shared<ListItemSchedulerAdapter>(
+    scheduler_adapter_ = std::make_unique<ListItemSchedulerAdapter>(
         this, batch_render_strategy, parent_context, continuous_resolve_tree);
   }
 }

@@ -50,13 +50,13 @@ TEST_F(ElementTest, CheckGlobalBindTarget) {
   const auto value_emtpy = lepus::Value("");
   auto element = manager->CreateNode("view", nullptr);
   element->SetAttribute(key, value_emtpy);
-  EXPECT_EQ(element->GlobalBindTarget().size(), static_cast<size_t>(0));
+  EXPECT_EQ(element->GlobalBindTarget()->size(), static_cast<size_t>(0));
   const auto value_id = lepus::Value("id");
   element->SetAttribute(key, value_id);
-  EXPECT_EQ(element->GlobalBindTarget().size(), static_cast<size_t>(1));
+  EXPECT_EQ(element->GlobalBindTarget()->size(), static_cast<size_t>(1));
   const auto values = lepus::Value("id, pager ");
   element->SetAttribute(key, values);
-  const auto set = element->GlobalBindTarget();
+  const auto& set = *element->GlobalBindTarget();
   EXPECT_EQ(set.size(), static_cast<size_t>(2));
   ASSERT_TRUE(set.count("pager") > 0);
   ASSERT_TRUE(set.count("id") > 0);
@@ -239,8 +239,8 @@ TEST_F(ElementTest, Animate_Array) {
   // 1.Check that the keyframe array was passed in correctly.
   lepus::Value test_animate_args{array1};
   element->Animate(test_animate_args);
-  auto iter = element->keyframes_map_.find("name1");
-  EXPECT_EQ(iter != element->keyframes_map_.end(), true);
+  auto iter = element->keyframes_map_->find("name1");
+  EXPECT_EQ(iter != element->keyframes_map_->end(), true);
   EXPECT_EQ(iter->second->GetKeyframesContent()
                 .find(0)
                 ->second->find(kPropertyIDLeft)
@@ -333,8 +333,8 @@ TEST_F(ElementTest, Animate_Table) {
   // 1.Check that the keyframe table was passed in correctly.
   lepus::Value test_animate_args{array1};
   element->Animate(test_animate_args);
-  auto iter = element->keyframes_map_.find("name1");
-  EXPECT_EQ(iter != element->keyframes_map_.end(), true);
+  auto iter = element->keyframes_map_->find("name1");
+  EXPECT_EQ(iter != element->keyframes_map_->end(), true);
   EXPECT_EQ(iter->second->GetKeyframesContent()
                 .find(0)
                 ->second->find(kPropertyIDLeft)
@@ -437,8 +437,8 @@ TEST_F(ElementTest, Animate_v2_Table) {
   // 1.Check that the keyframe table was passed in correctly.
   lepus::Value test_animate_args{array1};
   element->AnimateV2(test_animate_args);
-  auto iter = element->keyframes_map_.find("name1");
-  EXPECT_EQ(iter != element->keyframes_map_.end(), true);
+  auto iter = element->keyframes_map_->find("name1");
+  EXPECT_EQ(iter != element->keyframes_map_->end(), true);
   EXPECT_EQ(iter->second->GetKeyframesContent()
                 .find(0)
                 ->second->find(kPropertyIDLeft)

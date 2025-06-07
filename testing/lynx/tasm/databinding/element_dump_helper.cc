@@ -686,10 +686,11 @@ rapidjson::Value ElementDumpHelper::DumpFiberElementToJSON(
   value.AddMember("Attributes", DumpAttributeToJSON(doc, element->data_model()),
                   allocator);
 
-  if (element->current_raw_inline_styles_.size() > 0) {
+  if (element->current_raw_inline_styles_.has_value() &&
+      element->current_raw_inline_styles_->size() > 0) {
     std::map<CSSPropertyID, CSSValue> ordered_inline_styles_map(
-        element->current_raw_inline_styles_.begin(),
-        element->current_raw_inline_styles_.end());
+        element->current_raw_inline_styles_->begin(),
+        element->current_raw_inline_styles_->end());
     rapidjson::Value inline_styles_value;
     inline_styles_value.SetObject();
     for (auto& it : ordered_inline_styles_map) {

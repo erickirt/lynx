@@ -209,6 +209,8 @@ class RadonElement : public Element {
   // This field is reserved for list
   base::String platform_node_tag_{BASE_STATIC_STRING(kListNodeTag)};
 
+  ElementChildrenArray children_;
+
   StyleMap styles_;
   AttrMap attributes_;
   DynamicCSSStylesManager styles_manager_;

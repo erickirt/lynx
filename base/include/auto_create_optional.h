@@ -13,6 +13,29 @@ namespace base {
 template <typename T>
 class auto_create_optional {
  public:
+  auto_create_optional() = default;
+
+  auto_create_optional(const auto_create_optional& other) {
+    if (other.data_) {
+      data_ = std::make_unique<T>(*other.data_);
+    }
+  }
+
+  auto_create_optional& operator=(const auto_create_optional& other) {
+    if (this == &other) {
+      return *this;
+    }
+    if (other.data_) {
+      data_ = std::make_unique<T>(*other.data_);
+    } else {
+      data_ = nullptr;
+    }
+    return *this;
+  }
+
+  auto_create_optional(auto_create_optional&& other) = default;
+  auto_create_optional& operator=(auto_create_optional&& other) = default;
+
   T& operator*() const { return *create_if_null(); }
 
   T* operator->() const { return create_if_null(); }

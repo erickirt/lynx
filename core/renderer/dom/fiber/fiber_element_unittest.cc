@@ -798,9 +798,9 @@ TEST_P(FiberElementTest, TestUpdateLayoutNodeByBundle00) {
   EXPECT_NE(view->layout_bundle_, nullptr);
   view->UpdateLayoutNodeByBundle();
   EXPECT_EQ(view->layout_bundle_, nullptr);
-  EXPECT_EQ(!view->parallel_reduce_tasks_.empty(),
+  EXPECT_EQ(!view->parallel_reduce_tasks_->empty(),
             manager->GetParallelWithSyncLayout());
-  view->parallel_reduce_tasks_.clear();
+  view->parallel_reduce_tasks_->clear();
 }
 
 TEST_P(FiberElementTest, TestUpdateLayoutNodeByBundle01) {
@@ -820,7 +820,7 @@ TEST_P(FiberElementTest, TestUpdateLayoutNodeByBundle01) {
   EXPECT_EQ(view->layout_bundle_, nullptr);
   EXPECT_EQ(!(manager->element_context_task_queue_->task_queue_.Empty()),
             manager->GetParallelWithSyncLayout());
-  EXPECT_TRUE(view->parallel_reduce_tasks_.empty());
+  EXPECT_TRUE(view->parallel_reduce_tasks_->empty());
   manager->element_context_task_queue_->task_queue_.ReversePopAll();
 }
 
@@ -1320,13 +1320,13 @@ TEST_P(FiberElementTest, SetStyle) {
   auto element = manager->CreateFiberView();
   element->SetStyle(CSSPropertyID::kPropertyIDOverflow,
                     lepus::Value("visible"));
-  auto raw_style_value = element->current_raw_inline_styles_.at(
+  auto raw_style_value = element->current_raw_inline_styles_->at(
       CSSPropertyID::kPropertyIDOverflow);
 
   page->InsertNode(element);
   EXPECT_TRUE(raw_style_value == lepus::Value("visible"));
   page->FlushActionsAsRoot();
-  auto stored_raw_style_value = element->current_raw_inline_styles_.at(
+  auto stored_raw_style_value = element->current_raw_inline_styles_->at(
       CSSPropertyID::kPropertyIDOverflow);
   EXPECT_TRUE(stored_raw_style_value == lepus::Value("visible"));
   auto parsed_style_value =
@@ -9355,7 +9355,7 @@ TEST_P(FiberElementTest, CopySetStyle) {
 
   element->SetStyle(CSSPropertyID::kPropertyIDOverflow,
                     lepus::Value("visible"));
-  auto raw_style_value = element->current_raw_inline_styles_.at(
+  auto raw_style_value = element->current_raw_inline_styles_->at(
       CSSPropertyID::kPropertyIDOverflow);
 
   page->InsertNode(element);
@@ -13106,28 +13106,28 @@ TEST_P(FiberElementTest, TestCheckTriggerGlobalEvent) {
 
 TEST_P(FiberElementTest, TestCheckGlobalBindTarget) {
   auto page = manager->CreateFiberPage("page", 11);
-  EXPECT_TRUE(page->global_bind_target_set_.empty());
+  EXPECT_TRUE(page->global_bind_target_set_->empty());
 
   page->CheckGlobalBindTarget("global-target", lepus::Value(true));
-  EXPECT_TRUE(page->global_bind_target_set_.empty());
+  EXPECT_TRUE(page->global_bind_target_set_->empty());
 
   page->CheckGlobalBindTarget("global-target", lepus::Value(1));
-  EXPECT_TRUE(page->global_bind_target_set_.empty());
+  EXPECT_TRUE(page->global_bind_target_set_->empty());
 
   page->CheckGlobalBindTarget("global-target", lepus::Value(false));
-  EXPECT_TRUE(page->global_bind_target_set_.empty());
+  EXPECT_TRUE(page->global_bind_target_set_->empty());
 
   page->CheckGlobalBindTarget("global-target", lepus::Value("xxx"));
-  EXPECT_FALSE(page->global_bind_target_set_.empty());
-  EXPECT_EQ(page->global_bind_target_set_.count("xxx"), 1);
+  EXPECT_FALSE(page->global_bind_target_set_->empty());
+  EXPECT_EQ(page->global_bind_target_set_->count("xxx"), 1);
 
   page->CheckGlobalBindTarget("global-target",
                               lepus::Value("xxxx, yyyy,zzzz,"));
-  EXPECT_FALSE(page->global_bind_target_set_.empty());
-  EXPECT_EQ(page->global_bind_target_set_.count("xxx"), 0);
-  EXPECT_EQ(page->global_bind_target_set_.count("xxxx"), 1);
-  EXPECT_EQ(page->global_bind_target_set_.count("yyyy"), 1);
-  EXPECT_EQ(page->global_bind_target_set_.count("zzzz"), 1);
+  EXPECT_FALSE(page->global_bind_target_set_->empty());
+  EXPECT_EQ(page->global_bind_target_set_->count("xxx"), 0);
+  EXPECT_EQ(page->global_bind_target_set_->count("xxxx"), 1);
+  EXPECT_EQ(page->global_bind_target_set_->count("yyyy"), 1);
+  EXPECT_EQ(page->global_bind_target_set_->count("zzzz"), 1);
 }
 
 TEST_P(FiberElementTest, CheckNewAnimatorAttr) {

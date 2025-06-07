@@ -3336,11 +3336,13 @@ RENDERER_FUNCTION_CC(FiberGetAttributeByName) {
     RETURN(iter->second);
   } else {
     const auto& builtin_attr_map = element->builtin_attr_map();
-    auto iter = builtin_attr_map.find(type);
-    if (iter == builtin_attr_map.end()) {
-      RETURN_UNDEFINED();
+    if (builtin_attr_map.has_value()) {
+      auto iter = builtin_attr_map->find(type);
+      if (iter != builtin_attr_map->end()) {
+        RETURN(iter->second);
+      }
     }
-    RETURN(iter->second);
+    RETURN_UNDEFINED();
   }
   RETURN_UNDEFINED();
 }
@@ -3365,8 +3367,10 @@ RENDERER_FUNCTION_CC(FiberGetAttributeNames) {
   }
 
   const auto& builtin_attr_map = element->builtin_attr_map();
-  for (const auto& pair : builtin_attr_map) {
-    ary->emplace_back(pair.first);
+  if (builtin_attr_map.has_value()) {
+    for (const auto& pair : *builtin_attr_map) {
+      ary->emplace_back(pair.first);
+    }
   }
 
   RETURN(lepus::Value(std::move(ary)));
@@ -3391,8 +3395,10 @@ RENDERER_FUNCTION_CC(FiberGetAttributes) {
   }
 
   const auto& builtin_attr_map = element->builtin_attr_map();
-  for (const auto& pair : builtin_attr_map) {
-    res.SetProperty(base::String(std::to_string(pair.first)), pair.second);
+  if (builtin_attr_map.has_value()) {
+    for (const auto& pair : *builtin_attr_map) {
+      res.SetProperty(base::String(std::to_string(pair.first)), pair.second);
+    }
   }
 
   RETURN(res);
@@ -4727,11 +4733,13 @@ RENDERER_FUNCTION_CC(FiberGetInlineStyle) {
 
   auto element = fml::static_ref_ptr_cast<FiberElement>(arg0->RefCounted());
 
-  const RawLepusStyleMap& inline_styles = element->GetCurrentRawInlineStyles();
-  const auto iterator =
-      inline_styles.find(static_cast<CSSPropertyID>(arg1->Number()));
-  if (iterator != inline_styles.end()) {
-    RETURN(iterator->second);
+  const auto& inline_styles = element->GetCurrentRawInlineStyles();
+  if (inline_styles.has_value()) {
+    const auto iterator =
+        inline_styles->find(static_cast<CSSPropertyID>(arg1->Number()));
+    if (iterator != inline_styles->end()) {
+      RETURN(iterator->second);
+    }
   }
   RETURN_UNDEFINED();
 }

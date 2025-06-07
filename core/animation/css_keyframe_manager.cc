@@ -214,9 +214,12 @@ std::shared_ptr<Animation> CSSKeyframeManager::CreateAnimation(
 tasm::CSSKeyframesContent& CSSKeyframeManager::GetKeyframesStyleMap(
     const base::String& animation_name) {
   DCHECK(element() != nullptr);
-  auto iter = element()->keyframes_map().find(animation_name);
-  if (iter != element()->keyframes_map().end()) {
-    return iter->second->GetKeyframesContent();
+  const auto& keyframes_map = element()->keyframes_map();
+  if (keyframes_map.has_value()) {
+    auto iter = keyframes_map->find(animation_name);
+    if (iter != keyframes_map->end()) {
+      return iter->second->GetKeyframesContent();
+    }
   }
   tasm::CSSKeyframesToken* tokens =
       element()->GetCSSKeyframesToken(animation_name);

@@ -311,7 +311,7 @@ TEST_F(CSSKeyframeManagerTest, UpdateAndFlushAnimatedStyle) {
   lynx::tasm::CSSParserConfigs configs;
   auto impl = lepus::Value("100px");
   lynx::tasm::UnitHandler::Process(id, impl, test_map, configs);
-  auto final_map = test_element->final_animator_map_;
+  const auto& final_map = *test_element->final_animator_map_;
 
   bool update_flag = final_map.empty();
   EXPECT_TRUE(update_flag);
@@ -320,7 +320,7 @@ TEST_F(CSSKeyframeManagerTest, UpdateAndFlushAnimatedStyle) {
   EXPECT_FALSE(flush_flag);
 
   test_manager->UpdateFinalStyleMap(test_map);
-  update_flag = test_element->final_animator_map_.empty();
+  update_flag = test_element->final_animator_map_->empty();
   EXPECT_FALSE(update_flag);
 
   flush_flag = test_element->FlushAnimatedStyle();
@@ -332,7 +332,7 @@ TEST_F(CSSKeyframeManagerTest, SetNeedsAnimationStyleRecalc) {
   auto test_element = InitElement();
   auto test_manager = InitTestKeyframeManager(test_element.get());
   test_manager->SetNeedsAnimationStyleRecalc(test_animation->name());
-  auto final_map = test_element->final_animator_map_;
+  const auto& final_map = *test_element->final_animator_map_;
   bool update_flag = final_map.empty();
   EXPECT_TRUE(update_flag);
 }

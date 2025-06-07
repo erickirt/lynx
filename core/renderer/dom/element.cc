@@ -144,9 +144,9 @@ Element::Element(const Element& element, bool clone_resolved_props)
       paddings_(element.paddings_),
       sticky_positions_(element.sticky_positions_),
       max_height_(element.max_height_),
+      record_parent_font_size_(element.record_parent_font_size_),
       global_bind_target_set_(element.global_bind_target_set_),
-      animation_previous_styles_(element.animation_previous_styles_),
-      record_parent_font_size_(element.record_parent_font_size_) {
+      animation_previous_styles_(element.animation_previous_styles_) {
   platform_css_style_ = std::make_unique<starlight::ComputedCSSStyle>(
       *(element.computed_css_style()));
 }
@@ -276,7 +276,7 @@ void Element::UpdateLayout(float left, float top, float width, float height,
   margins_ = margins;
   borders_ = borders;
   if (sticky_positions != nullptr) {
-    sticky_positions_ = *sticky_positions;
+    *sticky_positions_ = *sticky_positions;
   }
   MarkSubtreeNeedUpdate();
   NotifyElementSizeUpdated();
@@ -337,7 +337,7 @@ void Element::SetStyleInternal(CSSPropertyID css_id,
     UpdateLayoutNodeStyle(css_id, value);
 
     if (element_manager_->GetEnableDumpElementTree()) {
-      layout_styles_[css_id] = value;
+      (*layout_styles_)[css_id] = value;
     }
   }
 
@@ -418,7 +418,9 @@ void Element::ResetCSSValue(CSSPropertyID css_id) {
   if (need_layout) {
     ResetLayoutNodeStyle(css_id);
     if (element_manager_->GetEnableDumpElementTree()) {
-      layout_styles_.erase(css_id);
+      if (layout_styles_.has_value()) {
+        layout_styles_->erase(css_id);
+      }
     }
   }
   if (css_id == kPropertyIDPosition) {
@@ -689,9 +691,8 @@ void Element::Animate(const lepus::Value& args) {
       // remove them from keyframes_map when the last animation was overwritten.
       if (!will_removed_keyframe_name_.empty()) {
         if (enable_new_animator()) {
-          auto iter = keyframes_map_.find(will_removed_keyframe_name_);
-          if (iter != keyframes_map_.end()) {
-            keyframes_map_.erase(iter);
+          if (keyframes_map_.has_value()) {
+            keyframes_map_->erase(will_removed_keyframe_name_);
           }
         } else {
           auto remove_name = lepus::Value(will_removed_keyframe_name_);
@@ -716,12 +717,12 @@ void Element::Animate(const lepus::Value& args) {
       }
 
       starlight::CSSStyleUtils::UpdateCSSKeyframes(
-          keyframes_map_, animate_name, args.GetProperty(2), parser_configs);
+          *keyframes_map_, animate_name, args.GetProperty(2), parser_configs);
       lepus_name = lepus::Value(std::move(animate_name));
       if (!enable_new_animator()) {
         // the unique_id may be the same but the keyframes content is different
         // when Animate trigger each time.
-        SetKeyframesByNames(lepus_name, keyframes_map_, true);
+        SetKeyframesByNames(lepus_name, *keyframes_map_, true);
       }
       UnitHandler::Process(kPropertyIDAnimationName, lepus_name, styles,
                            parser_configs);
@@ -817,7 +818,7 @@ void Element::AnimateV2(const lepus::Value& args) {
       }
 
       starlight::CSSStyleUtils::UpdateCSSKeyframes(
-          keyframes_map_, animate_name, args.GetProperty(2), parser_configs);
+          *keyframes_map_, animate_name, args.GetProperty(2), parser_configs);
       lepus_name = lepus::Value(std::move(animate_name));
       UnitHandler::Process(kPropertyIDAnimationName, lepus_name, styles,
                            parser_configs);
@@ -1190,7 +1191,7 @@ void Element::CheckGlobalBindTarget(const lynx::base::String& key,
   // clear target_set_ if set global-target attribute, no matter value is empty
   // or not
   auto value_str = value.StringView();
-  global_bind_target_set_.clear();
+  global_bind_target_set_.reset();
   if (value_str.empty()) {
     return;
   }
@@ -1199,7 +1200,7 @@ void Element::CheckGlobalBindTarget(const lynx::base::String& key,
   // multiple id split by comma delimiter
   base::SplitString(base::TrimString(value_str), kDelimiter, id_targets);
   for (auto& s : id_targets) {
-    global_bind_target_set_.insert(base::TrimString(s));
+    global_bind_target_set_->insert(base::TrimString(s));
   }
 }
 
@@ -1451,16 +1452,18 @@ bool Element::TickAllAnimation(fml::TimePoint& frame_time,
 
 void Element::UpdateFinalStyleMap(const StyleMap& styles) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_UPDATE_FINAL_STYLE_MAP);
-  final_animator_map_.merge(styles);
+  if (!styles.empty()) {
+    final_animator_map_->merge(styles);
+  }
 }
 
 bool Element::FlushAnimatedStyle() {
-  if (final_animator_map_.empty()) {
+  if (!final_animator_map_.has_value() || final_animator_map_->empty()) {
     return false;
   }
   TRACE_EVENT(LYNX_TRACE_CATEGORY, ELEMENT_FLUSH_ANIMATED_STYLE);
   bool has_layout_style = false;
-  for (const auto& style : final_animator_map_) {
+  for (const auto& style : *final_animator_map_) {
     if (NeedFastFlushPath(style)) {
       has_layout_style = true;
       break;
@@ -1476,7 +1479,7 @@ bool Element::FlushAnimatedStyle() {
   }
 
   bool has_render_style = false;
-  for (const auto& style : final_animator_map_) {
+  for (const auto& style : *final_animator_map_) {
     // Record previous before rtl-converter for transition.
     if (style.second != CSSValue::Empty()) {
       RecordElementPreviousStyle(style.first, style.second);
@@ -1529,7 +1532,7 @@ bool Element::FlushAnimatedStyle() {
       painting_context()->OnNodeReady(id);
     });
   }
-  final_animator_map_.clear();
+  final_animator_map_.reset();
   return has_layout_style || !has_painting_node_;
 }
 

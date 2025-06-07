@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/include/auto_create_optional.h"
 #include "base/include/fml/memory/ref_counted.h"
 #include "base/include/vector.h"
 #include "base/trace/native/trace_event.h"
@@ -514,7 +515,12 @@ class FiberElement : public Element, public SelectorItem {
   virtual const AttrMap& GetAttributesForWorklet() override;
 
   const base::String& GetRawInlineStyles();
-  const RawLepusStyleMap& GetCurrentRawInlineStyles() const;
+
+  // Check has_value() before usage to avoid unintentional construction.
+  const auto& GetCurrentRawInlineStyles() const {
+    return current_raw_inline_styles_;
+  }
+
   void SetRawInlineStyles(base::String value);
 
   void MarkDirty(const uint32_t flag) {
@@ -800,7 +806,11 @@ class FiberElement : public Element, public SelectorItem {
 
   virtual bool WillResolveStyle(StyleMap& merged_styles) override;
 
-  const BuiltinAttrMap& builtin_attr_map() const { return builtin_attr_map_; }
+  // Check has_value() before usage to avoid unintentional construction.
+  const auto& builtin_attr_map() const { return builtin_attr_map_; }
+
+  // Check has_value() before usage to avoid unintentional construction.
+  const auto& updated_attr_map() const { return updated_attr_map_; }
 
   void PrepareOrUpdatePseudoElement(PseudoState state, StyleMap& style_map);
 
@@ -820,7 +830,7 @@ class FiberElement : public Element, public SelectorItem {
 
   void ClearExtremeParsedStyles() {
     if (has_extreme_parsed_styles_) {
-      extreme_parsed_styles_.clear();
+      extreme_parsed_styles_.reset();
       has_extreme_parsed_styles_ = false;
     }
   }
@@ -841,7 +851,7 @@ class FiberElement : public Element, public SelectorItem {
   }
 
   inline void EnqueueReduceTask(base::MoveOnlyClosure<void> operation) {
-    parallel_reduce_tasks_.emplace_back(std::move(operation));
+    parallel_reduce_tasks_->emplace_back(std::move(operation));
   }
 
   virtual int32_t GetMemoryUsage() const override { return sizeof(*this); }
@@ -896,8 +906,6 @@ class FiberElement : public Element, public SelectorItem {
 
   virtual void MarkHasLayoutOnlyPropsIfNecessary(
       const base::String& attribute_key);
-
-  const AttrUMap& updated_attr_map() const { return updated_attr_map_; }
 
   bool ShouldDestroy() const;
 
@@ -970,7 +978,8 @@ class FiberElement : public Element, public SelectorItem {
       scoped_children_;
 
   // for air virtual node
-  base::Vector<fml::RefPtr<FiberElement>> scoped_virtual_children_;
+  base::auto_create_optional<base::InlineVector<fml::RefPtr<FiberElement>, 2>>
+      scoped_virtual_children_;
   FiberElement* virtual_parent_{nullptr};
 
   // layout_parent/child to indicate current real tree hierarchy after
@@ -1047,47 +1056,51 @@ class FiberElement : public Element, public SelectorItem {
 
   StyleMap parsed_styles_map_;
 
-  StyleMap styles_from_attributes_;
+  base::auto_create_optional<StyleMap> styles_from_attributes_;
 
-  StyleMap updated_inherited_styles_;  // current styles = parsed_styles_map_ +
-                                       // updated_inherited_styles_
-  RawLepusStyleMap current_raw_inline_styles_{kCSSStyleMapFuzzyAllocationSize};
+  base::auto_create_optional<RawLepusStyleMap> current_raw_inline_styles_;
 
   // the parsed styles that set from front-end resolved in compiler stage
-  StyleMap extreme_parsed_styles_;
+  base::auto_create_optional<StyleMap> extreme_parsed_styles_;
 
-  StyleMap inherited_styles_;
-  base::Vector<tasm::CSSPropertyID> reset_inherited_ids_;
+  base::auto_create_optional<StyleMap> inherited_styles_;
+  base::auto_create_optional<StyleMap>
+      updated_inherited_styles_;  // current styles = parsed_styles_map_ +
+                                  // updated_inherited_styles_
+  base::auto_create_optional<base::Vector<tasm::CSSPropertyID>>
+      reset_inherited_ids_;
 
   //{origin_css_id, {css_value, is_logic_style}}
-  base::LinearFlatMap<tasm::CSSPropertyID, std::pair<CSSValue, IsLogic>>
+  base::auto_create_optional<
+      base::LinearFlatMap<tasm::CSSPropertyID, std::pair<CSSValue, IsLogic>>>
       pending_updated_direction_related_styles_;
 
   base::Vector<ActionParam> action_param_list_;
 
   AttrUMap updated_attr_map_;
-  base::Vector<base::String> reset_attr_vec_;
+  base::auto_create_optional<BuiltinAttrMap> builtin_attr_map_;
+  base::auto_create_optional<base::Vector<base::String>> reset_attr_vec_;
 
   // Configuration set for elements through the LepusRuntime will be stored in
   // the config variable
   fml::RefPtr<lepus::Dictionary> config_;
 
-  std::list<base::closure> parallel_reduce_tasks_;
+  base::auto_create_optional<std::list<base::closure>> parallel_reduce_tasks_;
 
   // Need extra list to record tasks that need to be invoked before flush
   // actions
-  std::list<base::closure> parallel_before_flush_action_tasks_;
+  base::auto_create_optional<std::list<base::closure>>
+      parallel_before_flush_action_tasks_;
 
   std::unique_ptr<LayoutBundle> layout_bundle_;
 
   base::String part_id_;
 
-  BuiltinAttrMap builtin_attr_map_;
-
-  base::LinearFlatMap<PseudoState, std::unique_ptr<PseudoElement>>
+  base::auto_create_optional<
+      base::LinearFlatMap<PseudoState, std::unique_ptr<PseudoElement>>>
       pseudo_elements_;
 
-  std::shared_ptr<ListItemSchedulerAdapter> scheduler_adapter_;
+  std::unique_ptr<ListItemSchedulerAdapter> scheduler_adapter_;
 
  protected:
   ElementContextDelegate* element_context_delegate_{nullptr};
