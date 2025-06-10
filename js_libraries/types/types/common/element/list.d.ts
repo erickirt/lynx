@@ -517,6 +517,22 @@ export interface ListProps extends StandardProps {
   'sticky-offset'?: number;
 
   /**
+   * The property to control whether recycle sticky item. The default value is true if sdk version >= 3.4 and false if sdk version < 3.4.
+   * @defaultValue false
+   * @Android
+   * @iOS
+   */
+  'experimental-recycle-sticky-item'?: boolean;
+
+  /**
+   * The property to set the capacity of sticky item cache. The default value is 1 if thread mode is ALL_ON_UI and 2 if thread mode is MOST_ON_TASM / PART_ON_LAYOUT / MULTI_THREADS.
+   * @defaultValue 1
+   * @Android
+   * @iOS
+   */
+  'sticky-buffer-count'?: number;
+
+  /**
    * When enabled, the upper or lower element will also be shifted together with the bounces effect.
    * @defaultValue false
    * @iOS
