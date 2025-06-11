@@ -218,7 +218,7 @@ bool LepusNGDebugger::GetDebugInfoEntry(rapidjson::Document& document,
       }
     }
   }
-  if (entry.Empty()) {
+  if (!entry.IsObject() || entry.MemberCount() == 0) {
     LOGE("lepusng debug: cannot find target entry in debug info, url: " << url);
     return false;
   }
