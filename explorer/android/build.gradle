@@ -20,6 +20,8 @@ buildscript {
         value = project.properties["abiList"]
         abiList = value? value.toString().split(",") : ["arm64-v8a"]
 
+        pythonExec = project.file(python_exec).absolutePath
+
         if (project.hasProperty("IntegrationTest")) {
             buildIntegrationDemo = true
         } else {
@@ -97,7 +99,7 @@ ext.getFlavorNamesAndBuildTypes = { Project project ->
 ext.writeGnArgs = { String gnArgs ->
     exec {
         workingDir "../../"
-        commandLine "python3", "tools/android_tools/write_gn_args.py", "--gn-args", gnArgs.replaceAll('"', '#')
+        commandLine pythonExec, "tools/android_tools/write_gn_args.py", "--gn-args", gnArgs.replaceAll('"', '#')
     }
 }
 
@@ -136,7 +138,7 @@ task generateAllGnCmakeTargets {
     }
     exec {
         workingDir "../../"
-        commandLine "python3", "tools/android_tools/generate_cmake_scripts_by_gn.py"
+        commandLine pythonExec, "tools/android_tools/generate_cmake_scripts_by_gn.py"
         println commandLine
     }
 }
@@ -145,7 +147,7 @@ task buildHomePage {
     description "Build home page card."
     exec {
         workingDir "../homepage"
-        commandLine "python3", "build.py"
+        commandLine pythonExec, "build.py"
         println commandLine
     }
     copy {
@@ -162,7 +164,7 @@ task buildShowcase {
     description "Build showcase card."
     exec {
         workingDir "../showcase"
-        commandLine "python3", "./build_and_copy.py"
+        commandLine pythonExec, "./build_and_copy.py"
         println commandLine
     }
 }
@@ -174,7 +176,7 @@ if (buildIntegrationDemo) {
         description "Build Integeration Test Demo Card."
         exec {
             workingDir "../../testing/integration_test/demo_pages"
-            commandLine "python3", "./build_and_copy.py"
+            commandLine pythonExec, "./build_and_copy.py"
             println commandLine
         }
     }
@@ -186,7 +188,7 @@ task clean(type: Delete) {
     doLast {
         exec {
             workingDir "../../"
-            commandLine "python3", "tools/android_tools/generate_cmake_scripts_by_gn.py", "--clean"
+            commandLine pythonExec, "tools/android_tools/generate_cmake_scripts_by_gn.py", "--clean"
             println commandLine
         }
     }
