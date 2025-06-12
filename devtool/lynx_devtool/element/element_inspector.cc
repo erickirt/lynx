@@ -523,7 +523,7 @@ std::unordered_map<std::string, std::string> ElementInspector::GetCssByStyleMap(
     if (pair.second.GetValueType() == lynx::tasm::CSSValueType::VARIABLE) {
       Value value_expr = pair.second.GetValue();
       String property = pair.second.GetDefaultValue();
-      auto& default_value_map_opt = pair.second.GetDefaultValueMapOpt();
+      const auto& default_value_map_opt = pair.second.GetDefaultValueMapOpt();
       auto default_value_map =
           default_value_map_opt ? *default_value_map_opt : Value();
       if (element && value_expr.IsString()) {
