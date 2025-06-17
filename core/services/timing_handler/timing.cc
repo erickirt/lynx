@@ -31,7 +31,7 @@ void TimingCollector::Mark(const TimingKey& key, uint64_t timestamp) {
         ctx.event()->add_debug_annotations("timestamp",
                                            std::to_string(timestamp));
       });
-  top_timings.timings_[key] = timestamp;
+  top_timings.timings_.insert_if_absent(key, timestamp);
 }
 
 void TimingCollector::MarkFrameworkTiming(const lynx::tasm::TimingKey& key,
