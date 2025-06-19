@@ -110,6 +110,8 @@ class NodeManager {
     node_map_.clear();
   }
 
+  size_t NodeCount() { return node_map_.size(); }
+
   int32_t GetTotalMemoryUsage() const {
     if (node_map_.empty()) {
       return 0;
@@ -288,6 +290,9 @@ class ElementManager : public ElementContextDelegate {
     virtual void BindPipelineIDWithTimingFlag(
         const tasm::PipelineID &pipeline_id,
         const tasm::timing::TimingFlag &timing_flag) = 0;
+
+    virtual void ReportElementMemoryInfo(float mem_size_byte,
+                                         int element_count) = 0;
   };
 
   ElementManager(

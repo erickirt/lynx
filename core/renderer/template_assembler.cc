@@ -3337,6 +3337,14 @@ void TemplateAssembler::OnLayoutAfter() {
         page_proxy()->element_manager()->CalcTotalMemoryUsageDiff());
   }
 
+  // TODO(@limeng.amer): Move this to Pipeline Lifecycle Observer if provided;
+  if (tasm::performance::MemoryMonitor::Enable()) {
+    auto* node_manager = page_proxy()->element_manager()->node_manager();
+    int32_t count = static_cast<int32_t>(node_manager->NodeCount());
+    float mem_size_byte = node_manager->GetTotalMemoryUsage();
+    delegate_.ReportElementMemoryInfo(mem_size_byte, count);
+  }
+
   // TODO(@yangguangzhao.solace): Advance Pipeline Lifecycle State;
 }
 

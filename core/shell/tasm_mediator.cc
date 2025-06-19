@@ -236,6 +236,26 @@ void TasmMediator::InitVSyncMonitorIfNeeded() {
   }
 }
 
+void TasmMediator::ReportElementMemoryInfo(float mem_size_byte,
+                                           int element_count) {
+  if (!perf_actor_) {
+    return;
+  }
+  perf_actor_->ActAsync([mem_size_byte, element_count](auto& performance) {
+    float mem_size_kb = mem_size_byte / tasm::performance::KB;
+    tasm::performance::MemoryRecord record;
+    record.category_ = tasm::performance::kCategoryTasmElement;
+    record.size_kb_ = mem_size_kb;
+    auto detail =
+        std::make_unique<std::unordered_map<std::string, std::string>>();
+    detail->emplace("singleElementSizeKb",
+                    std::to_string(mem_size_kb / element_count));
+    detail->emplace("elementCount", std::to_string(element_count));
+    record.detail_ = std::move(detail);
+    performance->GetMemoryMonitor().UpdateMemoryUsage(std::move(record));
+  });
+}
+
 void TasmMediator::RequestVsync(
     uintptr_t id, base::MoveOnlyClosure<void, int64_t, int64_t> callback) {
   InitVSyncMonitorIfNeeded();

@@ -48,6 +48,9 @@ class MockTasmDelegate : public TemplateAssembler::Delegate,
 
   tasm::LynxTemplateBundle GetTemplateBundle() { return std::move(bundle_); }
 
+  void ReportElementMemoryInfo(float mem_size_byte,
+                               int element_count) override{};
+
   // synchronous
   virtual std::string TranslateResourceForTheme(
       const std::string& res_id, const std::string& theme_key) override;

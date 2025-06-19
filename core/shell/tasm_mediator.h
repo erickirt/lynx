@@ -145,6 +145,9 @@ class TasmMediator : public LynxEngine::Delegate {
 
   void OnCardConfigDataChanged(const lepus::Value& data) override;
 
+  void ReportElementMemoryInfo(float memory_size_byte,
+                               int element_count) override;
+
   void SetTiming(tasm::Timing timing) override;
 
   virtual void BindPipelineIDWithTimingFlag(
