@@ -166,11 +166,13 @@ public class FlattenUIText extends LynxFlattenUI implements IUIText {
   }
 
   public int getDrawPositionLeft() {
-    return getLeft() + mPaddingLeft + mBorderLeftWidth + (int) mTextTranslateOffset.x;
+    return getLeft() + mPaddingLeft + mBorderLeftWidth
+        + (mTextTranslateOffset != null ? (int) mTextTranslateOffset.x : 0);
   }
 
   public int getDrawPositionTop() {
-    return getTop() + mPaddingTop + mBorderTopWidth + (int) mTextTranslateOffset.y;
+    return getTop() + mPaddingTop + mBorderTopWidth
+        + (mTextTranslateOffset != null ? (int) mTextTranslateOffset.y : 0);
   }
   @Override
   @Nullable
