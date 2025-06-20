@@ -160,12 +160,13 @@ open class LynxUIBaseInput(context: LynxContext) : LynxUI<LynxEditTextView>(cont
 
                 override fun afterTextChanged(s: Editable?) {
                     afterTextDidChanged(s)
-                    s?.let {
+                    if (mView != null) {
+                      s?.let {
                         lynxContext.eventEmitter.sendCustomEvent(LynxDetailEvent(
-                            sign,
-                            "input"
+                          sign,
+                          "input"
                         ).apply {
-                            addDetail("value", it.toString())
+                          addDetail("value", it.toString())
                           var selectionStart = -1
                           if (mView.isFocused) {
                             selectionStart = mView.selectionStart
@@ -174,10 +175,11 @@ open class LynxUIBaseInput(context: LynxContext) : LynxUI<LynxEditTextView>(cont
                           if (mView.isFocused) {
                             selectionEnd = mView.selectionEnd
                           }
-                            addDetail("selectionStart", selectionStart)
-                            addDetail("selectionEnd", selectionEnd)
-                            addDetail("isComposing", mView?.inputConnection()?.hasComposingText(it))
+                          addDetail("selectionStart", selectionStart)
+                          addDetail("selectionEnd", selectionEnd)
+                          addDetail("isComposing", mView?.inputConnection()?.hasComposingText(it))
                         })
+                      }
                     }
                 }
 
