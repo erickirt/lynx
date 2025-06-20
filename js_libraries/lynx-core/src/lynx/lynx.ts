@@ -11,19 +11,19 @@ import {
   LoadDynamicComponentFunc,
   LoadDynamicComponentSuccessResult,
   LynxSetTimeout,
+  MessageEvent,
 } from '@lynx-js/types';
 import {
   RequireModule,
   RequireModuleAsync,
-  DispatchEventResult,
   NativeLynxProxy,
+  MessageEventType,
 } from './interface';
 import { BaseApp, NativeApp } from '../app';
 import { TextInfo, TextMetrics } from '../modules/nativeModules';
 import nativeGlobal from '../common/nativeGlobal';
 import Element from '../modules/element';
 import { LynxErrorLevel } from '../modules/report';
-import { MessageEventType, MessageEvent } from './interface';
 import Performance from '../modules/performance';
 import SelectorQuery from '../modules/selectorQuery/SelectorQuery';
 import { KeyframeEffectV2 } from '../modules/animation/effect';
@@ -212,7 +212,7 @@ export class Lynx {
     var eventResult = this.getCoreContext().dispatchEvent(event);
 
     // In LynxView, the event has been sucessfully handled by `CoreContext`.
-    if (eventResult == DispatchEventResult.NotCanceled) {
+    if (eventResult == 0) {
       return;
     }
 

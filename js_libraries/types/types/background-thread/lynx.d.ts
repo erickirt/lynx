@@ -149,5 +149,4 @@ export interface Lynx extends CommonLynx {
    * @since 1.0
    */
   onError?: (error: Error) => void;
-
 }

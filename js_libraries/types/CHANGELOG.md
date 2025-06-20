@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.3.4
+
+- Add typing for the runtime interfaces.
+
 ## 3.3.3
 
 - [Infra][Types] Codegen longhand and shorthand properties from css_defines

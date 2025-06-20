@@ -7,7 +7,12 @@
  */
 import { TextInfo, TextMetrics } from '../modules/nativeModules';
 import { NativeElementProxy } from '../modules';
-import { GlobalProps, Lynx as BackgroundLynx, Response } from '@lynx-js/types';
+import {
+  GlobalProps,
+  Lynx as BackgroundLynx,
+  Response,
+  ContextProxy,
+} from '@lynx-js/types';
 
 export interface NativeLynxProxy extends BackgroundLynx {
   __globalProps: GlobalProps;
@@ -42,25 +47,6 @@ export interface NativeLynxProxy extends BackgroundLynx {
   reload(value: object, callback: () => void): void;
 
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-}
-
-export enum DispatchEventResult {
-  // Event was not canceled by event handler or default event handler.
-  NotCanceled = 0,
-  // Event was canceled by event handler; i.e. a script handler calling
-  // preventDefault.
-  CanceledByEventHandler,
-  // Event was canceled by the default event handler; i.e. executing the default
-  // action.  This result should be used sparingly as it deviates from the DOM
-  // Event Dispatch model. Default event handlers really shouldn't be invoked
-  // inside of dispatch.
-  CanceledByDefaultEventHandler,
-  // Event was canceled but suppressed before dispatched to event handler.  This
-  // result should be used sparingly; and its usage likely indicates there is
-  // potential for a bug. Trusted events may return this code; but untrusted
-  // events likely should always execute the event handler the developer intends
-  // to execute.
-  CanceledBeforeDispatch,
 }
 
 export const enum ContextProxyType {
@@ -98,24 +84,6 @@ export const enum MessageEventType {
   EVENT_GET_SESSION_STORAGE = '__GetSessionStorageItem',
   EVENT_SUBSCRIBE_SESSION_STORAGE = '__SubscribeSessionStorage',
   EVENT_UNSUBSCRIBE_SESSION_STORAGE = '__UnSubscribeSessionStorage',
-}
-
-export interface MessageEvent {
-  type: string;
-  data: any;
-  origin?: string;
-}
-
-export interface ContextProxy {
-  onTriggerEvent?: (event: MessageEvent) => void;
-
-  postMessage(message: any): void;
-  dispatchEvent(event: MessageEvent): DispatchEventResult;
-  addEventListener(type: string, listener: (event: MessageEvent) => void): void;
-  removeEventListener(
-    type: string,
-    listener: (event: MessageEvent) => void
-  ): void;
 }
 
 export interface RequireModuleCache {

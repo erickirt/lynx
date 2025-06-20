@@ -36,6 +36,7 @@ import {
   CreateIntersectionObserverFunc,
   LynxClearTimeout,
   LynxSetTimeout,
+  MessageEvent,
 } from '@lynx-js/types';
 import Performance from '../modules/performance';
 import { reportError } from '../modules/report';
@@ -44,7 +45,7 @@ import { BaseAppSingletonData } from '../standalone/StandaloneApp';
 import { CachedFunctionProxy } from '../util/cachedFunctionProxy';
 import { getPromiseMaybePolyfill } from '../util/setup-promise';
 import { createResponseClass, createRequestClass } from '../modules/fetch';
-import { MessageEventType, MessageEvent } from '../lynx';
+import { MessageEventType } from '../lynx';
 import { TraceEventDef } from '../util/TraceEventDef';
 
 export abstract class BaseApp<

@@ -18,6 +18,9 @@ import {
   NativeModules as INativeModules,
   SystemInfo,
   PlatformType,
+  ContextProxy,
+  MessageEvent,
+  DispatchEventResult,
 } from '../../types/index';
 
 describe('Global Variable Type Test ', () => {
@@ -92,6 +95,28 @@ describe('Global Variable Type Test ', () => {
     expectTypeOf(lynx.reportError).parameter(0).toEqualTypeOf<string | Error>();
     expectTypeOf(lynx.reportError).parameter(1).toEqualTypeOf<{ level?: 'error' | 'warning' } | undefined>();
     expectTypeOf(lynx.reportError).returns.toBeVoid();
+    //Runtime
+    expectTypeOf(lynx.getCoreContext).returns.toEqualTypeOf<ContextProxy>();
+    expectTypeOf(lynx.getJSContext).returns.toEqualTypeOf<ContextProxy>();
+    expectTypeOf(lynx.getDevtool).returns.toEqualTypeOf<ContextProxy>();
+    expectTypeOf(lynx.getNative).returns.toEqualTypeOf<ContextProxy>();
+    expectTypeOf(lynx.getEngine).returns.toEqualTypeOf<ContextProxy>();
+  });
+
+  it('ContextProxy Method Types Check', () => {
+    const contextProxy = {} as ContextProxy;
+    expectTypeOf(contextProxy.onTriggerEvent).parameter(0).toEqualTypeOf<MessageEvent>();
+    expectTypeOf(contextProxy.onTriggerEvent).returns.toBeVoid();
+    expectTypeOf(contextProxy.postMessage).parameter(0).toEqualTypeOf<any>();
+    expectTypeOf(contextProxy.postMessage).returns.toBeVoid();
+    expectTypeOf(contextProxy.dispatchEvent).parameter(0).toEqualTypeOf<MessageEvent>();
+    expectTypeOf(contextProxy.dispatchEvent).returns.toEqualTypeOf<DispatchEventResult>();
+    expectTypeOf(contextProxy.addEventListener).parameter(0).toEqualTypeOf<string>();
+    expectTypeOf(contextProxy.addEventListener).parameter(1).toEqualTypeOf<(event: MessageEvent) => void>();
+    expectTypeOf(contextProxy.addEventListener).returns.toBeVoid();
+    expectTypeOf(contextProxy.removeEventListener).parameter(0).toEqualTypeOf<string>();
+    expectTypeOf(contextProxy.removeEventListener).parameter(1).toEqualTypeOf<(event: MessageEvent) => void>();
+    expectTypeOf(contextProxy.removeEventListener).returns.toBeVoid();
   });
 
   it('GetElementById Types Check', () => {

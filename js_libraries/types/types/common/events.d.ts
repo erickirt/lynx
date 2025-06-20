@@ -80,9 +80,9 @@ export interface BaseTouchEvent<T> extends BaseEventOrig<any, T> {
   changedTouches: Array<Touch>;
 
   detail: {
-    /** The current position of the touch point relative to the touched element's x-coordinate. */
+    /** The current position of the touch point relative to the page's x-coordinate. */
     x: number;
-    /** The current position of the touch point relative to the touched element's y-coordinate. */
+    /** The current position of the touch point relative to the page's y-coordinate. */
     y: number;
   }
 }
