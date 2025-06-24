@@ -946,7 +946,7 @@ void FiberElement::ResetDirectionAwareProperty(const CSSPropertyID &id,
   }
 }
 
-void FiberElement::HandleKeyframePropsChange(bool need_animation_props) {
+void FiberElement::HandleKeyframePropsChange() {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, FIBER_ELEMENT_HANDLE_KEYFRAME_PROPS_CHANGE,
               [this](lynx::perfetto::EventContext ctx) {
                 UpdateTraceDebugInfo(ctx.event());
@@ -955,9 +955,6 @@ void FiberElement::HandleKeyframePropsChange(bool need_animation_props) {
     ResolveAndFlushKeyframes();
   } else {
     SetDataToNativeKeyframeAnimator();
-    if (need_animation_props) {
-      ResolveAndFlushKeyframes();
-    }
   }
   has_keyframe_props_changed_ = false;
 }
@@ -1350,13 +1347,9 @@ void FiberElement::ResolveCSSStyles(
         element_manager()->GetInstanceId());
   }
   // keyframe props
-  bool need_animation_props = painting_context()->NeedAnimationProps();
   if (has_keyframe_props_changed_) {
-    HandleDelayTask([this, need_animation_props]() {
-      HandleKeyframePropsChange(need_animation_props);
-    });
-    if (!enable_new_animator() ||
-        (enable_new_animator() && need_animation_props)) {
+    HandleDelayTask([this]() { HandleKeyframePropsChange(); });
+    if (!enable_new_animator()) {
       PushToBundle(kPropertyIDAnimation);
     }
     need_update = true;
@@ -1371,9 +1364,6 @@ void FiberElement::ResolveCSSStyles(
       PushToBundle(kPropertyIDTransition);
     } else {
       SetDataToNativeTransitionAnimator();
-      if (need_animation_props) {
-        PushToBundle(kPropertyIDTransition);
-      }
     }
     has_transition_props_changed_ = false;
     need_update = true;

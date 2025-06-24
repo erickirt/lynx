@@ -703,7 +703,7 @@ class FiberElement : public Element,
 
   void HandleBeforeFlushActionsTask(base::MoveOnlyClosure<void> operation);
 
-  void HandleKeyframePropsChange(bool need_animation_props);
+  void HandleKeyframePropsChange();
 
   void VerifyKeyframePropsChangedHandling();
 
