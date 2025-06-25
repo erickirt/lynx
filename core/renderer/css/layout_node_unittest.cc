@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "core/renderer/lynx_env_config.h"
+#include "core/style/layout_property.h"
 #include "third_party/googletest/googletest/include/gtest/gtest.h"
 
 namespace lynx {
@@ -189,7 +190,7 @@ TEST_F(LayoutNodeTests, RemoveCommonWithinVirtual) {
 }
 
 #define TEST_DECLARE_WANTED_PROPERTY(name, type) \
-  EXPECT_EQ(LayoutNode::ConsumptionTest(kPropertyID##name), type);
+  EXPECT_EQ(LayoutProperty::ConsumptionTest(kPropertyID##name), type);
 
 struct ThreadArgs {
   std::atomic<bool>* flag;

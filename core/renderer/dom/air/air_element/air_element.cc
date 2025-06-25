@@ -18,6 +18,7 @@
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/renderer/utils/value_utils.h"
+#include "core/style/layout_property.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 
 namespace lynx {
@@ -556,7 +557,7 @@ void AirElement::SetStyle(CSSPropertyID id, tasm::CSSValue &value) {
     return;
   }
   // The LayoutOnly css property only needs to be set to starlight
-  if (LayoutNode::IsLayoutOnly(id)) {
+  if (LayoutProperty::IsLayoutOnly(id)) {
     ConsumeStyle(id, value);
   } else {
     // check if css props passing to platform are flatten-related
@@ -574,7 +575,7 @@ void AirElement::SetStyle(CSSPropertyID id, tasm::CSSValue &value) {
 
     // The LayoutWanted css property needs to be set to starlight, and also
     // needs to be set to the platform.
-    if (LayoutNode::IsLayoutWanted(id)) {
+    if (LayoutProperty::IsLayoutWanted(id)) {
       ConsumeStyle(id, value);
       ComputeCSSStyle(id, value);
       // set to the platform
@@ -591,8 +592,8 @@ void AirElement::SetStyle(CSSPropertyID id, tasm::CSSValue &value) {
 
 void AirElement::ResetStyle(CSSPropertyID id) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, AIR_ELEMENT_RESET_STYLE);
-  bool is_layout_only = LayoutNode::IsLayoutOnly(id);
-  if (is_layout_only || LayoutNode::IsLayoutWanted(id)) {
+  bool is_layout_only = LayoutProperty::IsLayoutOnly(id);
+  if (is_layout_only || LayoutProperty::IsLayoutWanted(id)) {
     if (EnableAsyncCalc()) {
       async_reset_styles_.insert(id);
     } else {

@@ -222,21 +222,6 @@ void LayoutNode::SetMeasureFunc(std::unique_ptr<MeasureFunc> measure_func) {
   });
 }
 
-ConsumptionStatus LayoutNode::ConsumptionTest(CSSPropertyID id) {
-  static const auto& kWantedProperty = []() -> const int(&)[kPropertyEnd] {
-    static int arr[kPropertyEnd];
-    std::fill(std::begin(arr), std::end(arr), ConsumptionStatus::SKIP);
-
-#define DECLARE_WANTED_PROPERTY(name, type) arr[kPropertyID##name] = type;
-    FOREACH_LAYOUT_PROPERTY(DECLARE_WANTED_PROPERTY)
-#undef DECLARE_WANTED_PROPERTY
-
-    return arr;
-  }();
-
-  return static_cast<ConsumptionStatus>(kWantedProperty[id]);
-}
-
 void LayoutNode::set_type(LayoutNodeType type) { type_ = type; }
 
 bool LayoutNode::IsDirty() {

@@ -15,10 +15,10 @@
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/ui_component/list/list_types.h"
-#include "core/renderer/ui_wrapper/layout/layout_node.h"
 #include "core/renderer/utils/base/tasm_constants.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/feature_count/global_feature_counter.h"
+#include "core/style/layout_property.h"
 
 namespace lynx {
 namespace tasm {
@@ -798,8 +798,8 @@ void RadonElement::ConsumeStyle(const StyleMap& styles,
 
 bool RadonElement::NeedFastFlushPath(
     const std::pair<CSSPropertyID, tasm::CSSValue>& style) {
-  return style.second.IsEmpty() || LayoutNode::IsLayoutOnly(style.first) ||
-         LayoutNode::IsLayoutWanted(style.first) ||
+  return style.second.IsEmpty() || LayoutProperty::IsLayoutOnly(style.first) ||
+         LayoutProperty::IsLayoutWanted(style.first) ||
          style.first == kPropertyIDTransform ||
          style.first == kPropertyIDColor || style.first == kPropertyIDFilter;
 }

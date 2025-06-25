@@ -17,8 +17,7 @@
 #include "core/renderer/dom/vdom/radon/radon_element.h"
 #include "core/renderer/starlight/style/default_layout_style.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
-#include "core/renderer/ui_wrapper/layout/layout_node.h"
-
+#include "core/style/layout_property.h"
 namespace lynx {
 namespace tasm {
 using starlight::DirectionType;
@@ -224,8 +223,8 @@ void DynamicCSSStylesManager::UpdateDirectionStyle(
 void DynamicCSSStylesManager::AdoptStyle(CSSPropertyID css_id,
                                          const tasm::CSSValue& value) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, DYNAMIC_STYLE_MANAGER_ADOPT_SHEET);
-  if (element_->element_manager() && (LayoutNode::IsLayoutOnly(css_id) ||
-                                      LayoutNode::IsLayoutWanted(css_id))) {
+  if (element_->element_manager() && (LayoutProperty::IsLayoutOnly(css_id) ||
+                                      LayoutProperty::IsLayoutWanted(css_id))) {
     element_->element_manager()->SetNeedsLayout();
   }
 

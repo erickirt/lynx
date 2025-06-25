@@ -45,13 +45,13 @@
 #include "core/renderer/starlight/style/default_layout_style.h"
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
-#include "core/renderer/ui_wrapper/layout/layout_node.h"
 #include "core/renderer/utils/lynx_env.h"
 #include "core/renderer/utils/value_utils.h"
 #include "core/runtime/bindings/jsi/java_script_element.h"
 #include "core/services/event_report/event_tracker.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/feature_count/global_feature_counter.h"
+#include "core/style/layout_property.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 
 namespace lynx {
@@ -262,8 +262,8 @@ FiberElement::GetParentInheritedProperty() {
 
 bool FiberElement::NeedFastFlushPath(
     const std::pair<CSSPropertyID, tasm::CSSValue> &style) {
-  return style.second.IsEmpty() || LayoutNode::IsLayoutOnly(style.first) ||
-         LayoutNode::IsLayoutWanted(style.first) ||
+  return style.second.IsEmpty() || LayoutProperty::IsLayoutOnly(style.first) ||
+         LayoutProperty::IsLayoutWanted(style.first) ||
          starlight::CSSStyleUtils::IsLayoutRelatedTransform(style) ||
          style.first == kPropertyIDColor || style.first == kPropertyIDFilter;
 }
@@ -2923,7 +2923,7 @@ bool FiberElement::ResolveStyleValue(CSSPropertyID id,
   }
 
   if (EnableLayoutInElementMode()) {
-    if (LayoutNode::IsLayoutWanted(id)) {
+    if (LayoutProperty::IsLayoutWanted(id)) {
       MarkLayoutDirtyLite();
     }
   }

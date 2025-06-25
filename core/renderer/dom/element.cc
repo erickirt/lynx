@@ -37,6 +37,7 @@
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/feature_count/global_feature_counter.h"
 #include "core/services/timing_handler/timing_constants_deprecated.h"
+#include "core/style/layout_property.h"
 #include "core/value_wrapper/value_impl_lepus.h"
 
 namespace lynx {
@@ -330,9 +331,9 @@ void Element::SetStyleInternal(CSSPropertyID css_id,
   }
 
   // check layout only related styles
-  bool is_layout_only = LayoutNode::IsLayoutOnly(css_id);
+  bool is_layout_only = LayoutProperty::IsLayoutOnly(css_id);
 
-  bool need_layout = is_layout_only || LayoutNode::IsLayoutWanted(css_id);
+  bool need_layout = is_layout_only || LayoutProperty::IsLayoutWanted(css_id);
   if (need_layout) {
     // Check fixed&sticky before layout only
     CheckFixedSticky(css_id, value);
@@ -420,8 +421,8 @@ void Element::ResetCSSValue(CSSPropertyID css_id) {
     return;
   }
 
-  bool is_layout_only = LayoutNode::IsLayoutOnly(css_id);
-  bool need_layout = is_layout_only || LayoutNode::IsLayoutWanted(css_id);
+  bool is_layout_only = LayoutProperty::IsLayoutOnly(css_id);
+  bool need_layout = is_layout_only || LayoutProperty::IsLayoutWanted(css_id);
   if (need_layout) {
     ResetLayoutNodeStyle(css_id);
     if (element_manager_->GetEnableDumpElementTree()) {
@@ -501,8 +502,8 @@ void Element::ResetStyle(const base::Vector<CSSPropertyID>& css_names) {
     // need to record some necessary styles which New Animator transition needs,
     // and it needs to be saved before rtl converted logic.
     ResetElementPreviousStyle(css_id);
-    if (element_manager() && (LayoutNode::IsLayoutOnly(css_id) ||
-                              LayoutNode::IsLayoutWanted(css_id))) {
+    if (element_manager() && (LayoutProperty::IsLayoutOnly(css_id) ||
+                              LayoutProperty::IsLayoutWanted(css_id))) {
       element_manager()->SetNeedsLayout();
     }
     ResetStyleInternal(DynamicCSSStylesManager::ResolveDirectionAwarePropertyID(
