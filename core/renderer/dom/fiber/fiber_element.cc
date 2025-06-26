@@ -116,7 +116,7 @@ FiberElement::FiberElement(const FiberElement &element,
       part_id_(element.part_id_) {
   SetAttributeHolder(
       fml::MakeRefCounted<AttributeHolder>(*element.data_model()));
-  data_model_->set_css_variables_map(element.data_model()->css_variables_map());
+  data_model_->SetCSSVariableBundle(*element.data_model());
 
   if (clone_resolved_props) {
     parsed_styles_map_ = element.parsed_styles_map_;

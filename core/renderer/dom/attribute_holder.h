@@ -426,6 +426,12 @@ class AttributeHolder : public fml::RefCountedThreadSafeStorage,
   BASE_EXPORT_FOR_DEVTOOL static const GestureMap& DefaultEmptyGestureMap();
   BASE_EXPORT_FOR_DEVTOOL static const DataMap& DefaultEmptyDataMap();
 
+  void SetCSSVariableBundle(const AttributeHolder& holder) {
+    if (holder.css_variables_.has_value()) {
+      *css_variables_ = *holder.css_variables_;
+    }
+  }
+
  protected:
   ClassList classes_;
   StyleMap inline_styles_{kCSSStyleMapFuzzyAllocationSize};
