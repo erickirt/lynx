@@ -516,6 +516,7 @@ napi_value LynxTemplateRenderer::Init(napi_env env, napi_value exports) {
       DECLARE_NAPI_METHOD("setupExtensionDelegate", SetupExtensionDelegate),
       DECLARE_NAPI_METHOD("onEnterForeground", OnEnterForeground),
       DECLARE_NAPI_METHOD("onEnterBackground", OnEnterBackground),
+      DECLARE_NAPI_METHOD("nativeGetAllJsSource", GetAllJsSource),
   };
 
   napi_value cons;
@@ -535,6 +536,22 @@ napi_value LynxTemplateRenderer::Init(napi_env env, napi_value exports) {
   NAPI_CREATE_FUNCTION(env, exports, "setCacheDirPath", SetCacheDirPath);
 
   return exports;
+}
+
+napi_value LynxTemplateRenderer::GetAllJsSource(napi_env env,
+                                                napi_callback_info info) {
+  napi_value js_this;
+  size_t argc = 0;
+  napi_value args[0];
+  napi_get_cb_info(env, info, &argc, args, &js_this, nullptr);
+  LynxTemplateRenderer* obj = nullptr;
+  napi_status status =
+      napi_unwrap(env, js_this, reinterpret_cast<void**>(&obj));
+  if (!CheckNapiUnwrapObject(status, obj, "GetAllJsSource failed")) {
+    return nullptr;
+  }
+  auto js_source = obj->shell_->GetAllJsSource();
+  return base::NapiUtil::CreateMap(env, js_source);
 }
 
 napi_value LynxTemplateRenderer::InitGlobalEnv(napi_env env,

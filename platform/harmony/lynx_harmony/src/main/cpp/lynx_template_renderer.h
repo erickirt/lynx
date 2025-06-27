@@ -171,6 +171,8 @@ class LynxTemplateRenderer : public devtool::LynxDevToolProxy {
   static napi_value OnEnterForeground(napi_env env, napi_callback_info info);
   static napi_value OnEnterBackground(napi_env env, napi_callback_info info);
 
+  static napi_value GetAllJsSource(napi_env env, napi_callback_info info);
+
   struct WeakFlag : public std::enable_shared_from_this<WeakFlag> {
     explicit WeakFlag(LynxTemplateRenderer* template_renderer)
         : renderer(template_renderer) {}
