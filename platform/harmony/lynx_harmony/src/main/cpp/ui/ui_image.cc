@@ -442,8 +442,13 @@ void UIImage::UpdateTintColor(const lepus::Value& value) {
   CSSStringParser parser =
       CSSStringParser::FromLepusString(value, CSSParserConfigs());
   CSSValue color = parser.ParseCSSColor();
-  tint_color_ = color.GetValue().UInt32();
-  dirty_flags_ |= kFlagTintColorChanged;
+  if (color.GetValue().IsEmpty()) {
+    LOGD("tint-color is either invalid or undefined, reset it");
+    NodeManager::Instance().ResetAttribute(Node(), NODE_IMAGE_COLOR_FILTER);
+  } else {
+    tint_color_ = color.GetValue().UInt32();
+    dirty_flags_ |= kFlagTintColorChanged;
+  }
 }
 
 void UIImage::UpdateDropShadow(const lepus::Value& value) {
