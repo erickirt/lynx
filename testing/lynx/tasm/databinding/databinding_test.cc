@@ -447,6 +447,14 @@ void DataBindingShell::UpdateDataByJS(const lepus::Value& table) {
   tasm_->UpdateDataByJS(task, task.pipeline_options_);
 }
 
+void DataBindingShell::UpdateComponentData(const std::string& component_id,
+                                           const lepus::Value& table) {
+  auto pipeline_options = std::make_shared<PipelineOptions>();
+  runtime::UpdateDataTask task(false, component_id, table, piper::ApiCallBack(),
+                               runtime::UpdateDataType(), pipeline_options);
+  tasm_->UpdateComponentData(task, task.pipeline_options_);
+}
+
 void DataBindingShell::UpdateDataByPreParsedData(const lepus::Value& table,
                                                  bool reset) {
   auto pipeline_options = std::make_shared<PipelineOptions>();

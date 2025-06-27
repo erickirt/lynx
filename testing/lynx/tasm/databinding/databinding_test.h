@@ -202,6 +202,9 @@ class DataBindingShell {
 
   void UpdateDataByJS(const lepus::Value& table);
 
+  void UpdateComponentData(const std::string& component_id,
+                           const lepus::Value& table);
+
   void UpdateDataByPreParsedData(const lepus::Value& table, bool reset = false);
 
   void SetOptimizedStyleDiff();
