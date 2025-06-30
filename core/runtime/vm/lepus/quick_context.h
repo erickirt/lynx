@@ -111,8 +111,12 @@ class QuickContext : private LEPUSRuntimeData,
                    const char* file_name = nullptr) override;
 
   // DeSerialize & Execute
-  bool EvalBinary(const uint8_t* buf, uint64_t size, Value* ret,
-                  const char* file_name = nullptr);
+  bool EvalBinary(const uint8_t* buf, uint64_t size, Value& ret,
+                  const char* file_name = nullptr) override;
+
+  // Execute for plain script.
+  bool EvalBuf(const char* buf, uint64_t size, Value& ret,
+               const char* file_name) override;
 
   LEPUSValue GetAndCall(const std::string& name, LEPUSValue*, size_t);
   LEPUSValue InternalCall(LEPUSValue func, LEPUSValue*, size_t);
@@ -213,6 +217,8 @@ class QuickContext : private LEPUSRuntimeData,
                                      const std::string& prefix);
 
   LEPUSValue GetProperty(const std::string& name, LEPUSValue this_obj);
+
+  void EvalLepusPendingTask();
   LEPUSValue top_level_function_;
   GCPersistent p_val_;
 

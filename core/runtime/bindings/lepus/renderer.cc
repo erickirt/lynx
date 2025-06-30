@@ -89,6 +89,7 @@ void Utils::RegisterMethodToLynx(lepus::Context* context, lepus::Value& lynx) {
                                  &SetSessionStorageItem);
     lepus::RegisterTableFunction(context, lynx_table, kGetSessionStorageItem,
                                  &GetSessionStorageItem);
+    lepus::RegisterTableFunction(context, lynx_table, kLoadScript, &LoadScript);
     // Timing
     RegisterMethodToLynxPerformance(context, lynx);
   }

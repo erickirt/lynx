@@ -88,6 +88,7 @@ void Utils::RegisterNGMethodToLynx(lepus::Context* context, lepus::Value& lynx,
          // reportError
          &RendererFunctions::LynxAddReporterCustomInfo},
         {kReportError, &RendererFunctions::ReportError},
+        {kLoadScript, &RendererFunctions::LoadScript},
     };
     lepus::RegisterObjectNGCFunction(context, lynx, funcs,
                                      sizeof(funcs) / sizeof(funcs[0]));

@@ -27,6 +27,7 @@ static constexpr const char* kClearTimeInterval = "clearInterval";
 static constexpr const char* kRequestAnimationFrame = "requestAnimationFrame";
 static constexpr const char* kCancelAnimationFrame = "cancelAnimationFrame";
 static constexpr const char* kReportError = "reportError";
+static constexpr const char* kLoadScript = "loadScript";
 
 // Constant string associated with tag
 // TODO(WUJINTIAN): Those `static char[]` here will lead to duplicate redundant

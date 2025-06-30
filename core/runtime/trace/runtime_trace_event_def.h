@@ -436,6 +436,8 @@ inline constexpr const char* const QUICK_CONTEXT_DO_SERIALIZE =
     "LepusNG.DeSerialize";
 inline constexpr const char* const QUICK_CONTEXT_EVAL_BINARY =
     "LepusNG.EvalBinary";
+inline constexpr const char* const QUICK_CONTEXT_EVAL_SCRIPT =
+    "LepusNG.EvalScript";
 inline constexpr const char* const QUICK_CONTEXT_CHECK_TABLE_SHADOW_UPDATED =
     "QuickContext::CheckTableShadowUpdatedWithTopLevelVariable";
 inline constexpr const char* const QUICK_CONTEXT_UPDATE_TOP_LEVEL_VARIABLE =

@@ -248,6 +248,17 @@ class Context {
 
   virtual bool IsTracingGCEnabled() { return false; }
 
+  virtual bool EvalBinary(const uint8_t* buf, uint64_t size, Value& ret,
+                          const char* file_name = nullptr) {
+    return false;
+  }
+
+  // Execute for plain script.
+  virtual bool EvalBuf(const char* buf, uint64_t size, Value& ret,
+                       const char* file_name) {
+    return false;
+  }
+
  protected:
   virtual Value CallArgs(const base::String& name, const Value* args[],
                          size_t args_count, bool pause_suppression_mode) = 0;

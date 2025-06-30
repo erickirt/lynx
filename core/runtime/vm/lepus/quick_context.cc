@@ -422,28 +422,7 @@ bool QuickContext::Execute(Value* ret_val) {
     ReportErrorWithMsg(log, err_code);
   }
   HandleScope func_scope(context(), &ret, HANDLE_TYPE_LEPUS_VALUE);
-  LEPUSContext* ctx = nullptr;
-  int result = 0;
-  while ((result = LEPUS_ExecutePendingJob(runtime_, &ctx))) {
-    if (unlikely(ctx != context())) {
-      continue;
-    }
-    if (result < 0) {
-      constexpr const static char* kErrorPrefix =
-          "QuickContext::Execute() pending job exception!!!\n";
-      const std::string log = GetExceptionMessage(kErrorPrefix);
-      LOGE("pending job error:\n" << log);
-      ReportErrorWithMsg(log, error::E_MTS_RUNTIME_ERROR);
-    }
-  }
-
-  while (LEPUS_MoveUnhandledRejectionToException(context())) {
-    constexpr const static char* kErrorPrefix =
-        "QuickContext::Execute() unhandled rejection!!!\n";
-    const std::string log = GetExceptionMessage(kErrorPrefix);
-    LOGE("unhandled rejection:" << log);
-    ReportErrorWithMsg(log, error::E_MTS_RUNTIME_ERROR);
-  }
+  EvalLepusPendingTask();
 
   if (!gc_flag_) LEPUS_FreeValue(context(), global);
   if (ret_val) {
@@ -869,7 +848,7 @@ bool QuickContext::DeSerialize(const ContextBundle& bundle, bool reuse_context,
     // file_name is only used for dynamic-components,
     // file_name of page is `lepus.js` by default.
     return EvalBinary(quick_bundle.lepusng_code_.data(),
-                      quick_bundle.lepusng_code_.size(), ret, file_name);
+                      quick_bundle.lepusng_code_.size(), *ret, file_name);
   }
 
   LEPUSValue val = LEPUS_EvalBinary(
@@ -890,7 +869,7 @@ bool QuickContext::DeSerialize(const ContextBundle& bundle, bool reuse_context,
   return true;
 }
 
-bool QuickContext::EvalBinary(const uint8_t* buf, uint64_t size, Value* ret,
+bool QuickContext::EvalBinary(const uint8_t* buf, uint64_t size, Value& ret,
                               const char* file_name) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_EVAL_BINARY);
   LEPUSValue val = LEPUS_EvalBinary(context(), buf, static_cast<size_t>(size),
@@ -906,9 +885,58 @@ bool QuickContext::EvalBinary(const uint8_t* buf, uint64_t size, Value* ret,
       LEPUS_DupValue(context(), top_level_function_);
   func_scope.PushHandle(&top_level_function, HANDLE_TYPE_LEPUS_VALUE);
   SetTopLevelFunction(val);
-  Execute(ret);
+  Execute(&ret);
   SetTopLevelFunction(top_level_function);
   return true;
+}
+
+bool QuickContext::EvalBuf(const char* buf, uint64_t size, Value& ret,
+                           const char* file_name) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY_VITALS, QUICK_CONTEXT_EVAL_SCRIPT,
+              [&](lynx::perfetto::EventContext ctx) {
+                ctx.event()->add_debug_annotations("file_name", file_name);
+                ctx.event()->add_debug_annotations("file_size",
+                                                   std::to_string(size));
+              });
+  EnsureLynx();
+  if (!use_lepus_strict_mode_) {
+    LEPUS_SetNoStrictMode(context());
+  }
+
+  LEPUSValue val = LEPUS_Eval(context(), buf, static_cast<size_t>(size),
+                              file_name, LEPUS_EVAL_TYPE_GLOBAL);
+  HandleScope func_scope(context(), &val, HANDLE_TYPE_LEPUS_VALUE);
+  if (LEPUS_IsException(val)) {
+    std::string msg = GetExceptionMessage();
+    LOGE("QuickContext EvalBuf error: " << msg);
+    return false;
+  }
+  EvalLepusPendingTask();
+  ret = MK_JS_LEPUS_VALUE(lepus_context_, val);
+  return true;
+}
+
+void QuickContext::EvalLepusPendingTask() {
+  LEPUSContext* ctx = nullptr;
+  int result = 0;
+  while ((result = LEPUS_ExecutePendingJob(runtime_, &ctx))) {
+    if (unlikely(ctx != context())) {
+      continue;
+    }
+    if (result < 0) {
+      const std::string log = GetExceptionMessage();
+      LOGE(" Call exception: " << log);
+      ReportErrorWithMsg(log, error::E_MTS_RUNTIME_ERROR);
+    }
+  }
+  while (LEPUS_MoveUnhandledRejectionToException(context())) {
+    std::string log = GetExceptionMessage();
+    LOGE("unhandled rejection:" << log);
+    ReportErrorWithMsg(log, error::E_MTS_RUNTIME_ERROR);
+    // If we caught unhandled rejections, we should still return the
+    // real return value of the call instead of undefined.
+    // Explicitly fallthrough here.
+  }
 }
 
 LEPUSValue QuickContext::InternalCall(LEPUSValue caller, LEPUSValue* args,

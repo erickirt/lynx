@@ -977,6 +977,57 @@ RENDERER_FUNCTION_CC(GetCustomSectionSync) {
   RETURN_UNDEFINED();
 }
 
+RENDERER_FUNCTION_CC(LoadScript) {
+  if (!LEPUS_CONTEXT()->IsLepusNGContext()) {
+    RETURN_UNDEFINED();
+  }
+  CHECK_ARGC_GE(LoadScript, 1);
+  CONVERT_ARG_AND_CHECK(arg0, 0, String, LoadScript);
+
+  std::string bundle_name = tasm::DEFAULT_ENTRY_NAME;
+  if (argc > 1) {
+    CONVERT_ARG_AND_CHECK(arg1, 1, Object, LoadScript);
+    BASE_STATIC_STRING_DECL(kBundleName, "bundleName");
+    if (arg1->Contains(kBundleName) &&
+        arg1->GetProperty(kBundleName).IsString()) {
+      bundle_name = arg1->GetProperty(kBundleName).StdString();
+    }
+  }
+
+  auto* tasm = GET_TASM_POINTER();
+  if (tasm) {
+    auto url = arg0->StdString();
+    auto source_code = tasm->GetCustomSection(url, bundle_name);
+    lepus::Value res;
+    if (source_code.IsByteArray()) {
+      auto byte_array = source_code.ByteArray();
+      LEPUS_CONTEXT()->EvalBinary(byte_array->GetPtr(), byte_array->GetLength(),
+                                  res, url.c_str());
+      return res;
+    } else if (source_code.IsString()) {
+      auto plain_source = source_code.StdString();
+      LEPUS_CONTEXT()->EvalBuf(plain_source.c_str(), plain_source.length(), res,
+                               url.c_str());
+      return res;
+    } else {
+      static const std::string error_msg_prefix =
+          "lynx.loadScript's script is ";
+      static constexpr char error_msg_suffix[] =
+          "key: %s, bundleName: %s, scriptType: %d";
+      std::string error_msg;
+      if (source_code.IsEmpty()) {
+        error_msg = error_msg_prefix + "empty.";
+      } else {
+        error_msg = error_msg_prefix + "not bytecode or string.";
+      }
+      return RenderFatal(LEPUS_CONTEXT(),
+                         (error_msg + error_msg_suffix).c_str(), url.c_str(),
+                         bundle_name.c_str(), source_code.Type());
+    }
+  }
+  RETURN_UNDEFINED();
+}
+
 /* Lepus Lynx API END */
 
 /* ContextProxy API BEGIN */
