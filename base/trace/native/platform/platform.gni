@@ -42,6 +42,12 @@ if (enable_trace == "perfetto") {
       platform_shared_sources +=
           [ "platform/android/trace_event_android_mock.cc" ]
     }
+  } else if (is_win) {
+    platform_public_headers += [ "platform/windows/trace_controller_win.h" ]
+    platform_shared_sources += [
+      "platform/windows/trace_controller_win.h",
+      "platform/windows/trace_controller_win_mock.cc",
+    ]
   }
 }
 
