@@ -84,7 +84,7 @@ void Animation::Destroy(bool need_clear_effect) {
   }
 }
 
-void Animation::CreateEventAndSend(const char* event) {
+void Animation::CreateEventAndSend(const base::String& event) {
   if (element_->event_map().find(event) == element_->event_map().end() &&
       element_->lepus_event_map().find(event) ==
           element_->lepus_event_map().end() &&
@@ -102,7 +102,7 @@ void Animation::CreateEventAndSend(const char* event) {
                                 : BASE_STATIC_STRING(kKeyframeAnimationName));
   dict->SetValue(kAnimationName, this->animation_data()->name);
   element_->element_manager()->SendAnimationEvent(
-      event, element_->impl_id(), lepus::Value(std::move(dict)));
+      event.str(), element_->impl_id(), lepus::Value(std::move(dict)));
 }
 
 void Animation::SetKeyframeEffect(
@@ -191,22 +191,25 @@ fml::TimePoint& Animation::GetAnimationDummyStartTime() {
 }
 
 void Animation::SendStartEvent() {
-  CreateEventAndSend(is_transition_ ? kTransitionStartEventName
-                                    : kKeyframeStartEventName);
+  CreateEventAndSend(is_transition_
+                         ? BASE_STATIC_STRING(kTransitionStartEventName)
+                         : BASE_STATIC_STRING(kKeyframeStartEventName));
 }
 
 void Animation::SendEndEvent() {
-  CreateEventAndSend(is_transition_ ? kTransitionEndEventName
-                                    : kKeyframeEndEventName);
+  CreateEventAndSend(is_transition_
+                         ? BASE_STATIC_STRING(kTransitionEndEventName)
+                         : BASE_STATIC_STRING(kKeyframeEndEventName));
 }
 
 void Animation::SendCancelEvent() {
-  CreateEventAndSend(is_transition_ ? kTransitionCancelEventName
-                                    : kKeyframeCancelEventName);
+  CreateEventAndSend(is_transition_
+                         ? BASE_STATIC_STRING(kTransitionCancelEventName)
+                         : BASE_STATIC_STRING(kKeyframeCancelEventName));
 }
 
 void Animation::SendIterationEvent() {
-  CreateEventAndSend(kKeyframeIterationEventName);
+  CreateEventAndSend(BASE_STATIC_STRING(kKeyframeIterationEventName));
 }
 
 }  // namespace animation

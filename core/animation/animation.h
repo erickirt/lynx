@@ -103,7 +103,7 @@ class Animation : public std::enable_shared_from_this<Animation> {
   fml::TimePoint start_time_{fml::TimePoint::Min()};
 
  private:
-  void CreateEventAndSend(const char* event);
+  void CreateEventAndSend(const base::String& event);
   void Tick(fml::TimePoint& time);
   void RequestNextFrame();
   AnimationDelegate* animation_delegate_{nullptr};

@@ -471,7 +471,7 @@ void TasmMediator::InsertLayoutNode(int32_t parent_id, int32_t child_id,
   });
 }
 
-void TasmMediator::SendAnimationEvent(const char* type, int tag,
+void TasmMediator::SendAnimationEvent(const std::string& type, int tag,
                                       const lepus::Value& dict) {
   engine_actor_->ActLite([arguments = dict, tag, type](auto& engine) {
     engine->SendCustomEvent(type, tag, arguments, "params");

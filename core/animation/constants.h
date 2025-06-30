@@ -10,13 +10,14 @@ namespace animation {
 
 static constexpr const char kKeyframeAnimationName[] = "keyframe-animation";
 static constexpr const char kTransitionAnimationName[] = "transition-animation";
-static constexpr const char* kKeyframeStartEventName = "animationstart";
-static constexpr const char* kTransitionStartEventName = "transitionstart";
-static constexpr const char* kKeyframeEndEventName = "animationend";
-static constexpr const char* kTransitionEndEventName = "transitionend";
-static constexpr const char* kKeyframeCancelEventName = "animationcancel";
-static constexpr const char* kTransitionCancelEventName = "transitioncancel";
-static constexpr const char* kKeyframeIterationEventName = "animationiteration";
+static constexpr const char kKeyframeStartEventName[] = "animationstart";
+static constexpr const char kTransitionStartEventName[] = "transitionstart";
+static constexpr const char kKeyframeEndEventName[] = "animationend";
+static constexpr const char kTransitionEndEventName[] = "transitionend";
+static constexpr const char kKeyframeCancelEventName[] = "animationcancel";
+static constexpr const char kTransitionCancelEventName[] = "transitioncancel";
+static constexpr const char kKeyframeIterationEventName[] =
+    "animationiteration";
 
 }  // namespace animation
 }  // namespace lynx

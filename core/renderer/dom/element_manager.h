@@ -247,7 +247,7 @@ class ElementManager : public ElementContextDelegate {
                                           double font_scale) = 0;
     virtual void InsertLayoutNode(int32_t parent_id, int32_t child_id,
                                   int index) = 0;
-    virtual void SendAnimationEvent(const char *type, int tag,
+    virtual void SendAnimationEvent(const std::string &type, int tag,
                                     const lepus::Value &dict) = 0;
     virtual void RemoveLayoutNodeAtIndex(int32_t parent_id, int index) = 0;
     virtual void MoveLayoutNode(int32_t parent_id, int32_t child_id,
@@ -376,7 +376,8 @@ class ElementManager : public ElementContextDelegate {
                               int32_t ref_id);
   void RemoveLayoutNode(int32_t parent_id, int32_t child_id);
   void DestroyLayoutNode(int32_t id);
-  void SendAnimationEvent(const char *type, int tag, const lepus::Value &dict);
+  void SendAnimationEvent(const std::string &type, int tag,
+                          const lepus::Value &dict);
   void MoveLayoutNode(int32_t parent_id, int32_t child_id, int from_index,
                       int to_index);
   void UpdateLayoutNodeStyle(int32_t id, tasm::CSSPropertyID css_id,

@@ -407,16 +407,16 @@ void MockTasmDelegate::RequestVsync(
   ss_ << "RequestVsync" << std::endl;
 }
 
-void MockTasmDelegate::SendAnimationEvent(const char* type, int tag,
+void MockTasmDelegate::SendAnimationEvent(const std::string& type, int tag,
                                           const lepus::Value& dict) {
-  animation_event_type_ = type;
-  if (std::strcmp(type, animation::kKeyframeStartEventName) == 0) {
+  animation_event_type_ = type.c_str();
+  if (type == animation::kKeyframeStartEventName) {
     animation_start_event_count_++;
-  } else if (std::strcmp(type, animation::kKeyframeEndEventName) == 0) {
+  } else if (type == animation::kKeyframeEndEventName) {
     animation_end_event_count_++;
-  } else if (std::strcmp(type, animation::kKeyframeCancelEventName) == 0) {
+  } else if (type == animation::kKeyframeCancelEventName) {
     animation_cancel_event_count_++;
-  } else if (std::strcmp(type, animation::kKeyframeIterationEventName) == 0) {
+  } else if (type == animation::kKeyframeIterationEventName) {
     animation_iteration_event_count_++;
   }
   animation_event_params_ = dict;

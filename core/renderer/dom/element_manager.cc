@@ -841,7 +841,7 @@ void ElementManager::MoveLayoutNode(int32_t parent_id, int32_t child_id,
   delegate_->MoveLayoutNode(parent_id, child_id, from_index, to_index);
 }
 
-void ElementManager::SendAnimationEvent(const char *type, int tag,
+void ElementManager::SendAnimationEvent(const std::string &type, int tag,
                                         const lepus::Value &dict) {
   delegate_->SendAnimationEvent(type, tag, dict);
 }

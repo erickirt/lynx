@@ -97,7 +97,7 @@ class MockTasmDelegate : public TemplateAssembler::Delegate,
       const std::shared_ptr<tasm::PipelineOptions>& pipeline_options) override;
   virtual void OnLifecycleEvent(const lepus::Value& args) override;
 
-  virtual void SendAnimationEvent(const char* type, int tag,
+  virtual void SendAnimationEvent(const std::string& type, int tag,
                                   const lepus::Value& dict) override;
   virtual void SendNativeCustomEvent(const std::string& name, int tag,
                                      const lepus::Value& param_value,
