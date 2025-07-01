@@ -437,11 +437,14 @@ export class Lynx {
     });
   };
 
-  createSelectorQuery = (): SelectorQuery => {
-    return SelectorQuery.newEmptyQuery({
-      nativeApp: this.getNativeApp(),
-      lynx: this,
-    });
+  createSelectorQuery = (component?: string): SelectorQuery => {
+    return SelectorQuery.newEmptyQuery(
+      {
+        nativeApp: this.getNativeApp(),
+        lynx: this,
+      },
+      component
+    );
   };
 
   requestAnimationFrame = (callback: () => void) =>
