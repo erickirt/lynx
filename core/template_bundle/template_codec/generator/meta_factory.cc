@@ -748,6 +748,9 @@ EncoderOptions MetaFactory::GetEncoderOptions(rapidjson::Document& document) {
   bool enable_simple_styling = false;
   GET_VALUE_FROM_JSON(options, kEnableSimpleStyling, Bool,
                       enable_simple_styling);
+  if (enable_simple_styling) {
+    enable_css_parser = true;
+  }
 
   CompileOptions compile_options{
       encoder_options.compile_options_.target_sdk_version_,

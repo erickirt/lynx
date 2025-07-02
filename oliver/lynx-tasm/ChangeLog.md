@@ -1,3 +1,6 @@
+# 0.0.12
+* Fix the issue that `StyleObjects` are not encoded as parsed `CSSValues` when `enableParallelElement` is false.
+
 # 0.0.11
 * add renderer functions for simple styling mode `__CreateStyleObject`, `__SetStyleObject` and `__UpdateStyleObject`.
 
