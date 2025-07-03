@@ -245,7 +245,6 @@ static const CGFloat kLynxUIListLoaderScreenWidthInRpx = 750.;
   }
 }
 
-// TODO(@hujing.1) Unified Interface
 - (void)recycleLynxUI:(LynxUI *)ui {
   auto *listNode = self.listNode;
   if (!listNode) {

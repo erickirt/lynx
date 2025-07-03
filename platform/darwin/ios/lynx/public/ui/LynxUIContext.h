@@ -3,7 +3,6 @@
 // LICENSE file in the root directory of this source tree.
 
 #import <Foundation/Foundation.h>
-#import <Lynx/ListNodeInFoFetcherProtocol.h>
 #import <Lynx/LynxEventEmitter.h>
 #import <Lynx/LynxGenericResourceFetcher.h>
 #import <Lynx/LynxLifecycleDispatcher.h>
@@ -46,7 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, weak, nullable, readwrite) LynxUIOwner* uiOwner;
 @property(nonatomic, weak) id lynxModuleExtraData;
 @property(nonatomic, assign, readwrite) int64_t shellPtr;
-@property(nonatomic, strong) id<ListNodeInFoFetcherProtocol> fetcher;
 @property(nonatomic, readwrite) LynxScreenMetrics* screenMetrics;
 @property(nonatomic, readonly) LynxUIIntersectionObserverManager* intersectionManager;
 @property(nonatomic) LynxUIExposure* uiExposure;

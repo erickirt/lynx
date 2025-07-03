@@ -13,6 +13,7 @@
 #import <Lynx/LynxUIMethodProcessor.h>
 #import <Lynx/UIScrollView+Lynx.h>
 #import "LynxUIContext+Internal.h"
+#include "core/shell/lynx_shell.h"
 
 static const CGFloat kLynxListContainerInvalidScrollEstimatedOffset = -1.0;
 static const CGFloat kInvalidSnapFactor = -1;
@@ -991,17 +992,13 @@ LYNX_UI_METHOD(scrollToPosition) {
 
   // Tell ListElement that we want scroll to some position
 
-  auto listNodeInfoFetcher = self.context.fetcher;
-  if (listNodeInfoFetcher) {
+  auto shellPtr = self.context.shellPtr;
+  if (shellPtr) {
     if (smooth) {
       self.scrollToCallback = callback;
     }
-    [listNodeInfoFetcher scrollToPosition:static_cast<int32_t>(self.sign)
-                                 position:(int)position
-                                   offset:offset
-                                    align:(int)alignTo
-                                   smooth:smooth];
-
+    reinterpret_cast<lynx::shell::LynxShell *>(shellPtr)->ScrollToPosition(
+        static_cast<int32_t>(self.sign), (int)position, offset, (int)alignTo, smooth);
     if (!smooth) {
       // TODO(xiamengfei.moonface) Invoke callback after ListElement did scroll on Most_On_Tasm
       callback(kUIMethodSuccess, nil);
@@ -1091,21 +1088,18 @@ LYNX_UI_METHOD(getVisibleCells) {
       ![self.view respondToScrollViewDidScroll:self.view.gestureConsumer]) {
     return;
   }
-
-  auto listNodeInfoFetcher = self.context.fetcher;
+  auto shellPtr = self.context.shellPtr;
   // If if the contentOffset was updated by targetContentOffset, which means now the contentOffset
   // is exactly the same with elementList, do not reenter ScrollByListContainer
 
-  if (listNodeInfoFetcher && !_shouldBlockScrollByListContainer) {
+  if (shellPtr && !_shouldBlockScrollByListContainer) {
     // Before sending scrollByListContainer, previousContentOffset should be updated to avoid
     // scrollViewDidScroll->scrollByListContainer->onNodeReady->setContentOffset->scrollViewDidScroll
     // loop
     [self updatePreviousContentOffset];
-    [listNodeInfoFetcher scrollByListContainer:(static_cast<int32_t>(self.sign))
-                                             x:[self clampToValidScrollEdge:NO]
-                                             y:[self clampToValidScrollEdge:YES]
-                                     originalX:self.view.contentOffset.x
-                                     originalY:self.view.contentOffset.y];
+    reinterpret_cast<lynx::shell::LynxShell *>(shellPtr)->ScrollByListContainer(
+        static_cast<int32_t>(self.sign), [self clampToValidScrollEdge:NO],
+        [self clampToValidScrollEdge:YES], self.view.contentOffset.x, self.view.contentOffset.y);
   }
   [self updatePreviousContentOffset];
   [self updateStickyTops];
@@ -1349,10 +1343,10 @@ LYNX_UI_METHOD(getVisibleCells) {
 
   ((LynxListContainerView *)(self.view)).scrollEstimatedOffset =
       kLynxListContainerInvalidScrollEstimatedOffset;
-  auto fetcher = self.context.fetcher;
-
-  if (fetcher) {
-    [fetcher scrollStopped:static_cast<int32_t>(self.sign)];
+  auto shellPtr = self.context.shellPtr;
+  if (shellPtr) {
+    reinterpret_cast<lynx::shell::LynxShell *>(shellPtr)->ScrollStopped(
+        static_cast<int32_t>(self.sign));
   }
 }
 

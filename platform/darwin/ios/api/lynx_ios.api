@@ -114,16 +114,6 @@ public class LineSpacingAdaptation : NSObject, <NSLayoutManagerDelegate> {
   public CGFloat LineSpacingAdaptation::baseline baseline;
 }
 
-public class ListNodeInfoFetcher : NSObject, <ListNodeInFoFetcherProtocol> {
-  public instancetype ListNodeInfoFetcher::initWithShell:(int64_t shellPtr);
-}
-
-public protocol ListNodeInFoFetcherProtocol-p : <NSObject> {
-  public void ListNodeInFoFetcherProtocol-p::scrollByListContainer:x:y:originalX:originalY:(int containerSign,[x] float x,[y] float y,[originalX] float originalX,[originalY] float originalY);
-  public void ListNodeInFoFetcherProtocol-p::scrollToPosition:position:offset:align:smooth:(int containerSign,[position] int position,[offset] float offset,[align] int align,[smooth] BOOL smooth);
-  public void ListNodeInFoFetcherProtocol-p::scrollStopped:(int containerSign);
-}
-
 public protocol LUIBodyView-p : <NSObject>, <LUIErrorHandling> {
   public BOOL LUIBodyView-p::enableAsyncDisplay enableAsyncDisplay;
   public NSString* LUIBodyView-p::url url;
@@ -3935,7 +3925,6 @@ public class LynxUIContext : NSObject {
   public LynxUIOwner* LynxUIContext::uiOwner uiOwner;
   public id LynxUIContext::lynxModuleExtraData lynxModuleExtraData;
   public int64_t LynxUIContext::shellPtr shellPtr;
-  public id<ListNodeInFoFetcherProtocol> LynxUIContext::fetcher fetcher;
   public LynxScreenMetrics* LynxUIContext::screenMetrics screenMetrics;
   public LynxUIIntersectionObserverManager* LynxUIContext::intersectionManager intersectionManager;
   public LynxUIExposure* LynxUIContext::uiExposure uiExposure;

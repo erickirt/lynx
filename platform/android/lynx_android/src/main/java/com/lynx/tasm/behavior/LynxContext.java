@@ -69,7 +69,7 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
   private final Map<String, ReadableMap> mCSSFontFaces = new HashMap<>();
   private EventEmitter mEventEmitter;
   private TouchEventDispatcher mTouchEventDispatcher = null;
-  private IListNodeInfoFetcher mListNodeInfoFetcher;
+  private ListNodeInfoFetcher mListNodeInfoFetcher;
   private WeakReference<JSProxy> mJSProxy;
 
   private WeakReference<LynxLayoutProxy> mLayoutProxy;
@@ -569,11 +569,11 @@ public abstract class LynxContext extends LynxBaseContext implements ExceptionHa
     return mEventEmitter;
   }
 
-  public IListNodeInfoFetcher getListNodeInfoFetcher() {
+  public ListNodeInfoFetcher getListNodeInfoFetcher() {
     return mListNodeInfoFetcher;
   }
 
-  public void setListNodeInfoFetcher(IListNodeInfoFetcher listNodeInfoFetcher) {
+  public void setListNodeInfoFetcher(ListNodeInfoFetcher listNodeInfoFetcher) {
     this.mListNodeInfoFetcher = listNodeInfoFetcher;
   }
 
