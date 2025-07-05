@@ -1753,17 +1753,9 @@ void TemplateAssembler::TriggerLepusGlobalEvent(const std::string& event_name,
   if (!template_loaded_) {
     return;
   }
-
-  std::shared_ptr<PipelineOptions> current_option =
-      std::make_shared<PipelineOptions>();
-  pipeline_context_manager_->CreateAndUpdateCurrentPipelineContext(
-      current_option);
-
   SendGlobalEventToLepus(event_name, std::move(msg));
   LOGI("TemplateAssembler TriggerLepusGlobalEvent event" << event_name
                                                          << " this:" << this);
-
-  RunPixelPipeline();
 }
 
 void TemplateAssembler::TriggerWorkletFunction(std::string component_id,
@@ -1791,17 +1783,12 @@ void TemplateAssembler::TriggerWorkletFunction(std::string component_id,
   }
 
   EnsureTouchEventHandler();
-  std::shared_ptr<PipelineOptions> current_option =
-      std::make_shared<PipelineOptions>();
-  pipeline_context_manager_->CreateAndUpdateCurrentPipelineContext(
-      current_option);
 
   std::optional<lepus::Value> call_result =
       worklet::LepusElement::TriggerWorkletFunction(
           this, component, worklet_module_name, method_name, args,
           touch_event_handler_->GetTaskHandler());
 
-  RunPixelPipeline();
   if (call_result.has_value()) {
     delegate_.CallJSApiCallbackWithValue(callback, *call_result);
   }
@@ -1936,14 +1923,9 @@ void TemplateAssembler::OnPseudoStatusChanged(int32_t id, uint32_t pre_status,
   DCHECK(current_status >= 0 &&
          current_status <= std::numeric_limits<PseudoState>::max());
   EnsureTouchEventHandler();
-  std::shared_ptr<PipelineOptions> current_option =
-      std::make_shared<PipelineOptions>();
-  pipeline_context_manager_->CreateAndUpdateCurrentPipelineContext(
-      current_option);
   touch_event_handler_->HandlePseudoStatusChanged(
       id, static_cast<PseudoState>(pre_status),
       static_cast<PseudoState>(current_status));
-  RunPixelPipeline();
 }
 
 void TemplateAssembler::SendTouchEvent(const std::string& name,
