@@ -14,6 +14,7 @@ import com.lynx.tasm.base.trace.TraceEventDef;
 import com.lynx.tasm.behavior.Behavior;
 import com.lynx.tasm.behavior.BehaviorRegistry;
 import com.lynx.tasm.behavior.BuiltInUIRegistry;
+import com.lynx.tasm.behavior.ILynxUIRenderer;
 import com.lynx.tasm.behavior.LynxUIRendererCreator;
 import com.lynx.tasm.component.DynamicComponentFetcher;
 import com.lynx.tasm.image.model.LynxImageFetcher;
@@ -122,6 +123,17 @@ public class LynxViewBuilder {
   public LynxViewBuilder setTemplateProvider(@Nullable AbsTemplateProvider provider) {
     templateProvider = provider;
     return this;
+  }
+
+  /**
+   * @brief create a UIRenderer for UIBodyView and refactor the thread strategy.
+   * @return UIRenderer
+   */
+  @RestrictTo(RestrictTo.Scope.LIBRARY)
+  public ILynxUIRenderer createLynxUIRenderer() {
+    ILynxUIRenderer uiRenderer = uiRenderCreator.createLynxUIRender();
+    threadStrategy = uiRenderer.getSupportedThreadStrategy(threadStrategy);
+    return uiRenderer;
   }
 
   /**

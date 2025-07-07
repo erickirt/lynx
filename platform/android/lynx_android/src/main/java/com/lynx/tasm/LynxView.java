@@ -96,8 +96,7 @@ public class LynxView extends UIBodyView {
    * @param builder
    */
   public void initWithLynxViewBuilder(LynxViewBuilder builder) {
-    mLynxUIRender = builder.uiRenderCreator.createLynxUIRender();
-    builder.threadStrategy = mLynxUIRender.getSupportedThreadStrategy(builder.threadStrategy);
+    mLynxUIRender = builder.createLynxUIRenderer();
     if (builder.lynxBackgroundRuntime != null) {
       initLynxViewWithRuntime(getContext(), builder);
       return;
@@ -1333,10 +1332,6 @@ public class LynxView extends UIBodyView {
       return null;
     }
     return mLynxTemplateRender.findUIByIdSelector(id);
-  }
-
-  public void innerSetMeasuredDimension(int w, int h) {
-    setMeasuredDimension(w, h);
   }
 
   public UIGroup<UIBodyView> getLynxUIRoot() {

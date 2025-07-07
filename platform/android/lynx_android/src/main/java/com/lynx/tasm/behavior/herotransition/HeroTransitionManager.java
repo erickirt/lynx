@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.animation.AnimationInfo;
 import com.lynx.tasm.behavior.ui.LynxUI;
+import com.lynx.tasm.behavior.ui.UIBody;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
@@ -131,13 +132,14 @@ public class HeroTransitionManager {
   }
 
   /**
-   * @param lynxView the view to enter
+   * @param bodyView the view to enter
    * @param listener listener triggered when all anim done
    */
-  public void executeEnterAnim(LynxView lynxView, final LynxViewEnterFinishListener listener) {
+  public void executeEnterAnim(
+      UIBody.UIBodyView bodyView, final LynxViewEnterFinishListener listener) {
     final AtomicInteger flag = new AtomicInteger(0);
     for (LynxUI lynxUI : mEnterTransitionMap.keySet()) {
-      if (lynxUI.getLynxContext().getUIBody().getBodyView() == lynxView) {
+      if (lynxUI.getLynxContext().getUIBody().getBodyView() == bodyView) {
         flag.incrementAndGet();
         lynxUI.execEnterAnim(new LynxViewEnterFinishListener() {
           @Override

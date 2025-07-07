@@ -1900,7 +1900,7 @@ public class com::lynx::tasm::behavior::herotransition::HeroTransitionManager : 
   public synchronized void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.registerExitAnim(LynxUI lynxUI, AnimationInfo transitionName);
   public synchronized void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.registerResumeAnim(LynxUI lynxUI, AnimationInfo transitionName);
   public synchronized void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.registerPauseAnim(LynxUI lynxUI, AnimationInfo transitionName);
-  public void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.executeEnterAnim(LynxView lynxView, final LynxViewEnterFinishListener listener);
+  public void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.executeEnterAnim(UIBody.UIBodyView bodyView, final LynxViewEnterFinishListener listener);
   public void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.executeExitAnim(LynxView lynxView, final LynxViewExitFinishListener listener);
   public void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.executeResumeAnim(LynxView lynxView);
   public void com.lynx.tasm.behavior.herotransition.HeroTransitionManager.executePauseAnim(LynxView lynxView);
@@ -3855,6 +3855,7 @@ public class abstract com::lynx::tasm::behavior::LynxContext : com.lynx.tasm.beh
   public void com.lynx.tasm.behavior.LynxContext.setUIBodyView(UIBodyView bodyView);
   public String com.lynx.tasm.behavior.LynxContext.getLynxSessionID();
   public LynxView com.lynx.tasm.behavior.LynxContext.getLynxView();
+  public UIBodyView com.lynx.tasm.behavior.LynxContext.getUIBodyView();
   public void com.lynx.tasm.behavior.LynxContext.reportResourceError(String errMsg);
   public void com.lynx.tasm.behavior.LynxContext.reportResourceError(String src, String type, String error_msg);
   public void com.lynx.tasm.behavior.LynxContext.reportResourceError(int code, String src, String type, String error_msg);
@@ -4623,17 +4624,11 @@ public class com::lynx::tasm::utils::LynxFrameRateControl :  {
   public void com.lynx.tasm.utils.LynxFrameRateControl.onScreenOn();
 }
 
-public class com::lynx::tasm::behavior::ui::frame::LynxFrameRender : com.lynx.tasm.ILynxEngine, com.lynx.tasm.ILynxErrorReceiver {
-  public void com.lynx.tasm.behavior.ui.frame.LynxFrameRender.loadTemplate(final LynxLoadMeta metaData);
-  public void com.lynx.tasm.behavior.ui.frame.LynxFrameRender.updateMetaData(LynxUpdateMeta meta);
-  public void com.lynx.tasm.behavior.ui.frame.LynxFrameRender.updateViewport(int widthMeasureSpec, int heightMeasureSpec);
-  public void com.lynx.tasm.behavior.ui.frame.LynxFrameRender.destroy();
-  public void com.lynx.tasm.behavior.ui.frame.LynxFrameRender.onErrorOccurred(LynxError error);
-}
-
 public class com::lynx::tasm::behavior::ui::frame::LynxFrameView : com.lynx.tasm.behavior.ui.UIBody.UIBodyView {
   public com.lynx.tasm.behavior.ui.frame.LynxFrameView.LynxFrameView(Context context);
   public com.lynx.tasm.behavior.ui.frame.LynxFrameView.LynxFrameView(Context context, AttributeSet attrs);
+  public void com.lynx.tasm.behavior.ui.frame.LynxFrameView.updateViewport(int widthMeasureSpec, int heightMeasureSpec);
+  public void com.lynx.tasm.behavior.ui.frame.LynxFrameView.runOnTasmThread(Runnable runnable);
 }
 
 public interface com::lynx::tasm::behavior::LynxGeneratorName {
@@ -5606,7 +5601,7 @@ public enum com::lynx::tasm::service::security::ILynxSecurityService::LynxTasmTy
 public class com::lynx::tasm::LynxTemplateRender : com.lynx.tasm.ILynxEngine, com.lynx.tasm.ILynxErrorReceiver {
   public final String com.lynx.tasm.LynxTemplateRender.RENDER_PHASE_SETUP RENDER_PHASE_SETUP;
   public final String com.lynx.tasm.LynxTemplateRender.RENDER_PHASE_UPDATE RENDER_PHASE_UPDATE;
-  public com.lynx.tasm.LynxTemplateRender.LynxTemplateRender(Context context, LynxView lynxView, LynxViewBuilder builder);
+  public com.lynx.tasm.LynxTemplateRender.LynxTemplateRender(Context context, UIBodyView bodyView, LynxViewBuilder builder);
   public boolean com.lynx.tasm.LynxTemplateRender.enableAirStrictMode();
   public LynxContext com.lynx.tasm.LynxTemplateRender.getLynxContext();
   public PerformanceController com.lynx.tasm.LynxTemplateRender.getPerformanceController();
@@ -6198,7 +6193,6 @@ public class com::lynx::tasm::LynxView : com.lynx.tasm.behavior.ui.UIBody.UIBody
   public LynxBaseUI com.lynx.tasm.LynxView.findUIByName(String name);
   public View com.lynx.tasm.LynxView.findViewByIdSelector(String id);
   public LynxBaseUI com.lynx.tasm.LynxView.findUIByIdSelector(String id);
-  public void com.lynx.tasm.LynxView.innerSetMeasuredDimension(int w, int h);
   public UIGroup< UIBodyView > com.lynx.tasm.LynxView.getLynxUIRoot();
   public void com.lynx.tasm.LynxView.syncFlush();
   public LynxBaseUI com.lynx.tasm.LynxView.findUIByIndex(int index);
@@ -6246,6 +6240,7 @@ public class com::lynx::tasm::LynxViewBuilder :  {
   public com.lynx.tasm.LynxViewBuilder.LynxViewBuilder();
   public com.lynx.tasm.LynxViewBuilder.LynxViewBuilder(Context context);
   public LynxViewBuilder com.lynx.tasm.LynxViewBuilder.setTemplateProvider(@Nullable AbsTemplateProvider provider);
+  public ILynxUIRenderer com.lynx.tasm.LynxViewBuilder.createLynxUIRenderer();
   public LynxViewBuilder com.lynx.tasm.LynxViewBuilder.setUri(@Nullable Uri uri);
   public Uri com.lynx.tasm.LynxViewBuilder.getUri();
   public void com.lynx.tasm.LynxViewBuilder.setCustomBehaviorRegistry(@Nullable BehaviorRegistry registry);
@@ -9037,6 +9032,7 @@ public class com::lynx::tasm::behavior::ui::UIBody::UIBodyView : FrameLayout, co
   public void com.lynx.tasm.behavior.ui.UIBody.UIBodyView.runOnTasmThread(Runnable runnable);
   public ILynxUIRenderer com.lynx.tasm.behavior.ui.UIBody.UIBodyView.getLynxUIRendererInternal();
   public void com.lynx.tasm.behavior.ui.UIBody.UIBodyView.setLynxUIRendererInternal(ILynxUIRenderer uiRenderer);
+  public void com.lynx.tasm.behavior.ui.UIBody.UIBodyView.innerSetMeasuredDimension(int w, int h);
 }
 
 public class com::lynx::tasm::behavior::ui::scroll::UIBounceView : com::lynx::tasm::behavior::ui::view::UISimpleView< AndroidView > {
@@ -9082,6 +9078,7 @@ public class com::lynx::tasm::behavior::ui::frame::UIFrame : com::lynx::tasm::be
   public com.lynx.tasm.behavior.ui.frame.UIFrame.UIFrame(LynxContext context);
   public void com.lynx.tasm.behavior.ui.frame.UIFrame.updateExtraData(Object data);
   public void com.lynx.tasm.behavior.ui.frame.UIFrame.onNodeRemoved();
+  public void com.lynx.tasm.behavior.ui.frame.UIFrame.updateLayout(int left, int top, int width, int height, int paddingLeft, int paddingTop, int paddingRight, int paddingBottom, int marginLeft, int marginTop, int marginRight, int marginBottom, int borderLeftWidth, int borderTopWidth, int borderRightWidth, int borderBottomWidth, Rect bound);
 }
 
 public class abstract com::lynx::tasm::behavior::ui::UIGroup : com.lynx.tasm.behavior.ui.LynxUI< T >, com.lynx.tasm.behavior.ui.UIParent, com.lynx.tasm.behavior.ui.IDrawChildHook {

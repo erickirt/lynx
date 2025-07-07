@@ -404,10 +404,10 @@ public class LynxUIRenderer implements ILynxUIRenderer {
   @Override
   public void performInnerMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     LynxContext lynxContext = (mLynxContext != null) ? mLynxContext.get() : null;
-    LynxView lynxView = (lynxContext != null) ? lynxContext.getLynxView() : null;
-    if ((mLynxUIOwner == null) || (lynxView == null)) {
+    UIBodyView bodyView = (lynxContext != null) ? lynxContext.getUIBodyView() : null;
+    if ((mLynxUIOwner == null) || (bodyView == null)) {
       LLog.e(TAG,
-          "performInnerMeasure failed, mLynxUIOwner:" + mLynxUIOwner + ",lynxView:" + lynxView);
+          "performInnerMeasure failed, mLynxUIOwner:" + mLynxUIOwner + ", bodyView:" + bodyView);
       return;
     }
     mLynxUIOwner.performMeasure();
@@ -425,7 +425,7 @@ public class LynxUIRenderer implements ILynxUIRenderer {
     } else {
       height = MeasureSpec.getSize(heightMeasureSpec);
     }
-    lynxView.innerSetMeasuredDimension(width, height);
+    bodyView.innerSetMeasuredDimension(width, height);
   }
 
   @Override

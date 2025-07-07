@@ -549,5 +549,10 @@ public class UIBody extends UIGroup<UIBodyView> {
     public void setLynxUIRendererInternal(ILynxUIRenderer uiRenderer) {
       mLynxUIRender = uiRenderer;
     }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public void innerSetMeasuredDimension(int w, int h) {
+      setMeasuredDimension(w, h);
+    }
   }
 }
