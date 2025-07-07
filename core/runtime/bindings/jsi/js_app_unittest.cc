@@ -1306,6 +1306,160 @@ function tryError(nativeApp, code) {
   }
 }
 
+TEST_P(AppTest, LoadCustomSectionScriptTest) {
+  EXPECT_TRUE(app);
+  rt.global().setProperty(rt, "loadCustomSectionScriptBar", 0);
+  constexpr char kScript1[] =
+      "(function(){loadCustomSectionScriptBar = 1; return "
+      "loadCustomSectionScriptBar;})()";
+  constexpr char kScript2[] =
+      "(function(){loadCustomSectionScriptBar = 2; return "
+      "loadCustomSectionScriptBar;})()";
+  constexpr char kScript3[] =
+      "(function(){loadCustomSectionScriptBar = 3; return "
+      "loadCustomSectionScriptBar;})()";
+  tasm::TasmRuntimeBundle card_bundle;
+  card_bundle.custom_sections = lepus::Value{lepus::Dictionary::Create({
+      {base::String("foo"), lepus::Value{kScript1}},
+      {base::String("bar"), lepus::Value{kScript2}},
+      {base::String("empty"), lepus::Value{""}},
+  })};
+
+  app->loadApp(std::move(card_bundle), lepus::Value(),
+               tasm::PackageInstanceDSL::TT,
+               tasm::PackageInstanceBundleModuleMode::EVAL_REQUIRE_MODE, "url");
+
+  {
+    tasm::TasmRuntimeBundle bundle;
+    bundle.name = "s1_entry";
+    bundle.custom_sections = lepus::Value{lepus::Dictionary::Create({
+        {base::String("bar"), lepus::Value{kScript3}},
+        {base::String("not_string"), lepus::Value{1}},
+    })};
+    app->OnComponentDecoded(std::move(bundle));
+  }
+
+  auto lynx_proxy = std::make_shared<piper::LynxProxy>(app);
+  auto load_script = [this, &rt = this->rt,
+                      &lynx_proxy](const std::string& param) {
+    Object obj = Object::createFromHostObject(rt, lynx_proxy);
+    std::string get_load_script_call =
+        "function(lynx) { return lynx.loadScript" + param + "; }";
+    return function(get_load_script_call).call(rt, obj);
+  };
+
+  auto get_bar = [this, &rt = this->rt]() {
+    std::string get_bar_call =
+        "function() { return loadCustomSectionScriptBar; }";
+    return function(get_bar_call).call(rt);
+  };
+
+  // lynx.loadScript("foo");
+  {
+    auto res = load_script(R"(("foo"))");
+    EXPECT_TRUE(res->isNumber());
+    EXPECT_EQ(res->getNumber(), 1);
+    auto bar = get_bar();
+    EXPECT_TRUE(bar->isNumber());
+    EXPECT_EQ(bar->getNumber(), 1);
+  }
+
+  // lynx.loadScript("bar");
+  {
+    auto res = load_script(R"(("bar"))");
+    EXPECT_TRUE(res->isNumber());
+    EXPECT_EQ(res->getNumber(), 2);
+    auto bar = get_bar();
+    EXPECT_TRUE(bar->isNumber());
+    EXPECT_EQ(bar->getNumber(), 2);
+  }
+
+  // lynx.loadScript("bar", {bundleName: "s1_entry"});
+  {
+    auto res = load_script(R"(("bar", {bundleName: "s1_entry"}))");
+    EXPECT_TRUE(res->isNumber());
+    EXPECT_EQ(res->getNumber(), 3);
+    auto bar = get_bar();
+    EXPECT_TRUE(bar->isNumber());
+    EXPECT_EQ(bar->getNumber(), 3);
+  }
+
+  // lynx.loadScript(): args count error
+  {
+    EXPECT_CALL(*exception_handler_,
+                onJSIException(
+                    HasMessage("loadScript's args must has 'key' argument.")))
+        .Times(1);
+    auto res = load_script(R"(())");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript(): args key type error
+  {
+    EXPECT_CALL(
+        *exception_handler_,
+        onJSIException(HasMessage("loadScript's first param must be string.")))
+        .Times(1);
+    auto res = load_script(R"((1))");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript("not_exist"): script is not exist.
+  {
+    EXPECT_CALL(*exception_handler_,
+                onJSIException(
+                    HasMessage("lynx.loadScript's script is empty. key: "
+                               "not_exist bundleName: __Card__ scriptType: 0")))
+        .Times(1);
+    auto res = load_script(R"(("not_exist"))");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript("empty"): script is empty.
+  {
+    EXPECT_CALL(
+        *exception_handler_,
+        onJSIException(HasMessage("lynx.loadScript's script is empty. key: "
+                                  "empty bundleName: __Card__ scriptType: 3")))
+        .Times(1);
+    auto res = load_script(R"(("empty"))");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript("not_string", {bundleName: "s1_entry"}): not string
+  {
+    EXPECT_CALL(*exception_handler_,
+                onJSIException(HasMessage(
+                    "lynx.loadScript's script is not string. key: not_string "
+                    "bundleName: s1_entry scriptType: 9")))
+        .Times(1);
+    auto res = load_script(R"(("not_string", {bundleName: "s1_entry"}))");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript("foo", {bundleName: "not_exist"}): not string
+  {
+    EXPECT_CALL(
+        *exception_handler_,
+        onJSIException(HasMessage("lynx.loadScript's script is empty. key: foo "
+                                  "bundleName: not_exist scriptType: 0")))
+        .Times(1);
+    auto res = load_script(R"(("foo", {bundleName: "not_exist"}))");
+    EXPECT_TRUE(res->isUndefined());
+  }
+
+  // lynx.loadScript("foo", 1): args 2 is not object: fallback into default
+  // bundle
+  {
+    auto res = load_script(R"(("foo", 1))");
+    EXPECT_TRUE(res->isNumber());
+    EXPECT_EQ(res->getNumber(), 1);
+    auto bar = get_bar();
+    EXPECT_TRUE(bar->isNumber());
+    EXPECT_EQ(bar->getNumber(), 1);
+  }
+}
+
 // TODO(liyanbo.monster): open this when pub value support this.
 // TEST_P(AppTest, ModuleGetCircleObject) {
 //   auto native_app = Object::createFromHostObject(

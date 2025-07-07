@@ -27,6 +27,7 @@ class LynxProxy : public HostObject {
   std::weak_ptr<App> native_app_;
 
   piper::Value GetCustomSectionSync(Runtime& rt, const char* prop_name);
+  piper::Value LoadScript(Runtime& rt);
 };
 }  // namespace piper
 }  // namespace lynx

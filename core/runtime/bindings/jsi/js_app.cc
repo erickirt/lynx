@@ -3514,6 +3514,36 @@ lepus::Value App::GetCustomSectionSync(const std::string& key,
   }
 }
 
+base::expected<Value, JSINativeException> App::LoadCustomSectionScript(
+    const std::string& key, const std::string& bundle_name) {
+  auto rt = rt_.lock();
+  if (!rt) {
+    return piper::Value::undefined();
+  }
+  auto maybe_script = GetCustomSectionSync(key, bundle_name);
+  static const std::string error_msg_prefix = "lynx.loadScript's script is ";
+  if (maybe_script.IsEmpty() ||
+      (maybe_script.IsString() && maybe_script.String().empty())) {
+    const std::string error_msg =
+        error_msg_prefix + "empty. key: " + key +
+        " bundleName: " + bundle_name +
+        " scriptType: " + std::to_string(maybe_script.Type());
+    return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(error_msg));
+  } else if (!maybe_script.IsString()) {
+    const std::string error_msg =
+        error_msg_prefix + "not string. key: " + key +
+        " bundleName: " + bundle_name +
+        " scriptType: " + std::to_string(maybe_script.Type());
+    return base::unexpected(BUILD_JSI_NATIVE_EXCEPTION(error_msg));
+  } else {
+    const auto source_code = maybe_script.StdString();
+    const auto buffer =
+        std::make_shared<piper::StringBuffer>(std::move(source_code));
+    auto prep = rt->prepareJavaScript(buffer, key);
+    return rt->evaluatePreparedJavaScript(prep);
+  }
+}
+
 void App::SetSourceMapRelease(common::JSErrorInfo error_info) {
   js_error_reporter_.SetSourceMapRelease(std::move(error_info));
 }

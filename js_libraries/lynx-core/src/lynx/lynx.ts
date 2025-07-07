@@ -457,6 +457,8 @@ export class Lynx {
     this.getNativeLynx().queueMicrotask(callback);
   }
 
+  loadScript = this.getNativeLynx().loadScript;
+
   __addReporterCustomInfo = (info: Record<string, string>): void => {
     this.getNativeApp().__addReporterCustomInfo(info);
   };

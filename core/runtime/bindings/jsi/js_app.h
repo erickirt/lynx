@@ -210,6 +210,9 @@ class App : public std::enable_shared_from_this<App> {
   lepus::Value GetCustomSectionSync(const std::string& key,
                                     const std::string& bundle_name);
 
+  base::expected<Value, JSINativeException> LoadCustomSectionScript(
+      const std::string& key, const std::string& bundle_name);
+
   // For fiber
   void CallLepusMethod(const std::string& method_name, lepus::Value args,
                        const ApiCallBack& callback, std::string stacks);

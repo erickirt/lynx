@@ -47,6 +47,8 @@ export interface NativeLynxProxy extends BackgroundLynx {
   reload(value: object, callback: () => void): void;
 
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+
+  loadScript(url: string, options?: { bundleName?: string }): object;
 }
 
 export const enum ContextProxyType {
