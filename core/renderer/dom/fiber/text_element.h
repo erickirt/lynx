@@ -59,7 +59,8 @@ class TextElement : public FiberElement {
   void OnNodeAdded(FiberElement* child) override;
   void SetAttributeInternal(const base::String& key,
                             const lepus::Value& value) override;
-  void BuildTextPropsBuffer(std::string& output, PropArray* prop);
+  void BuildTextPropsBuffer(std::string& output, size_t& current_length,
+                            bool use_utf16, PropArray* prop);
 
   static base::String ConvertContent(const lepus::Value);
 
@@ -76,8 +77,12 @@ class TextElement : public FiberElement {
   }
 
   base::String content_;
+  // TODO(linxs): Use base::String.length_utf16() after its implementation has
+  // been optimized
+  size_t content_utf16_length_{0};
   std::unique_ptr<TextProps> text_props_;
   CSSIDBitset property_bits_;
+  bool has_inline_child_{false};
 };
 
 }  // namespace tasm

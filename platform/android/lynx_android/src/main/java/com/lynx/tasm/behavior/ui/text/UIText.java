@@ -47,7 +47,7 @@ public class UIText
   public UIText(LynxContext context) {
     super(context);
     mAccessibilityElementStatus = ACCESSIBILITY_ELEMENT_TRUE;
-    if (mContext.isTextOverflowEnabled()) {
+    if (mContext.isTextOverflowEnabled() && !mContext.isLayoutInElementModeOn()) {
       mOverflow = OVERFLOW_XY;
     }
   }

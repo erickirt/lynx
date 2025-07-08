@@ -5,6 +5,7 @@
 #include "core/renderer/dom/fiber/raw_text_element.h"
 
 #include "core/renderer/dom/element_manager.h"
+#include "core/renderer/dom/fiber/text_props.h"
 
 namespace lynx {
 namespace tasm {
@@ -22,6 +23,10 @@ void RawTextElement::SetText(const lepus::Value& text) {
       std::stringstream stream;
       stream << text.Number();
       content_ = stream.str();
+    }
+    if (EnableLayoutInElementMode()) {
+      content_utf16_length_ =
+          GetUtf16SizeFromUtf8(content_.c_str(), content_.length());
     }
   }
 }

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/include/value/base_string.h"
+#include "core/renderer/css/css_property.h"
 #include "core/renderer/dom/element_manager.h"
 #include "core/renderer/dom/fiber/image_element.h"
 #include "core/renderer/dom/fiber/raw_text_element.h"
@@ -23,7 +24,8 @@ TextElement::TextElement(ElementManager* manager, const base::String& tag)
   if (element_manager_ == nullptr) {
     return;
   }
-  SetDefaultOverflow(element_manager_->GetDefaultTextOverflow());
+  SetDefaultOverflow(element_manager_->GetDefaultTextOverflow() &&
+                     !EnableLayoutInElementMode());
 }
 
 void TextElement::AttachToElementManager(
@@ -31,7 +33,8 @@ void TextElement::AttachToElementManager(
     const std::shared_ptr<CSSStyleSheetManager>& style_manager,
     bool keep_element_id) {
   FiberElement::AttachToElementManager(manager, style_manager, keep_element_id);
-  SetDefaultOverflow(manager->GetDefaultTextOverflow());
+  SetDefaultOverflow(manager->GetDefaultTextOverflow() &&
+                     !EnableLayoutInElementMode());
 }
 
 void TextElement::SetStyleInternal(CSSPropertyID id,
@@ -53,6 +56,9 @@ void TextElement::SetStyleInternal(CSSPropertyID id,
 void TextElement::OnNodeAdded(FiberElement* child) {
   child->ConvertToInlineElement();
   UpdateRenderRootElementIfNecessary(child);
+  if (!child->is_raw_text()) {
+    has_inline_child_ = true;
+  }
 }
 
 base::String TextElement::ConvertContent(const lepus::Value value) {
@@ -93,6 +99,10 @@ void TextElement::SetAttributeInternal(const base::String& key,
   if (EnableLayoutInElementMode()) {
     if (key.IsEqual(kTextAttr)) {
       content_ = ConvertContent(value);
+      if (EnableLayoutInElementMode()) {
+        content_utf16_length_ =
+            GetUtf16SizeFromUtf8(content_.c_str(), content_.length());
+      }
     } else if (key.IsEqual(kTextMaxlineAttr)) {
       EnsureTextProps();
       text_props_->text_max_line =
@@ -146,7 +156,7 @@ bool TextElement::ResolveStyleValue(CSSPropertyID id,
                                     bool force_update) {
   bool has_processed = false;
 
-  if (EnableLayoutInElementMode()) {
+  if (EnableLayoutInElementMode() && IsTextMeasurerWanted(id)) {
     if (computed_css_style()->SetValue(id, value)) {
       property_bits_.Set(id);
       has_processed = true;
@@ -176,27 +186,40 @@ bool TextElement::ResetCSSValue(CSSPropertyID id) {
   return has_processed;
 }
 
-void TextElement::BuildTextPropsBuffer(std::string& output, PropArray* props) {
-  auto start = output.length();
-  output += content_.str();
+void TextElement::BuildTextPropsBuffer(std::string& output,
+                                       size_t& current_length, bool use_utf16,
+                                       PropArray* props) {
+  size_t start = current_length;
+  if (!content_.empty()) {
+    output += content_.str();
+    current_length += use_utf16 ? content_utf16_length_ : content_.length();
+  }
 
   auto* child = first_render_child();
   while (child) {
     if (static_cast<FiberElement*>(child)->is_raw_text()) {
-      output += static_cast<RawTextElement*>(child)->content().str();
+      auto* raw_text_child = static_cast<RawTextElement*>(child);
+      const auto& raw_content = raw_text_child->content();
+      if (!raw_content.empty()) {
+        output += raw_content.str();
+        current_length += use_utf16 ? raw_text_child->content_utf16_length()
+                                    : raw_content.length();
+      }
     } else if (child->is_text()) {
       // inline text
-      static_cast<TextElement*>(child)->BuildTextPropsBuffer(output, props);
+      static_cast<TextElement*>(child)->BuildTextPropsBuffer(
+          output, current_length, use_utf16, props);
     } else if (child->is_image() || child->is_view()) {
       // inline image
       output += kInlinePlaceHolder;
+      current_length += 1;  // placeholder's length is 1
       static_cast<FiberElement*>(child)->BuildAttributedStringProps(
-          output.length() - 1, output.length(), props);
+          current_length - 1, current_length, props);
     }
     child = child->next_render_sibling();
   }
 
-  auto end = output.length();
+  auto end = current_length;
   if (end > start) {
     BuildAttributedStringProps(start, end, props);
   }
@@ -213,7 +236,9 @@ LayoutResult TextElement::Measure(float width, int32_t width_mode, float height,
     return LayoutResult(0, 0, 0);
   }
   std::string output_str;
-  BuildTextPropsBuffer(output_str, props.get());
+  size_t current_length = 0;
+  bool use_utf16 = is_inline_element_ || has_inline_child_;
+  BuildTextPropsBuffer(output_str, current_length, use_utf16, props.get());
 
   props->AddProp(kPropTextString);
   props->AddProp(output_str.c_str());

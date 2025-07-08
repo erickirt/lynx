@@ -28,6 +28,7 @@ class RawTextElement : public FiberElement {
   ParallelFlushReturn PrepareForCreateOrUpdate() override;
 
   const base::String& content() const { return content_; }
+  size_t content_utf16_length() const { return content_utf16_length_; }
 
   constexpr const static char kRawTextTag[] = "raw-text";
   constexpr const static char kTextAttr[] = "text";
@@ -38,6 +39,9 @@ class RawTextElement : public FiberElement {
 
  private:
   base::String content_;
+  // TODO(linxs): Use base::String.length_utf16() after its implementation has
+  // been optimized
+  size_t content_utf16_length_{0};
 };
 
 }  // namespace tasm

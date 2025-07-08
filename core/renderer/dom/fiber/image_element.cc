@@ -95,6 +95,37 @@ void ImageElement::BuildAttributedStringProps(size_t start, size_t end,
     props->AddProp(margin_bottom);
   }
 
+  if (computed_css_style()->HasBorderRadius()) {
+    props->AddProp(kPropBorderRadius);
+    // only support: left,top,right,bottom border-radius for such mode
+    const auto& top_left = computed_css_style()->GetSimpleBorderTopLeftRadius();
+    const auto& top_right =
+        computed_css_style()->GetSimpleBorderTopLeftRadius();
+    const auto& bottom_left =
+        computed_css_style()->GetSimpleBorderTopLeftRadius();
+    const auto& bottom_right =
+        computed_css_style()->GetSimpleBorderTopLeftRadius();
+    const auto resolve_length = [](PropArray* props,
+                                   const starlight::NLength& length) {
+      if (length.NumericLength().ContainsPercentage()) {
+        props->AddProp(static_cast<float>(
+            length.NumericLength().GetPercentagePart() / 100.f));
+        props->AddProp(
+            static_cast<int>(starlight::PlatformLengthUnit::PERCENTAGE));
+      }
+      if (length.NumericLength().ContainsFixedValue() ||
+          !length.NumericLength().ContainsPercentage()) {
+        props->AddProp(
+            static_cast<float>(length.NumericLength().GetFixedPart()));
+        props->AddProp(static_cast<int>(starlight::PlatformLengthUnit::NUMBER));
+      }
+    };
+    resolve_length(props, top_left);
+    resolve_length(props, top_right);
+    resolve_length(props, bottom_left);
+    resolve_length(props, bottom_right);
+  }
+
   // inline range end
   props->AddProp(kPropInlineEnd);
   props->AddProp(static_cast<int>(end));
