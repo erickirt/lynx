@@ -11,7 +11,12 @@ namespace lynx {
 namespace tasm {
 
 ImageElement::ImageElement(ElementManager* manager, const base::String& tag)
-    : FiberElement(manager, tag) {}
+    : FiberElement(manager, tag) {
+  if (element_manager_ == nullptr) {
+    return;
+  }
+  element_manager_->IncreaseImageElementCount();
+}
 
 void ImageElement::OnNodeAdded(FiberElement* child) {
   LOGE("image element can not insert any child!!!");
