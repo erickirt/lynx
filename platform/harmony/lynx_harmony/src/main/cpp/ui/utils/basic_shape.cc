@@ -8,6 +8,7 @@
 #include "base/include/value/array.h"
 #include "base/include/value/base_value.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/platform_length.h"
+#include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/svg_path_utils.h"
 
 namespace lynx {
 namespace tasm {
@@ -44,6 +45,13 @@ static constexpr const uint32_t kRawIndexSuperEllipseCenterXUnit = 8;
 static constexpr const uint32_t kRawIndexSuperEllipseCenterY = 9;
 static constexpr const uint32_t kRawIndexSuperEllipseCenterYUnit = 10;
 static constexpr const uint32_t kIndexBasicShapeType = 0;
+static constexpr const uint32_t kRawParamsLenInsetRect = 9;
+static constexpr const uint32_t kRawParamsLenInsetRound = 25;
+static constexpr const uint32_t kRawParamsLenInsetSuperEllipse = 27;
+static constexpr const uint32_t kRawIndexInsetSuperEllipseExponentX = 9;
+static constexpr const uint32_t kRawIndexInsetSuperEllipseExponentY = 10;
+static constexpr const uint32_t kInsetRoundRadiusOffset = 9;
+static constexpr const uint32_t kInsetSuperEllipseRadiusOffset = 11;
 
 BasicShape::BasicShape(const lepus::Value& value, float density) {
   density_ = density;
@@ -59,8 +67,6 @@ void BasicShape::ParsePathWithParentSize(float view_width, float view_height) {
       !shape_data_) {
     return;
   }
-  float width = view_width * density_;
-  float height = view_height * density_;
   auto len = shape_data_->size();
   if (basic_shape_type_ == starlight::BasicShapeType::kPath) {
     if (len != kRawParamsLenPath) {
@@ -84,25 +90,29 @@ void BasicShape::ParsePathWithParentSize(float view_width, float view_height) {
             shape_data_->get(kRawIndexSuperEllipseRadiusX),
             static_cast<PlatformLengthType>(
                 shape_data_->get(kRawIndexSuperEllipseRadiusXUnit).Number()))
-            .GetValue(width);
+            .GetValue(view_width) *
+        density_;
     float ry =
         PlatformLength(
             shape_data_->get(kRawIndexSuperEllipseRadiusY),
             static_cast<PlatformLengthType>(
                 shape_data_->get(kRawIndexSuperEllipseRadiusYUnit).Number()))
-            .GetValue(height);
+            .GetValue(view_height) *
+        density_;
     float cx =
         PlatformLength(
             shape_data_->get(kRawIndexSuperEllipseCenterX),
             static_cast<PlatformLengthType>(
                 shape_data_->get(kRawIndexSuperEllipseCenterXUnit).Number()))
-            .GetValue(width);
+            .GetValue(view_width) *
+        density_;
     float cy =
         PlatformLength(
             shape_data_->get(kRawIndexSuperEllipseCenterY),
             static_cast<PlatformLengthType>(
                 shape_data_->get(kRawIndexSuperEllipseCenterYUnit).Number()))
-            .GetValue(height);
+            .GetValue(view_height) *
+        density_;
     path_string_ =
         SuperEllipseToSvgPath(rx, ry, cx, cy, exponents_x, exponents_y);
   } else if (basic_shape_type_ == starlight::BasicShapeType::kCircle) {
@@ -110,23 +120,27 @@ void BasicShape::ParsePathWithParentSize(float view_width, float view_height) {
       return;
     }
     float parent_percent =
-        std::sqrt(width * width + height * height) / std::sqrt(2);
+        std::sqrt(view_width * view_width + view_height * view_height) /
+        std::sqrt(2);
     float radius =
         PlatformLength(
             shape_data_->get(kRawIndexCircleRadius),
             static_cast<PlatformLengthType>(
                 shape_data_->get(kRawIndexCircleRadiusUnit).Number()))
-            .GetValue(parent_percent);
+            .GetValue(parent_percent) *
+        density_;
     float cx = PlatformLength(
                    shape_data_->get(kRawIndexCircleCenterX),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexCircleCenterXUnit).Number()))
-                   .GetValue(width);
+                   .GetValue(view_width) *
+               density_;
     float cy = PlatformLength(
                    shape_data_->get(kRawIndexCircleCenterY),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexCircleCenterYUnit).Number()))
-                   .GetValue(height);
+                   .GetValue(view_height) *
+               density_;
     path_string_ = CircleToSvgPath(radius, cx, cy);
   } else if (basic_shape_type_ == starlight::BasicShapeType::kEllipse) {
     if (len != kRawParamsLenEllipse) {
@@ -136,25 +150,130 @@ void BasicShape::ParsePathWithParentSize(float view_width, float view_height) {
                    shape_data_->get(kRawIndexEllipseRadiusX),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexEllipseRadiusXUnit).Number()))
-                   .GetValue(width);
+                   .GetValue(view_width) *
+               density_;
     float ry = PlatformLength(
                    shape_data_->get(kRawIndexEllipseRadiusY),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexEllipseRadiusYUnit).Number()))
-                   .GetValue(height);
+                   .GetValue(view_height) *
+               density_;
     float cx = PlatformLength(
                    shape_data_->get(kRawIndexEllipseCenterX),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexEllipseCenterXUnit).Number()))
-                   .GetValue(width);
+                   .GetValue(view_width) *
+               density_;
     float cy = PlatformLength(
                    shape_data_->get(kRawIndexEllipseCenterY),
                    static_cast<PlatformLengthType>(
                        shape_data_->get(kRawIndexEllipseCenterYUnit).Number()))
-                   .GetValue(height);
+                   .GetValue(view_height) *
+               density_;
     path_string_ = EllipseToSvgPath(rx, ry, cx, cy);
   } else if (basic_shape_type_ == starlight::BasicShapeType::kInset) {
-    // TODO(chengjunnan)impl it later.
+    std::vector<PlatformLength> box{};
+    for (int i = 0; i < 4; ++i) {
+      box.emplace_back(shape_data_->get(2 * i + 1).Number(),
+                       static_cast<PlatformLengthType>(
+                           shape_data_->get(2 * i + 2).Number()));
+    }
+    float top = box[0].GetValue(view_height) * density_;
+    float right = box[1].GetValue(view_width) * density_;
+    float bottom = box[2].GetValue(view_height) * density_;
+    float left = box[3].GetValue(view_width) * density_;
+    float v_inset = top + bottom;
+    float h_inset = left + right;
+    if (v_inset != 0 && base::FloatsLarger(v_inset, view_height * density_)) {
+      float s = view_height * density_ / v_inset;
+      top *= s;
+      bottom *= s;
+    }
+    if (h_inset != 0 && base::FloatsLarger(h_inset, view_width * density_)) {
+      float s = view_width * density_ / h_inset;
+      left *= s;
+      right *= s;
+    }
+
+    float inset_right = view_width * density_ - right;
+    float inset_bottom = view_height * density_ - bottom;
+    std::ostringstream oss;
+    if (len == kRawParamsLenInsetRect) {
+      SvgPathUtils::MoveTo(oss, left, top);
+      SvgPathUtils::LineTo(oss, inset_right, top);
+      SvgPathUtils::LineTo(oss, inset_right, inset_bottom);
+      SvgPathUtils::LineTo(oss, left, inset_bottom);
+      SvgPathUtils::Close(oss);
+    } else {
+      std::vector<PlatformLength> radius{};
+      int radius_offset = len == kRawParamsLenInsetRound
+                              ? kInsetRoundRadiusOffset
+                              : kInsetSuperEllipseRadiusOffset;
+      for (int i = 0; i < 4; i++) {
+        radius.emplace_back(
+            shape_data_->get(4 * i + radius_offset).Number(),
+            static_cast<PlatformLengthType>(
+                shape_data_->get(4 * i + radius_offset + 1).Number()));
+        radius.emplace_back(
+            shape_data_->get(4 * i + radius_offset + 2).Number(),
+            static_cast<PlatformLengthType>(
+                shape_data_->get(4 * i + radius_offset + 3).Number()));
+      }
+      float rx1 = radius[0].GetValue(view_width) * density_;
+      float ry1 = radius[1].GetValue(view_height) * density_;
+      float rx2 = radius[2].GetValue(view_width) * density_;
+      float ry2 = radius[3].GetValue(view_height) * density_;
+      float rx3 = radius[4].GetValue(view_width) * density_;
+      float ry3 = radius[5].GetValue(view_height) * density_;
+      float rx4 = radius[6].GetValue(view_width) * density_;
+      float ry4 = radius[7].GetValue(view_height) * density_;
+      if (len == kRawParamsLenInsetRound) {
+        SvgPathUtils::MoveTo(oss, left + rx1, top);
+        SvgPathUtils::LineTo(oss, inset_right - rx2, top);
+        SvgPathUtils::ArcTo(oss, rx2, ry2, inset_right - 2 * rx2, top,
+                            inset_right, top + 2 * ry2, -90, 90);
+        SvgPathUtils::LineTo(oss, inset_right, inset_bottom - ry3);
+        SvgPathUtils::ArcTo(oss, rx3, ry3, inset_right - 2 * rx3,
+                            inset_bottom - 2 * ry3, inset_right, inset_bottom,
+                            0, 90);
+        SvgPathUtils::LineTo(oss, left + rx4, inset_bottom);
+        SvgPathUtils::ArcTo(oss, rx4, ry4, left, inset_bottom - 2 * ry4,
+                            left + 2 * rx4, inset_bottom, 90, 90);
+        SvgPathUtils::LineTo(oss, left, top + ry1);
+        SvgPathUtils::ArcTo(oss, rx1, ry1, left + rx1, top);
+        SvgPathUtils::Close(oss);
+      } else if (len == kRawParamsLenInsetSuperEllipse) {
+        float exponents_x = static_cast<float>(
+            shape_data_->get(kRawIndexInsetSuperEllipseExponentX).Number());
+        float exponents_y = static_cast<float>(
+            shape_data_->get(kRawIndexInsetSuperEllipseExponentY).Number());
+        float rx = rx3;
+        float ry = ry3;
+        float cx = inset_right - rx;
+        float cy = inset_bottom - ry;
+        AddLameCurveToPath(oss, rx, ry, cx, cy, exponents_x, exponents_y, 1);
+        rx = rx4;
+        ry = ry4;
+        cx = left + rx;
+        cy = inset_bottom - ry;
+        AddLameCurveToPath(oss, rx, ry, cx, cy, exponents_x, exponents_y, 2);
+        rx = rx1;
+        ry = ry1;
+        cx = left + rx;
+        cy = top + ry;
+        AddLameCurveToPath(oss, rx, ry, cx, cy, exponents_x, exponents_y, 3);
+        rx = rx2;
+        ry = ry2;
+        cx = inset_right - rx;
+        cy = top + ry;
+        AddLameCurveToPath(oss, rx, ry, cx, cy, exponents_x, exponents_y, 4);
+        SvgPathUtils::Close(oss);
+      }
+    }
+    path_string_ = oss.str();
+    // TODO(chengjunnan)For now, SVG path strings are used universally for shape
+    // clipping to ensure consistency.However, certain clipping styles may be
+    // optimized by leveraging native shape capabilities provided by HarmonyOS.
   }
 }
 

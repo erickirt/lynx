@@ -6,6 +6,7 @@
 #define PLATFORM_HARMONY_LYNX_HARMONY_SRC_MAIN_CPP_UI_UTILS_BASIC_SHAPE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/include/value/base_value.h"
 #include "core/renderer/starlight/style/css_type.h"

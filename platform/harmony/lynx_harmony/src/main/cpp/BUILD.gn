@@ -181,6 +181,7 @@ lynx_core_source_set("cpp") {
     "ui/utils/lynx_unit_utils.h",
     "ui/utils/platform_length.cc",
     "ui/utils/platform_length.h",
+    "ui/utils/svg_path_utils.h",
     "ui/utils/transform.cc",
     "ui/utils/transform.h",
     "ui/utils/ui_observer_callback.h",

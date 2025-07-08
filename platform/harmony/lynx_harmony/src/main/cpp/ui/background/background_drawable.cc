@@ -17,6 +17,7 @@
 #include "base/include/float_comparison.h"
 #include "core/base/harmony/napi_convert_helper.h"
 #include "core/renderer/utils/value_utils.h"
+#include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/svg_path_utils.h"
 
 namespace lynx {
 namespace tasm {
@@ -795,46 +796,6 @@ static inline float GenCenterBorderRadius(float radius, float border_width,
           : 0.0f);  // Radius of the first ellipse in the X direction
 }
 
-static inline void PathMoveTo(std::ostringstream& oss, float x, float y) {
-  // M x y;
-  oss << "M";
-  oss << " " << x;
-  oss << " " << y << " ";
-};
-
-static inline void PathLineTo(std::ostringstream& oss, float x, float y) {
-  // L x y
-  oss << "L";
-  oss << " " << x;
-  oss << " " << y << " ";
-}
-
-static inline void PathArcTo(std::ostringstream& oss, float rx, float ry,
-                             float x, float y) {
-  // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
-  oss << "A";
-  oss << " " << rx;
-  oss << " " << ry;
-  oss << " " << 0;
-  oss << " " << 0;
-  oss << " " << 1;
-  oss << " " << x;
-  oss << " " << y << " ";
-}
-
-static inline void PathArcTo(std::ostringstream& oss, float rx, float ry,
-                             float left, float top, float right, float bottom,
-                             float start_deg, float sweep_deg) {
-  float cx = (left + right) / 2;
-  float cy = (top + bottom) / 2;
-  double end_radians = (start_deg + sweep_deg) * M_PI / 180.0;
-  float x = cx + rx * cos(end_radians);
-  float y = cy + ry * sin(end_radians);
-  PathArcTo(oss, rx, ry, x, y);
-}
-
-static inline void PathClose(std::ostringstream& oss) { oss << "Z"; }
-
 void BackgroundDrawable::UpdateRoundBorderPath(
     float mul, std::unique_ptr<RoundRectPath>& round_path) {
   if (!round_path) {
@@ -888,30 +849,31 @@ void BackgroundDrawable::UpdateRoundBorderPath(
 
   OH_Drawing_PathReset(path);
   OH_Drawing_PathMoveTo(path, left + rx1, top);
-  PathMoveTo(oss, left + rx1, top);
+  SvgPathUtils::MoveTo(oss, left + rx1, top);
   OH_Drawing_PathLineTo(path, right - rx2, top);
-  PathLineTo(oss, right - rx2, top);
+  SvgPathUtils::LineTo(oss, right - rx2, top);
   OH_Drawing_PathArcTo(path, right - 2 * rx2, top, right, top + 2 * ry2, -90,
                        90);
-  PathArcTo(oss, rx2, ry2, right - 2 * rx2, top, right, top + 2 * ry2, -90, 90);
+  SvgPathUtils::ArcTo(oss, rx2, ry2, right - 2 * rx2, top, right, top + 2 * ry2,
+                      -90, 90);
   OH_Drawing_PathLineTo(path, right, bottom - ry3);
-  PathLineTo(oss, right, bottom - ry3);
+  SvgPathUtils::LineTo(oss, right, bottom - ry3);
   OH_Drawing_PathArcTo(path, right - 2 * rx3, bottom - 2 * ry3, right, bottom,
                        0, 90);
-  PathArcTo(oss, rx3, ry3, right - 2 * rx3, bottom - 2 * ry3, right, bottom, 0,
-            90);
+  SvgPathUtils::ArcTo(oss, rx3, ry3, right - 2 * rx3, bottom - 2 * ry3, right,
+                      bottom, 0, 90);
   OH_Drawing_PathLineTo(path, left + rx4, bottom);
-  PathLineTo(oss, left + rx4, bottom);
+  SvgPathUtils::LineTo(oss, left + rx4, bottom);
   OH_Drawing_PathArcTo(path, left, bottom - 2 * ry4, left + 2 * rx4, bottom, 90,
                        90);
-  PathArcTo(oss, rx4, ry4, left, bottom - 2 * ry4, left + 2 * rx4, bottom, 90,
-            90);
+  SvgPathUtils::ArcTo(oss, rx4, ry4, left, bottom - 2 * ry4, left + 2 * rx4,
+                      bottom, 90, 90);
   OH_Drawing_PathLineTo(path, left, top + ry1);
-  PathLineTo(oss, left, top + ry1);
+  SvgPathUtils::LineTo(oss, left, top + ry1);
   OH_Drawing_PathArcTo(path, left, top, left + 2 * rx1, top + 2 * ry1, 180, 90);
-  PathArcTo(oss, rx1, ry1, left + rx1, top);
+  SvgPathUtils::ArcTo(oss, rx1, ry1, left + rx1, top);
   OH_Drawing_PathClose(path);
-  PathClose(oss);
+  SvgPathUtils::Close(oss);
   round_path->radius = {rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4};
   round_path->path_string = oss.str();
 }
