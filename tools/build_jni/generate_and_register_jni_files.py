@@ -105,6 +105,12 @@ def get_relative_path(path1, path2):
 def convert_to_relative_path(root_path, src_path, des_path):
     return get_relative_path(os.path.join(root_path, src_path), os.path.join(root_path, des_path))
 
+def format_file(file_path):
+  format_cmd = 'clang-format -i {}'.format(file_path)
+  if file_path.endswith('.gn'):
+    format_cmd = 'gn format {}'.format(file_path)
+  os.system(format_cmd)
+
 def write_content_to_file(file_path, content):
   if os.path.exists(file_path):
     with open(file_path, 'r') as file:
@@ -113,6 +119,7 @@ def write_content_to_file(file_path, content):
         return
   with open(file_path, 'w') as file:
     file.write(content)
+  format_file(file_path)
 
 def generate_register_header(java_file, function_name, register_header_path):
   # generate XXX_register_jni.h which contains RegisterJNIForXXX method.
@@ -450,22 +457,22 @@ def generate_files(root_path, jni_configs_file, use_base_jni_utils_header):
 
   # generate SoLoad.cc
   if not so_load_file_path:
-    print("Error: so load file path is empty, please input the path by `jni_register_configs.output_path`")
-    return -1
-  include_headers.extend(special_headers)
-  register_methods.extend(special_methods)
-  include_headers.sort()
-  register_methods.sort()
-  jni_register_configs['output_path'] = os.path.join(root_path, so_load_file_path)
-  append_content_to_so_registry(jni_register_configs, include_headers, register_methods)
+    print(f"Warning: so load file path is empty, you can input the path by `jni_register_configs.output_path` in {jni_configs_file}.")
+  else:
+    include_headers.extend(special_headers)
+    register_methods.extend(special_methods)
+    include_headers.sort()
+    register_methods.sort()
+    jni_register_configs['output_path'] = os.path.join(root_path, so_load_file_path)
+    append_content_to_so_registry(jni_register_configs, include_headers, register_methods)
+    gn_files.append(convert_to_relative_path(root_path, gn_file_path, so_load_file_path))
   # generate BUILD.gn
   if not gn_file_path:
-    print("Error: gn file path is empty, please input the path by `gn_configs.output_path` in your jni config file.")
-    return -1
-  gn_files.append(convert_to_relative_path(root_path, gn_file_path, so_load_file_path))
-  gn_files.sort()
-  gn_configs['output_path'] = os.path.join(root_path, gn_file_path)
-  append_files_to_gn(root_path, gn_configs, gn_files)
+    print(f"Warning: gn file path is empty, you can input the path by `gn_configs.output_path` in {jni_configs_file}.")
+  else:
+    gn_files.sort()
+    gn_configs['output_path'] = os.path.join(root_path, gn_file_path)
+    append_files_to_gn(root_path, gn_configs, gn_files)
 
 def main():
   parser = argparse.ArgumentParser()

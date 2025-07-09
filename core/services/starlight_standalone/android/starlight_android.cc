@@ -9,7 +9,8 @@
 #include <string>
 
 #include "core/base/android/jni_helper.h"
-#include "core/services/starlight_standalone/jni_headers/build/gen/StarlightNode_jni.h"
+#include "platform/android/lynx_starlight/src/main/jni/gen/StarlightNode_jni.h"
+#include "platform/android/lynx_starlight/src/main/jni/gen/StarlightNode_register_jni.h"
 
 static constexpr uint16_t kLayoutWidthIndex = 0;
 static constexpr uint16_t kLayoutHeightIndex = 1;
@@ -22,8 +23,9 @@ static constexpr uint16_t kLayoutBorderStartIndex = 12;
 static jclass g_starlightNodeClass = nullptr;
 static jmethodID g_measureMethod = nullptr;
 
-namespace starlight {
-bool StarlightAndroid::RegisterJNIUtils(JNIEnv* env) {
+namespace lynx {
+namespace jni {
+bool RegisterJNIForStarlightNode(JNIEnv* env) {
   g_starlightNodeClass =
       env->FindClass("com/lynx/starlight/nodes/StarlightNode");
   if (g_starlightNodeClass == NULL) {
@@ -48,7 +50,10 @@ bool StarlightAndroid::RegisterJNIUtils(JNIEnv* env) {
 
   return RegisterNativesImpl(env);
 }
+}  // namespace jni
+}  // namespace lynx
 
+namespace starlight {
 SLMeasureDelegateAndroid::SLMeasureDelegateAndroid(JNIEnv* env, jobject obj)
     : jni_object_(env, obj) {}
 

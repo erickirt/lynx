@@ -9,10 +9,6 @@
 #include "core/include/starlight_standalone/starlight.h"
 
 namespace starlight {
-class StarlightAndroid {
- public:
-  static bool RegisterJNIUtils(JNIEnv *env);
-};
 
 class SLMeasureDelegateAndroid {
  public:
