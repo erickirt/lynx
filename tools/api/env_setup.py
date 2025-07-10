@@ -42,13 +42,26 @@ with open(API_CONFIG_PATH, "r") as f:
     DOXYGEN_PATH = os.path.normpath(
         os.path.join(LYNX_ROOT_PATH, API_CONFIG["path"]["doxygen"])
     )
+    if not os.path.exists(DOXYGEN_PATH):
+        DOXYGEN_PATH = os.path.join(
+            LYNX_ROOT_PATH, os.pardir, API_CONFIG["path"]["doxygen"]
+        )
+
     HANDLE_FAILED_INSTRUCTION = API_CONFIG["path"]["instruction_doc"]
+
     NODE_PATH = os.path.normpath(
         os.path.join(LYNX_ROOT_PATH, API_CONFIG["path"]["node"])
     )
+    if not os.path.exists(NODE_PATH):
+        NODE_PATH = os.path.join(LYNX_ROOT_PATH, os.pardir, API_CONFIG["path"]["node"])
+
     CLANG_FORMAT_PATH = os.path.normpath(
         os.path.join(LYNX_ROOT_PATH, API_CONFIG["path"]["llvm"], "bin", "clang-format")
     )
+    if not os.path.exists(CLANG_FORMAT_PATH):
+        CLANG_FORMAT_PATH = os.path.join(
+            LYNX_ROOT_PATH, os.pardir, API_CONFIG["path"]["llvm"], "bin", "clang-format"
+        )
 
 
 def guarantee_generated_files():
