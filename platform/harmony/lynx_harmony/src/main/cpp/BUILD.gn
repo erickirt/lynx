@@ -145,6 +145,8 @@ lynx_core_source_set("cpp") {
     "ui/js_ui_base.h",
     "ui/ui_base.cc",
     "ui/ui_base.h",
+    "ui/ui_bounce.cc",
+    "ui/ui_bounce.h",
     "ui/ui_component.cc",
     "ui/ui_component.h",
     "ui/ui_exposure.cc",

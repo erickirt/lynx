@@ -15,6 +15,7 @@
 #include "core/renderer/dom/lynx_get_ui_result.h"
 #include "core/renderer/utils/value_utils.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/base/node_manager.h"
+#include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_bounce.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/lynx_unit_utils.h"
 
 namespace lynx {
@@ -54,6 +55,9 @@ UIScroll::~UIScroll() {
   NodeManager::Instance().RemoveNodeCustomEventReceiver(
       container_layout_, UIBase::CustomEventReceiver);
   NodeManager::Instance().DisposeNode(container_layout_);
+
+  end_bounce_view_ = nullptr;
+  start_bounce_view_ = nullptr;
 }
 
 void UIScroll::ScrollToAsync() {
@@ -242,6 +246,24 @@ void UIScroll::OnMeasure(ArkUI_LayoutConstraint* layout_constraint) {
     }
   }
 
+  if (start_bounce_view_ != nullptr) {
+    NodeManager::Instance().MeasureNode(start_bounce_view_->DrawNode(),
+                                        constraint);
+    NodeManager::Instance().SetAttributeWithNumberValue(
+        start_bounce_view_->DrawNode(), NODE_POSITION,
+        IsHorizontal() ? -start_bounce_view_->width_ : 0,
+        IsHorizontal() ? 0 : -start_bounce_view_->height_);
+  }
+
+  if (end_bounce_view_ != nullptr) {
+    NodeManager::Instance().MeasureNode(end_bounce_view_->DrawNode(),
+                                        constraint);
+    NodeManager::Instance().SetAttributeWithNumberValue(
+        end_bounce_view_->DrawNode(), NODE_POSITION,
+        IsHorizontal() ? content_width : 0,
+        IsHorizontal() ? 0 : content_height);
+  }
+
   OH_ArkUI_LayoutConstraint_Dispose(constraint);
 
   if (!base::FloatsEqual(content_width, content_width_) ||
@@ -312,10 +334,23 @@ void UIScroll::SetEvents(const std::vector<lepus::Value>& events) {
 }
 
 void UIScroll::AddChild(lynx::tasm::harmony::UIBase* child, int index) {
+  bool is_bounce_view =
+      child->Tag() == "bounce-view" || child->Tag() == "x-bounce-view";
+
   if (index == -1) {
     children_.emplace_back(child);
-  } else {
+  } else if (!is_bounce_view) {
     children_.insert(children_.begin() + index, child);
+  }
+  if (is_bounce_view) {
+    if (static_cast<UIBounce*>(child)->is_lower_) {
+      start_bounce_view_ = child;
+    } else {
+      end_bounce_view_ = child;
+    }
+    NodeManager::Instance().InsertNode(container_layout_, child->DrawNode(),
+                                       index);
+    return;
   }
   child->SetParent(this);
   NodeManager::Instance().InsertNode(container_layout_, child->DrawNode(),
@@ -325,6 +360,13 @@ void UIScroll::AddChild(lynx::tasm::harmony::UIBase* child, int index) {
 void UIScroll::RemoveChild(lynx::tasm::harmony::UIBase* child) {
   child->SetParent(nullptr);
   NodeManager::Instance().RemoveNode(container_layout_, child->DrawNode());
+  if (child == end_bounce_view_) {
+    end_bounce_view_ = nullptr;
+    return;
+  } else if (child == start_bounce_view_) {
+    start_bounce_view_ = nullptr;
+    return;
+  }
   children_.erase(std::remove(children_.begin(), children_.end(), child),
                   children_.end());
 }
@@ -352,6 +394,7 @@ void UIScroll::OnNodeEvent(ArkUI_NodeEvent* event) {
                       component_event->data[1].f32);
   } else if (type == NODE_SCROLL_EVENT_ON_SCROLL_STOP) {
     HandleScrollStopEvent();
+    HandleScrollBounceEvent();
   } else if (type == NODE_SCROLL_EVENT_ON_SCROLL_EDGE) {
     HandleScrollEdgeEvent();
   } else if (type == NODE_SCROLL_EVENT_ON_WILL_SCROLL) {
@@ -362,6 +405,27 @@ void UIScroll::OnNodeEvent(ArkUI_NodeEvent* event) {
     }
   } else {
     UIBase::OnNodeEvent(event);
+  }
+}
+
+void UIScroll::HandleScrollBounceEvent() {
+  if (send_lower_bounces_event_) {
+    send_lower_bounces_event_ = false;
+    auto param = lepus::Dictionary::Create();
+    param->SetValue("direction", IsHorizontal() ? "left" : "bottom");
+    CustomEvent event{Sign(), scroll::kScrollToBounceEvent, "detail",
+                      lepus_value(param)};
+    context_->SendEvent(event);
+  }
+  if (send_upper_bounces_event_) {
+    send_upper_bounces_event_ = false;
+    auto param = lepus::Dictionary::Create();
+    param->SetValue("direction", IsHorizontal() ? "right" : "top");
+    CustomEvent event{Sign(), scroll::kScrollToBounceEvent, "detail",
+                      lepus_value(param)};
+    context_->SendEvent(event);
+    SendCustomScrollEvent(scroll::kScrollToBounceEvent, GetScrollOffset(), 0,
+                          0);
   }
 }
 
@@ -409,6 +473,29 @@ void UIScroll::HandleScrollEvent(float delta_x, float delta_y) {
   auto offset = GetScrollOffset();
   OnScrollSticky(offset.first, offset.second);
   // onScrollEvent
+  if (end_bounce_view_ != nullptr) {
+    if (IsHorizontal()) {
+      if (offset.first >= content_width_ + end_bounce_view_->width_ - width_) {
+        send_upper_bounces_event_ = true;
+      }
+    } else {
+      if (offset.second >=
+          content_height_ + end_bounce_view_->height_ - height_) {
+        send_upper_bounces_event_ = true;
+      }
+    }
+  }
+  if (start_bounce_view_ != nullptr) {
+    if (IsHorizontal()) {
+      if (offset.first <= -start_bounce_view_->width_) {
+        send_lower_bounces_event_ = true;
+      }
+    } else {
+      if (offset.second <= -start_bounce_view_->height_) {
+        send_lower_bounces_event_ = true;
+      }
+    }
+  }
   if (enable_scroll_event_) {
     SendCustomScrollEvent(scroll::kScrollEvent, offset, delta_x, delta_y);
   }

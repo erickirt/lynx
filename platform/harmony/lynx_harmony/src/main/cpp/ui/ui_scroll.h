@@ -37,6 +37,7 @@ static constexpr const char* const kScrollToLowerEdge = "scrolltoloweredge";
 static constexpr const char* const kScrollToNormalState = "scrolltonormalstate";
 static constexpr const char* const kScrollStartEvent = "scrollstart";
 static constexpr const char* const kScrollEndEvent = "scrollend";
+static constexpr const char* const kScrollToBounceEvent = "scrolltobounce";
 static constexpr const char* const kContentSizeChangeEvent =
     "contentsizechanged";
 // event_type
@@ -95,6 +96,7 @@ class UIScroll : public BaseScrollContainer {
 
   void HandleContentSizeChangedEvent(float width, float height);
   void HandleScrollEdgeEvent();
+  void HandleScrollBounceEvent();
 
   void SendCustomScrollEvent(const std::string name,
                              const std::pair<float, float> offset, float deltaX,
@@ -134,9 +136,13 @@ class UIScroll : public BaseScrollContainer {
   bool enable_scroll_to_upper_edge_event_{false};
   bool enable_scroll_to_lower_edge_event_{false};
   bool enable_scroll_to_normal_state_event_{false};
+  bool send_lower_bounces_event_{false};
+  bool send_upper_bounces_event_{false};
   // edge_type
   static constexpr int kBorderStatusUpper = 1;
   static constexpr int kBorderStatusLower = 2;
+  UIBase* end_bounce_view_{nullptr};
+  UIBase* start_bounce_view_{nullptr};
 };
 
 }  // namespace harmony

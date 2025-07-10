@@ -23,6 +23,7 @@
 #include "platform/harmony/lynx_harmony/src/main/cpp/shadow_node/raw_text_shadow_node.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/shadow_node/shadow_node_owner.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/shadow_node/text_shadow_node.h"
+#include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_bounce.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_image.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_list.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_owner.h"
@@ -77,6 +78,7 @@ LynxContext::GetCAPINodeInfoMap() {
           {"list-container", {UIList::Make}},
           {"list-item", {UIComponent::Make}},
           {"scroll-view", {UIScroll::Make}},
+          {"bounce-view", {UIBounce::Make}},
       }};
   return *kNodeTypeInfoMap;
 }
