@@ -277,8 +277,10 @@ void UIScroll::OnNodeReady() { BaseScrollContainer::OnNodeReady(); }
 void UIScroll::OnPropUpdate(const std::string& name,
                             const lepus::Value& value) {
   if (name == scroll::kScrollX && value.IsBool()) {
+    // TODO: @deprecated scroll-x
     SetHorizontal(value.Bool());
   } else if (name == scroll::kScrollY && value.IsBool()) {
+    // TODO: @deprecated scroll-y
     SetHorizontal(!value.Bool());
   } else if (name == scroll::kEnableScroll && value.IsBool()) {
     SetEnableScrollInteraction(value.Bool());

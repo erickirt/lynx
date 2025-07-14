@@ -96,16 +96,8 @@ void UIList::OnPropUpdate(const std::string& name, const lepus::Value& value) {
   if (name == list::kListContainerInfo) {
     UpdateListContainerInfo(value);
   } else if (name == list::kListVerticalOrientation && value.IsBool()) {
+    // TODO: @deprecated vertical-orientation
     SetHorizontal(!value.Bool());
-  } else if (name == list::kScrollOrientation && value.IsString()) {
-    const auto& val = value.StdString();
-    if (val == "vertical") {
-      SetHorizontal(false);
-    } else if (val == "horizontal") {
-      SetHorizontal(true);
-    } else {
-      SetHorizontal(false);
-    }
   } else if (name == list::kExperimentalRecycleStickyItem && value.IsBool()) {
     enable_recycle_sticky_item_ = value.Bool();
   } else if (name == list::kSticky && value.IsBool()) {
@@ -151,7 +143,6 @@ void UIList::OnPropUpdate(const std::string& name, const lepus::Value& value) {
       NodeManager::Instance().SetAttributeWithNumberValue(
           node_, NODE_SCROLL_FRICTION, 1000.f);
     }
-
   } else {
     BaseScrollContainer::OnPropUpdate(name, value);
   }

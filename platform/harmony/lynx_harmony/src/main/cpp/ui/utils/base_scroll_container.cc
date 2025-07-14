@@ -133,6 +133,15 @@ void BaseScrollContainer::OnPropUpdate(const std::string& name,
     scroll_forward_mode_ = GetNestedScrollMode(value.StdString());
   } else if (name == kNestedScrollBackWardOptions && value.IsString()) {
     scroll_backward_mode_ = GetNestedScrollMode(value.StdString());
+  } else if (name == kScrollOrientation && value.IsString()) {
+    const auto& val = value.StdString();
+    if (val == "vertical") {
+      SetHorizontal(false);
+    } else if (val == "horizontal") {
+      SetHorizontal(true);
+    } else {
+      SetHorizontal(false);
+    }
   } else {
     UIView::OnPropUpdate(name, value);
   }

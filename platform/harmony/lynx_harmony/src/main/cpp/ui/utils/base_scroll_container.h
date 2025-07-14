@@ -18,6 +18,7 @@ namespace harmony {
 static constexpr const char* const kNestedScrollForwardOptions = "temporary-nested-scroll-forward";
 static constexpr const char* const kNestedScrollBackWardOptions =
     "temporary-nested-scroll-backward";
+static constexpr const char* const kScrollOrientation = "scroll-orientation";
 
 class BaseScrollContainer : public UIView {
  public:
