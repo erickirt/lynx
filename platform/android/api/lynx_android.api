@@ -1921,6 +1921,17 @@ public class com::lynx::tasm::behavior::herotransition::HeroTransitionManager : 
   public static HeroTransitionManager com.lynx.tasm.behavior.herotransition.HeroTransitionManager.inst();
 }
 
+public class com::lynx::tasm::performance::performanceobserver::HostPlatformTiming :  {
+  public String com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.hostPlatformType hostPlatformType;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.measureStart measureStart;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.measureEnd measureEnd;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.layoutStart layoutStart;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.layoutEnd layoutEnd;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.drawStart drawStart;
+  public double com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.drawEnd drawEnd;
+  public com.lynx.tasm.performance.performanceobserver.HostPlatformTiming.HostPlatformTiming(HashMap< String, Object > props);
+}
+
 public class com::lynx::jsbridge::network::HttpRequest :  {
   public com.lynx.jsbridge.network.HttpRequest.HttpRequest();
   public String com.lynx.jsbridge.network.HttpRequest.getHttpMethod();
@@ -7213,6 +7224,7 @@ public class com::lynx::tasm::performance::performanceobserver::PipelineEntry : 
   public double com.lynx.tasm.performance.performanceobserver.PipelineEntry.layoutUiOperationExecuteEnd layoutUiOperationExecuteEnd;
   public double com.lynx.tasm.performance.performanceobserver.PipelineEntry.paintEnd paintEnd;
   public HashMap<String, Object> com.lynx.tasm.performance.performanceobserver.PipelineEntry.frameworkRenderingTiming frameworkRenderingTiming;
+  public HostPlatformTiming com.lynx.tasm.performance.performanceobserver.PipelineEntry.hostPlatformTiming hostPlatformTiming;
   public com.lynx.tasm.performance.performanceobserver.PipelineEntry.PipelineEntry(HashMap< String, Object > props);
 }
 
