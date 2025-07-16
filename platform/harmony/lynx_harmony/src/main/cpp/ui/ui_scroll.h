@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/include/float_comparison.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/ui_view.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/auto_scroller.h"
 #include "platform/harmony/lynx_harmony/src/main/cpp/ui/utils/base_scroll_container.h"
@@ -28,20 +29,26 @@ static constexpr const char* const kScrollToIndex = "scroll-to-index";
 static constexpr const char* const kScrollLeft = "scroll-left";
 static constexpr const char* const kScrollTop = "scroll-top";
 static constexpr const char* const kEnableScrollBar = "scroll-bar-enable";
+static constexpr const char* const kInitialScrollToIndex =
+    "initial-scroll-to-index";
+static constexpr const char* const kInitialScrollOffset =
+    "initial-scroll-offset";
 // event
 static constexpr const char* const kScrollEvent = "scroll";
-static constexpr const char* const kScrollUpperEvent = "scrolltoupper";
-static constexpr const char* const kScrollLowerEvent = "scrolltolower";
-static constexpr const char* const kScrollToUpperEdge = "scrolltoupperedge";
-static constexpr const char* const kScrollToLowerEdge = "scrolltoloweredge";
-static constexpr const char* const kScrollToNormalState = "scrolltonormalstate";
+static constexpr const char* const kScrollToUpperEvent = "scrolltoupper";
+static constexpr const char* const kScrollToLowerEvent = "scrolltolower";
+static constexpr const char* const kScrollToUpperEdgeEvent =
+    "scrolltoupperedge";
+static constexpr const char* const kScrollToLowerEdgeEvent =
+    "scrolltoloweredge";
+static constexpr const char* const kScrollToNormalStateEvent =
+    "scrolltonormalstate";
 static constexpr const char* const kScrollStartEvent = "scrollstart";
 static constexpr const char* const kScrollEndEvent = "scrollend";
 static constexpr const char* const kScrollToBounceEvent = "scrolltobounce";
 static constexpr const char* const kContentSizeChangeEvent =
     "contentsizechanged";
 // event_type
-
 static constexpr ArkUI_NodeEventType kScrollNodeEventTypes[] = {
     NODE_SCROLL_EVENT_ON_SCROLL,      NODE_SCROLL_EVENT_ON_SCROLL_START,
     NODE_SCROLL_EVENT_ON_SCROLL_STOP, NODE_SCROLL_EVENT_ON_SCROLL_EDGE,
@@ -52,7 +59,9 @@ static constexpr const char* const kNearest = "nearest";
 static constexpr const char* const kCenter = "center";
 static constexpr const char* const kEnd = "end";
 static constexpr const char* const kStart = "start";
-
+// const value
+static constexpr int kInvalidIndex = -1;
+static constexpr float kInvalidScrollOffset = -1.f;
 }  // namespace scroll
 
 class UIScroll : public BaseScrollContainer {
@@ -102,6 +111,7 @@ class UIScroll : public BaseScrollContainer {
                              const std::pair<float, float> offset, float deltaX,
                              float deltaY);
   void UpdateContentSize(float width, float height) override;
+  void FrameDidChanged() override;
 
  private:
   void OnScrollSticky(float x_offset, float y_offset);
@@ -116,26 +126,57 @@ class UIScroll : public BaseScrollContainer {
       base::MoveOnlyClosure<void, int32_t, const lepus::Value&> callback);
   void InvokeGetScrollInfo(
       base::MoveOnlyClosure<void, int32_t, const lepus::Value&> callback);
-  void ScrollToAsync();
+  void ScrollToAsyncIfNeeded(const float scroll_offset);
+  void ScrollToOffset(const float scroll_offset);
+  void ResetEventFlag() {
+    enable_scroll_to_upper_event_ = false;
+    enable_scroll_to_lower_event_ = false;
+    enable_scroll_event_ = false;
+    enable_scroll_start_event_ = false;
+    enable_scroll_end_event_ = false;
+    enable_content_size_change_event_ = false;
+    enable_scroll_to_upper_edge_event_ = false;
+    enable_scroll_to_lower_edge_event_ = false;
+    enable_scroll_to_normal_state_event_ = false;
+    enable_scroll_to_bounce_event_ = false;
+  }
+  void ResetScrollTarget() {
+    scroll_to_index_ = scroll::kInvalidIndex;
+    scroll_left_ = scroll::kInvalidScrollOffset;
+    scroll_top_ = scroll::kInvalidScrollOffset;
+  }
+  bool IsValidScrollToIndex(const int scroll_to_index) const {
+    return scroll_to_index >= 0 &&
+           scroll_to_index < static_cast<int>(children_.size());
+  }
+  bool IsValidScrollOffset(const float scroll_offset) const {
+    return base::FloatsLargerOrEqual(scroll_offset, 0.f);
+  }
 
  private:
   ArkUI_NodeHandle container_layout_{nullptr};
   std::shared_ptr<AutoScroller> auto_scroller_;
   int lower_threshold_{0};
   int upper_threshold_{0};
-  int pending_scroll_index_{-1};
-  float pending_scroll_left_{-1};
-  float pending_scroll_top_{-1};
+  bool should_consume_initial_scroll_target_{true};
+  bool layout_changed_{false};
+  int scroll_to_index_{scroll::kInvalidIndex};
+  float scroll_left_{scroll::kInvalidScrollOffset};
+  float scroll_top_{scroll::kInvalidScrollOffset};
+  int initial_scroll_to_index_{scroll::kInvalidIndex};
+  float initial_scroll_offset_{scroll::kInvalidScrollOffset};
+  float pending_scroll_offset_{scroll::kInvalidScrollOffset};
   int last_border_status_{kBorderStatusUpper};
-  bool enable_scroll_upper_event_{false};
-  bool enable_scroll_lower_event_{false};
+  bool enable_scroll_to_upper_event_{false};
+  bool enable_scroll_to_lower_event_{false};
   bool enable_scroll_event_{false};
   bool enable_scroll_start_event_{false};
-  bool enable_scroll_stop_event_{false};
+  bool enable_scroll_end_event_{false};
   bool enable_content_size_change_event_{false};
   bool enable_scroll_to_upper_edge_event_{false};
   bool enable_scroll_to_lower_edge_event_{false};
   bool enable_scroll_to_normal_state_event_{false};
+  bool enable_scroll_to_bounce_event_{false};
   bool send_lower_bounces_event_{false};
   bool send_upper_bounces_event_{false};
   // edge_type

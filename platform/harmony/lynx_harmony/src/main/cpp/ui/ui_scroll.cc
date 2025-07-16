@@ -60,40 +60,6 @@ UIScroll::~UIScroll() {
   start_bounce_view_ = nullptr;
 }
 
-void UIScroll::ScrollToAsync() {
-  if (pending_scroll_index_ < 0 && pending_scroll_left_ < 0 &&
-      pending_scroll_top_ < 0) {
-    return;
-  }
-  if (const auto monitor = context_->VSyncMonitor()) {
-    monitor->ScheduleVSyncSecondaryCallback(
-        reinterpret_cast<intptr_t>(this),
-        [weak_this = weak_from_this()](int64_t, int64_t) {
-          auto share_this = weak_this.lock();
-          if (!share_this) {
-            return;
-          }
-          auto scroll = static_cast<UIScroll*>(share_this.get());
-          bool is_horizontal = scroll->IsHorizontal();
-          auto scroll_offset_x{-1}, scroll_offset_y{-1};
-          if (scroll->pending_scroll_index_ >= 0 &&
-              scroll->pending_scroll_index_ < scroll->children_.size()) {
-            auto view = scroll->children_[scroll->pending_scroll_index_];
-            scroll_offset_x = is_horizontal ? view->left_ : 0;
-            scroll_offset_y = is_horizontal ? 0 : view->top_;
-          } else if (scroll->pending_scroll_left_ >= 0 ||
-                     scroll->pending_scroll_top_ >= 0) {
-            scroll_offset_x = is_horizontal ? scroll->pending_scroll_left_ : 0;
-            scroll_offset_y = is_horizontal ? 0 : scroll->pending_scroll_top_;
-          }
-          scroll->pending_scroll_index_ = -1;
-          scroll->pending_scroll_left_ = -1;
-          scroll->pending_scroll_top_ = -1;
-          scroll->ScrollTo(scroll_offset_x, scroll_offset_y, false);
-        });
-  }
-}
-
 void UIScroll::InvokeMethod(
     const std::string& method, const lepus::Value& args,
     base::MoveOnlyClosure<void, int32_t, const lepus::Value&> callback) {
@@ -230,7 +196,7 @@ void UIScroll::OnMeasure(ArkUI_LayoutConstraint* layout_constraint) {
                                          std::numeric_limits<int32_t>::max());
   OH_ArkUI_LayoutConstraint_SetMinWidth(constraint, 0);
   OH_ArkUI_LayoutConstraint_SetMaxWidth(constraint,
-                                        context_->ScaledDensity() * width_);
+                                        std::numeric_limits<int32_t>::max());
   for (const auto child : children_) {
     if (child) {
       NodeManager::Instance().MeasureNode(child->DrawNode(), constraint);
@@ -245,7 +211,6 @@ void UIScroll::OnMeasure(ArkUI_LayoutConstraint* layout_constraint) {
       }
     }
   }
-
   if (start_bounce_view_ != nullptr) {
     NodeManager::Instance().MeasureNode(start_bounce_view_->DrawNode(),
                                         constraint);
@@ -263,16 +228,68 @@ void UIScroll::OnMeasure(ArkUI_LayoutConstraint* layout_constraint) {
         IsHorizontal() ? content_width : 0,
         IsHorizontal() ? 0 : content_height);
   }
-
   OH_ArkUI_LayoutConstraint_Dispose(constraint);
-
   if (!base::FloatsEqual(content_width, content_width_) ||
       !base::FloatsEqual(content_height, content_height_)) {
     UpdateContentSize(content_width, content_height);
   }
+  layout_changed_ = false;
+  if (IsValidScrollOffset(pending_scroll_offset_)) {
+    ScrollToOffset(pending_scroll_offset_);
+    pending_scroll_offset_ = scroll::kInvalidScrollOffset;
+  }
 }
 
-void UIScroll::OnNodeReady() { BaseScrollContainer::OnNodeReady(); }
+void UIScroll::OnNodeReady() {
+  BaseScrollContainer::OnNodeReady();
+  float scroll_offset = scroll::kInvalidScrollOffset;
+  if (IsValidScrollToIndex(scroll_to_index_)) {
+    UIBase* child = children_[scroll_to_index_];
+    scroll_offset = is_horizontal_ ? child->left_ : child->top_;
+  } else if (IsValidScrollOffset(is_horizontal_ ? scroll_left_ : scroll_top_)) {
+    scroll_offset = is_horizontal_ ? scroll_left_ : scroll_top_;
+  }
+  // Reset scroll_to_index_ / scroll_left_ / scroll_top_.
+  ResetScrollTarget();
+  // Consume valid initial-scroll-to-index or initial-scroll-offset.
+  if (should_consume_initial_scroll_target_) {
+    should_consume_initial_scroll_target_ = false;
+    if (IsValidScrollToIndex(initial_scroll_to_index_)) {
+      UIBase* child = children_[initial_scroll_to_index_];
+      scroll_offset = is_horizontal_ ? child->left_ : child->top_;
+    } else if (IsValidScrollOffset(initial_scroll_offset_)) {
+      scroll_offset = initial_scroll_offset_;
+    }
+  }
+  if (IsValidScrollOffset(scroll_offset)) {
+    ScrollToOffset(scroll_offset);
+  }
+}
+
+void UIScroll::ScrollToOffset(const float scroll_offset) {
+  if (layout_changed_) {
+    pending_scroll_offset_ = scroll_offset;
+    return;
+  }
+  ScrollToAsyncIfNeeded(scroll_offset);
+}
+
+void UIScroll::ScrollToAsyncIfNeeded(const float scroll_offset) {
+  const auto& monitor = context_->VSyncMonitor();
+  if (monitor) {
+    monitor->ScheduleVSyncSecondaryCallback(
+        reinterpret_cast<intptr_t>(this),
+        [weak_this = weak_from_this(), scroll_offset](int64_t, int64_t) {
+          auto share_this = weak_this.lock();
+          if (share_this) {
+            UIScroll* ui_scroll = static_cast<UIScroll*>(share_this.get());
+            ui_scroll->ScrollTo(ui_scroll->is_horizontal_ ? scroll_offset : 0.f,
+                                ui_scroll->is_horizontal_ ? 0.f : scroll_offset,
+                                false);
+          }
+        });
+  }
+}
 
 void UIScroll::OnPropUpdate(const std::string& name,
                             const lepus::Value& value) {
@@ -295,11 +312,15 @@ void UIScroll::OnPropUpdate(const std::string& name,
   } else if (name == scroll::kUpperThreshold && value.IsNumber()) {
     upper_threshold_ = static_cast<int>(value.Number());
   } else if (name == scroll::kScrollToIndex && value.IsNumber()) {
-    pending_scroll_index_ = static_cast<int>(value.Number());
+    scroll_to_index_ = static_cast<int>(value.Number());
   } else if (name == scroll::kScrollLeft && value.IsNumber()) {
-    pending_scroll_left_ = value.Number();
+    scroll_left_ = value.Number();
   } else if (name == scroll::kScrollTop && value.IsNumber()) {
-    pending_scroll_top_ = value.Number();
+    scroll_top_ = value.Number();
+  } else if (name == scroll::kInitialScrollToIndex && value.IsNumber()) {
+    initial_scroll_to_index_ = static_cast<int>(value.Number());
+  } else if (name == scroll::kInitialScrollOffset && value.IsNumber()) {
+    initial_scroll_offset_ = value.Number();
   } else {
     BaseScrollContainer::OnPropUpdate(name, value);
   }
@@ -307,38 +328,35 @@ void UIScroll::OnPropUpdate(const std::string& name,
 
 void UIScroll::SetEvents(const std::vector<lepus::Value>& events) {
   UIBase::SetEvents(events);
-  enable_scroll_upper_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollUpperEvent) !=
-      events_.end();
-  enable_scroll_lower_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollLowerEvent) !=
-      events_.end();
-  enable_scroll_event_ = std::find(events_.begin(), events_.end(),
-                                   scroll::kScrollEvent) != events_.end();
-  enable_scroll_start_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollStartEvent) !=
-      events_.end();
-  enable_scroll_stop_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollEndEvent) !=
-      events_.end();
-  enable_content_size_change_event_ =
-      std::find(events_.begin(), events_.end(),
-                scroll::kContentSizeChangeEvent) != events_.end();
-  enable_scroll_to_upper_edge_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollToUpperEdge) !=
-      events_.end();
-  enable_scroll_to_lower_edge_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollToLowerEdge) !=
-      events_.end();
-  enable_scroll_to_normal_state_event_ =
-      std::find(events_.begin(), events_.end(), scroll::kScrollToNormalState) !=
-      events_.end();
+  ResetEventFlag();
+  for (const auto& event : events_) {
+    if (event == scroll::kScrollEvent) {
+      enable_scroll_event_ = true;
+    } else if (event == scroll::kContentSizeChangeEvent) {
+      enable_content_size_change_event_ = true;
+    } else if (event == scroll::kScrollStartEvent) {
+      enable_scroll_start_event_ = true;
+    } else if (event == scroll::kScrollEndEvent) {
+      enable_scroll_end_event_ = true;
+    } else if (event == scroll::kScrollToLowerEvent) {
+      enable_scroll_to_lower_event_ = true;
+    } else if (event == scroll::kScrollToUpperEvent) {
+      enable_scroll_to_upper_event_ = true;
+    } else if (event == scroll::kScrollToLowerEdgeEvent) {
+      enable_scroll_to_lower_edge_event_ = true;
+    } else if (event == scroll::kScrollToUpperEdgeEvent) {
+      enable_scroll_to_upper_edge_event_ = true;
+    } else if (event == scroll::kScrollToNormalStateEvent) {
+      enable_scroll_to_normal_state_event_ = true;
+    } else if (event == scroll::kScrollToBounceEvent) {
+      enable_scroll_to_bounce_event_ = true;
+    }
+  }
 }
 
 void UIScroll::AddChild(lynx::tasm::harmony::UIBase* child, int index) {
   bool is_bounce_view =
       child->Tag() == "bounce-view" || child->Tag() == "x-bounce-view";
-
   if (index == -1) {
     children_.emplace_back(child);
   } else if (!is_bounce_view) {
@@ -352,16 +370,19 @@ void UIScroll::AddChild(lynx::tasm::harmony::UIBase* child, int index) {
     }
     NodeManager::Instance().InsertNode(container_layout_, child->DrawNode(),
                                        index);
+    layout_changed_ = true;
     return;
   }
   child->SetParent(this);
   NodeManager::Instance().InsertNode(container_layout_, child->DrawNode(),
                                      index);
+  layout_changed_ = true;
 }
 
 void UIScroll::RemoveChild(lynx::tasm::harmony::UIBase* child) {
   child->SetParent(nullptr);
   NodeManager::Instance().RemoveNode(container_layout_, child->DrawNode());
+  layout_changed_ = true;
   if (child == end_bounce_view_) {
     end_bounce_view_ = nullptr;
     return;
@@ -373,6 +394,11 @@ void UIScroll::RemoveChild(lynx::tasm::harmony::UIBase* child) {
                   children_.end());
 }
 
+void UIScroll::FrameDidChanged() {
+  UIBase::FrameDidChanged();
+  layout_changed_ = true;
+}
+
 void UIScroll::UpdateContentSize(float width, float height) {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, UI_SCROLL_UPDATE_CONTENT_SIZE);
   BaseScrollContainer::UpdateContentSize(width, height);
@@ -380,7 +406,6 @@ void UIScroll::UpdateContentSize(float width, float height) {
                                           context_->ScaledDensity() * width,
                                           context_->ScaledDensity() * height);
   HandleContentSizeChangedEvent(width, height);
-  ScrollToAsync();
   HandleScrollEdgeEvent();
 }
 
@@ -411,6 +436,9 @@ void UIScroll::OnNodeEvent(ArkUI_NodeEvent* event) {
 }
 
 void UIScroll::HandleScrollBounceEvent() {
+  if (!enable_scroll_to_bounce_event_) {
+    return;
+  }
   if (send_lower_bounces_event_) {
     send_lower_bounces_event_ = false;
     auto param = lepus::Dictionary::Create();
@@ -449,15 +477,17 @@ void UIScroll::HandleScrollEdgeEvent() {
     }
   }
   if (enable_scroll_to_upper_edge_event_ && is_upper_edge) {
-    SendCustomScrollEvent(scroll::kScrollToUpperEdge, GetScrollOffset(), 0, 0);
+    SendCustomScrollEvent(scroll::kScrollToUpperEdgeEvent, GetScrollOffset(), 0,
+                          0);
   }
   if (enable_scroll_to_lower_edge_event_ && is_lower_edge) {
-    SendCustomScrollEvent(scroll::kScrollToLowerEdge, GetScrollOffset(), 0, 0);
+    SendCustomScrollEvent(scroll::kScrollToLowerEdgeEvent, GetScrollOffset(), 0,
+                          0);
   }
   if (enable_scroll_to_normal_state_event_ && !is_lower_edge &&
       !is_upper_edge) {
-    SendCustomScrollEvent(scroll::kScrollToNormalState, GetScrollOffset(), 0,
-                          0);
+    SendCustomScrollEvent(scroll::kScrollToNormalStateEvent, GetScrollOffset(),
+                          0, 0);
   }
 }
 
@@ -502,14 +532,14 @@ void UIScroll::HandleScrollEvent(float delta_x, float delta_y) {
     SendCustomScrollEvent(scroll::kScrollEvent, offset, delta_x, delta_y);
   }
   // onScrollLowerEvent、onScrollUpperEvent
-  if (enable_scroll_upper_event_ || enable_scroll_lower_event_) {
+  if (enable_scroll_to_upper_event_ || enable_scroll_to_lower_event_) {
     auto status = UpdateBorderStatus(offset.first, offset.second);
-    if (enable_scroll_upper_event_ && status == kBorderStatusUpper &&
+    if (enable_scroll_to_upper_event_ && status == kBorderStatusUpper &&
         last_border_status_ != kBorderStatusUpper) {
-      this->SendCustomScrollEvent(scroll::kScrollUpperEvent, offset, 0, 0);
-    } else if (enable_scroll_lower_event_ && status == kBorderStatusLower &&
+      this->SendCustomScrollEvent(scroll::kScrollToUpperEvent, offset, 0, 0);
+    } else if (enable_scroll_to_lower_event_ && status == kBorderStatusLower &&
                last_border_status_ != kBorderStatusLower) {
-      SendCustomScrollEvent(scroll::kScrollLowerEvent, offset, 0, 0);
+      SendCustomScrollEvent(scroll::kScrollToLowerEvent, offset, 0, 0);
     }
     last_border_status_ = status;
   }
@@ -524,14 +554,14 @@ void UIScroll::HandleScrollEvent(float delta_x, float delta_y) {
     if (GetScrollDistance() > 0 ||
         (list_size < scroll_range &&
          GetScrollDistance() < scroll_range - list_size)) {
-      SendCustomScrollEvent(scroll::kScrollToNormalState, offset, 0, 0);
+      SendCustomScrollEvent(scroll::kScrollToNormalStateEvent, offset, 0, 0);
     }
   }
   context_->NotifyUIScroll();
 }
 
 void UIScroll::HandleScrollStopEvent() {
-  if (enable_scroll_stop_event_) {
+  if (enable_scroll_end_event_) {
     auto offset = this->GetScrollOffset();
     SendCustomScrollEvent(scroll::kScrollEndEvent, offset, 0, 0);
   }
