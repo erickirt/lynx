@@ -46,6 +46,7 @@ class BASE_EXPORT PubUIOwner {
   int IndexOf(int child_id) const;
   int GetUINodeByPosition(float x, float y) const;
   std::string GetTag(int sign) const;
+  int32_t GetTagInfo(const std::string& tag) const;
 
  private:
   std::shared_ptr<UIOwner> ui_owner_;

@@ -116,6 +116,10 @@ std::string PubUIOwner::GetTag(int sign) const {
   return ui ? ui->Tag() : std::string();
 }
 
+int32_t PubUIOwner::GetTagInfo(const std::string& tag) const {
+  return ui_owner_->GetTagInfo(tag);
+}
+
 }  // namespace harmony
 }  // namespace tasm
 }  // namespace lynx
