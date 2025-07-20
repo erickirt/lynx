@@ -486,13 +486,13 @@
   return enableTextStorageDeallocFix;
 }
 
-- (int)memoryAcquisitionDelayMs {
+- (int)memoryAcquisitionDelaySec {
   static dispatch_once_t onceToken;
-  static int delayMs = 0;
+  static int delaySecond = 0;
   dispatch_once(&onceToken, ^{
-    delayMs = lynx::tasm::LynxEnv::GetInstance().GetMemoryAcquisitionDelayMs();
+    delaySecond = lynx::tasm::LynxEnv::GetInstance().GetMemoryAcquisitionDelaySec();
   });
-  return delayMs;
+  return delaySecond;
 }
 
 - (BOOL)enableGenericResourceFetcher {
@@ -604,7 +604,7 @@
     @(LynxEnvEnableTextStorageDeallocFix) : @"enable_text_storage_dealloc_fix",
     @(LynxEnvEnableJSGroupThreadByDefault) : @"enable_multi_js_thread_by_default",
     @(LynxEnvEnableTextLayoutCache) : @"enable_text_layout_cache",
-    @(LynxEnvMemoryAcquisitionDelayMs) : @"memory_acquisition_delay_ms"
+    @(LynxEnvMemoryAcquisitionDelayMs) : @"memory_acquisition_delay_second"
   };
   NSString *keyString = envKeyBinding[@(key)];
   NSAssert(keyString.length > 0, @"LynxEnv key string should not be nill.");

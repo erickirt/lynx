@@ -37,7 +37,7 @@ public enum LynxEnvKey {
   ENABLE_MULTI_JS_THREAD_BY_DEFAULT("enable_multi_js_thread_by_default"),
   ENABLE_RECYCLE_RENDER_DATA_LIST_WHILE_RELOAD("enable_recycle_render_data_list_while_reload"),
   ENABLE_TEXT_LAYOUT_CACHE("enable_text_layout_cache"),
-  MEMORY_ACQUISITION_DELAY_MS("memory_acquisition_delay_ms");
+  MEMORY_ACQUISITION_DELAY_SEC("memory_acquisition_delay_second");
 
   private final String description;
 

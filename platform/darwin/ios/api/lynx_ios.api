@@ -1267,7 +1267,7 @@ public class LynxEnv : NSObject {
   public BOOL LynxEnv::enableGenericResourceFetcher();
   public BOOL LynxEnv::enableTextContainerOpt();
   public BOOL LynxEnv::enableTextStorageDeallocFix();
-  public int LynxEnv::memoryAcquisitionDelayMs();
+  public int LynxEnv::memoryAcquisitionDelaySec();
   public NSDictionary< NSString *, NSString * > * LynxEnv::cppEnvDebugDescription();
   public NSDictionary< NSString *, NSString * > * LynxEnv::platformEnvDebugDescription();
   public BOOL LynxEnv()::enableCreateUIAsync();

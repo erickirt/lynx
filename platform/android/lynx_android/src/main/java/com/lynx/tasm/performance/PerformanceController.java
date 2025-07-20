@@ -35,7 +35,7 @@ import java.util.Map;
 public class PerformanceController implements IMemoryMonitor, ITimingCollector {
   private static volatile boolean sIsNativeLibraryLoaded = false;
   private static volatile LynxBooleanOption sIsMemoryMonitorEnabled = LynxBooleanOption.UNSET;
-  private static volatile long sMemoryAcquisitionDelayMs = -1;
+  private static volatile long sMemoryAcquisitionDelaySec = -1;
   private volatile long mNativePerformanceActorPtr = 0;
   private WeakReference<IPerformanceObserver> mObserver;
   private WeakReference<ILynxEventReporterService> mEventReporterService;
@@ -60,17 +60,17 @@ public class PerformanceController implements IMemoryMonitor, ITimingCollector {
     return false;
   }
 
-  public static long getMemoryAcquisitionDelayMs() {
-    if (sMemoryAcquisitionDelayMs >= 0) {
-      return sMemoryAcquisitionDelayMs;
+  public static long getMemoryAcquisitionDelaySec() {
+    if (sMemoryAcquisitionDelaySec >= 0) {
+      return sMemoryAcquisitionDelaySec;
     }
-    String value = LynxEnv.inst().getMemoryAcquisitionDelayMs();
-    // default is 2 ms.
+    String value = LynxEnv.inst().getMemoryAcquisitionDelaySec();
+    // default is 2 second.
     long delay = 2;
     if (value != null && !value.isEmpty()) {
       try {
         delay = Long.parseLong(value);
-        sMemoryAcquisitionDelayMs = delay;
+        sMemoryAcquisitionDelaySec = delay;
       } catch (NumberFormatException ignored) {
       }
     }

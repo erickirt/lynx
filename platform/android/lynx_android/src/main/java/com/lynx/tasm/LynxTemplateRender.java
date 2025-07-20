@@ -2230,7 +2230,7 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     }
 
     WeakReference<LynxTemplateRender> weakThis = new WeakReference<>(this);
-    long delayMs = PerformanceController.getMemoryAcquisitionDelayMs();
+    long delayMs = PerformanceController.getMemoryAcquisitionDelaySec() * 1000;
     // Since resources are usually loaded asynchronously, such as images downloaded asynchronously
     // from the network, it is necessary to delay the collection of memory so as to collect as much
     // resource memory as possible.

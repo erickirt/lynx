@@ -137,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)enableTextStorageDeallocFix;
 
-- (int)memoryAcquisitionDelayMs;
+- (int)memoryAcquisitionDelaySec;
 
 - (NSDictionary<NSString *, NSString *> *)cppEnvDebugDescription;
 
