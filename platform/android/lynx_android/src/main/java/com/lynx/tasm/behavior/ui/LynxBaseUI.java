@@ -216,7 +216,6 @@ public abstract class LynxBaseUI
   @Nullable protected TransformOrigin mTransformOrigin;
   @Nullable protected ReadableArray mPerspective = null;
   protected float mPrePerspectiveValue = 0;
-  protected boolean mResetPerspectiveFlag = false;
   protected boolean hasTransformChanged = false;
   protected boolean userInteractionEnabled = true;
   protected boolean nativeInteractionEnabled = false;
@@ -2264,11 +2263,6 @@ public abstract class LynxBaseUI
 
   @LynxProp(name = PropsConstants.PERSPECTIVE)
   public void setPerspective(@Nullable ReadableArray perspective) {
-    if (perspective == null || perspective.size() != 2) {
-      mResetPerspectiveFlag = true;
-    } else {
-      mResetPerspectiveFlag = false;
-    }
     mPerspective = perspective;
   }
 

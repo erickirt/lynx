@@ -1323,7 +1323,7 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI implements IProc
         // sqrt(5) produces an exact replica with iOS.
         perspective = perspective * scale * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER;
       }
-    } else if (mResetPerspectiveFlag) {
+    } else {
       int maxLength = getWidth() > getHeight() ? getWidth() : getHeight();
       perspective =
           maxLength * scale * CAMERA_DISTANCE_NORMALIZATION_MULTIPLIER * DEFAULT_PERSPECTIVE_FACTOR;
