@@ -1242,6 +1242,11 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
     if (mNativeFacade != null) {
       mNativeFacade.setTemplateLoadClient(mClient);
       dispatchOnPageStart(mUrl);
+      // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchOnPageStart
+      // Due to lynxDevTool UI session limitations, we cannot do this yet
+      if (mDevTool != null) {
+        mDevTool.attachToDebugBridge(mUrl);
+      }
     }
   }
 

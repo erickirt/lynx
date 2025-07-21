@@ -487,6 +487,9 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
   [self updateUrl:url];
   [self dispatchViewDidStartLoading];
+  // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchViewDidStartLoading
+  // Due to lynxDevTool UI session limitations, we cannot do this yet
+  [self->_devTool attachDebugBridge:url];
   [self internalLoadTemplate:tem withUrl:url initData:data];
 }
 
@@ -514,9 +517,15 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
              if (!error) {
                if (templateRes.bundle) {
                  [weakSelf.devTool onLoadFromBundle:templateRes.bundle withURL:url initData:data];
+                 // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchViewDidStartLoading
+                 // Due to lynxDevTool UI session limitations, we cannot do this yet
+                 [self->_devTool attachDebugBridge:url];
                  [weakSelf loadTemplateBundle:templateRes.bundle withURL:url initData:data];
                } else if (templateRes.data) {
                  [weakSelf.devTool onTemplateLoadSuccess:templateRes.data];
+                 // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchViewDidStartLoading
+                 // Due to lynxDevTool UI session limitations, we cannot do this yet
+                 [self->_devTool attachDebugBridge:url];
                  [weakSelf internalLoadTemplate:templateRes.data withUrl:url initData:data];
                }
              } else {
@@ -565,6 +574,9 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
   [self updateUrl:url];
   [self dispatchViewDidStartLoading];
+  // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchViewDidStartLoading
+  // Due to lynxDevTool UI session limitations, we cannot do this yet
+  [self->_devTool attachDebugBridge:url];
   if ([bundle errorMsg]) {
     NSString* errorMsg =
         [NSString stringWithFormat:@"LynxTemplateRender loadTemplateBundle with an invalid "
@@ -612,7 +624,6 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
           // element bundle passed in by the business.
           copied_bundle.SetElementBundle(template_bundle->GetElementBundle().DeepClone());
         }
-        [self->_devTool attachDebugBridge:url];
         [self markTiming:lynx::tasm::timing::kFfiStart
               pipelineID:pipeline_options->pipeline_id.c_str()];
         self->shell_->LoadTemplateBundle(lynx::base::SafeStringConvert([url UTF8String]),
@@ -629,6 +640,9 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
 
 - (void)internalLoadTemplate:(NSData*)tem withUrl:(NSString*)url initData:(LynxTemplateData*)data {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, TEMPLATE_RENDER_INTERNAL_LOAD_TEMPLATE, "url", [url UTF8String]);
+  // TODO(zhoumingsong.smile) move attachToDebugBridge to dispatchViewDidStartLoading
+  // Due to lynxDevTool UI session limitations, we cannot do this yet
+  [self->_devTool attachDebugBridge:url];
   auto pipeline_options = std::make_shared<lynx::tasm::PipelineOptions>();
   pipeline_options->pipeline_origin = lynx::tasm::timing::kLoadBundle;
   pipeline_options->need_timestamps = YES;
@@ -653,7 +667,6 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
         }
         auto securityService = LynxService(LynxServiceSecurityProtocol);
         if (securityService == nil) {
-          [self->_devTool attachDebugBridge:url];
           // if securityService is nil, Skip Security Check.
           [self markTiming:lynx::tasm::timing::kFfiStart
                 pipelineID:pipeline_options->pipeline_id.c_str()];
@@ -670,7 +683,6 @@ LYNX_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder*)aDecoder)
           [self markTiming:lynx::tasm::timing::kVerifyTasmEnd
                 pipelineID:pipeline_options->pipeline_id.c_str()];
           if (verification.verified) {
-            [self->_devTool attachDebugBridge:url];
             [self markTiming:lynx::tasm::timing::kFfiStart
                   pipelineID:pipeline_options->pipeline_id.c_str()];
             self->shell_->LoadTemplate([url UTF8String], ConvertNSBinary(tem), pipeline_options,
