@@ -495,12 +495,7 @@ public class TextMeasurer {
   }
 
   public Object takeTextLayout(int sign) {
-    Object value = mExtraDatas.get(sign);
-    if (value != null) {
-      mExtraDatas.remove(sign);
-      mAttributedTextBundles.remove(sign);
-    }
-    return value;
+    return mExtraDatas.get(sign);
   }
 
   public void releaseLayoutObject(int sign) {

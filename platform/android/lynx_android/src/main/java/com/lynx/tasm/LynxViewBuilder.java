@@ -378,6 +378,11 @@ public class LynxViewBuilder
   }
 
   @Override
+  public boolean hasPresetMeasureSpec() {
+    return this.hasPresetMeasureSpec;
+  }
+
+  @Override
   public int getPresetWidthMeasureSpec() {
     if (lynxViewGroup != null) {
       return lynxViewGroup.getPresetWidthMeasureSpec();

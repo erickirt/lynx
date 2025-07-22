@@ -2301,6 +2301,7 @@ public interface com::lynx::tasm::behavior::ILynxUIRenderer {
 }
 
 public interface com::lynx::tasm::group::ILynxViewConfigProvider {
+  public boolean com.lynx.tasm.group.ILynxViewConfigProvider.hasPresetMeasureSpec();
   public BehaviorRegistry com.lynx.tasm.group.ILynxViewConfigProvider.getBehaviorRegistry();
   public boolean com.lynx.tasm.group.ILynxViewConfigProvider.isEnableAutoExpose();
   public Float com.lynx.tasm.group.ILynxViewConfigProvider.getDensity();
@@ -6389,6 +6390,7 @@ public class com::lynx::tasm::LynxViewBuilder : LynxBaseConfigurator< LynxViewBu
   public boolean com.lynx.tasm.LynxViewBuilder.isEnableJSRuntime();
   public boolean com.lynx.tasm.LynxViewBuilder.isEnableAirStrictMode();
   public boolean com.lynx.tasm.LynxViewBuilder.isDebuggable();
+  public boolean com.lynx.tasm.LynxViewBuilder.hasPresetMeasureSpec();
   public int com.lynx.tasm.LynxViewBuilder.getPresetWidthMeasureSpec();
   public int com.lynx.tasm.LynxViewBuilder.getPresetHeightMeasureSpec();
   public float com.lynx.tasm.LynxViewBuilder.getFontScale();

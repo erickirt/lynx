@@ -56,6 +56,12 @@ class LynxViewGroup implements ILynxViewGroup, ILynxViewRuntimeCacheManager {
   private boolean enablePreUpdateData;
   private IUIRendererCreator uiRendererCreator;
   private int embeddedMode = EmbeddedMode.UNSET;
+  private boolean hasPresetMeasureSpec = false;
+
+  @Override
+  public boolean hasPresetMeasureSpec() {
+    return hasPresetMeasureSpec;
+  }
 
   LynxViewGroup(String url, TemplateBundle bundle, TemplateData globalProps,
       BehaviorRegistry registry, LynxBackgroundRuntimeOptions runtimeOptions,
@@ -66,7 +72,8 @@ class LynxViewGroup implements ILynxViewGroup, ILynxViewRuntimeCacheManager {
       boolean enableAsyncHydration, boolean enableAutoConcurrency,
       boolean enableVSyncAlignedMessageLoop, boolean enableJSRuntime, boolean enableAirStrictMode,
       boolean debuggable, int presetWidthMeasureSpec, int presetHeightMeasureSpec, float fontScale,
-      boolean enablePreUpdateData, IUIRendererCreator uiRendererCreator, int embeddedMode) {
+      boolean enablePreUpdateData, IUIRendererCreator uiRendererCreator, int embeddedMode,
+      boolean hasPresetMeasureSpec) {
     this.url = url;
     this.templateBundle = bundle;
     this.globalProps = globalProps;
@@ -96,6 +103,7 @@ class LynxViewGroup implements ILynxViewGroup, ILynxViewRuntimeCacheManager {
     this.enablePreUpdateData = enablePreUpdateData;
     this.uiRendererCreator = uiRendererCreator;
     this.embeddedMode = embeddedMode;
+    this.hasPresetMeasureSpec = hasPresetMeasureSpec;
   }
 
   @Override

@@ -33,12 +33,13 @@ public class LynxViewGroupBuilder extends LynxBaseConfigurator<LynxViewGroupBuil
   }
 
   public ILynxViewGroup build() {
-    return new LynxViewGroup(url, templateBundle, globalProps, behaviorRegistry, lynxRuntimeOptions,
-        mContextData, threadStrategy, enableAutoExpose, enableLayoutSafepoint,
+    LynxViewGroup group = new LynxViewGroup(url, templateBundle, globalProps, behaviorRegistry,
+        lynxRuntimeOptions, mContextData, threadStrategy, enableAutoExpose, enableLayoutSafepoint,
         enableUnifiedPipeline, forceDarkAllowed, densityOverride, screenWidth, screenHeight,
         enableMultiAsyncThread, enableSyncFlush, enablePendingJsTask, enableAsyncHydration,
         enableAutoConcurrency, enableVSyncAlignedMessageLoop, enableJSRuntime, enableAirStrictMode,
         debuggable, presetWidthMeasureSpec, presetHeightMeasureSpec, fontScale, enablePreUpdateData,
-        uiRendererCreator, embeddedMode);
+        uiRendererCreator, embeddedMode, hasPresetMeasureSpec);
+    return group;
   }
 }

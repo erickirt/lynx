@@ -17,6 +17,8 @@ import java.util.Map;
  * Interface that defines the behaviours of LynxViewBuilder & LynxViewGroup;
  */
 public interface ILynxViewConfigProvider {
+  boolean hasPresetMeasureSpec();
+
   /**
    * @return current config BehaviorRegistry
    */

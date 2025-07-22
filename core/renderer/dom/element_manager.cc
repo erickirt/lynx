@@ -806,7 +806,9 @@ void ElementManager::OnUpdateViewport(float width, int width_mode, float height,
   viewport_.UpdateViewport(width, width_mode, height, height_mode);
   has_viewport_ready_ = true;
 
-  SetViewportSizeToRootNode();
+  if (SetViewportSizeToRootNode()) {
+    RequestLayout(std::make_shared<PipelineOptions>());
+  }
 }
 
 /**

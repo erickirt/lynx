@@ -152,10 +152,6 @@ void PageElement::SetCSSID(int32_t id) {
  * Reference {@link LayoutContext#Layout }
  */
 void PageElement::Layout(const std::shared_ptr<PipelineOptions>& options) {
-  element_manager()->OnUpdateViewport(
-      element_manager_->viewport_.width, element_manager_->viewport_.width_mode,
-      element_manager_->viewport_.height,
-      element_manager_->viewport_.height_mode, false);
   DispatchLayoutBeforeRecursively();
 
   sl_node_->ReLayout();

@@ -432,6 +432,12 @@ public class LynxTemplateRender implements ILynxEngine, ILynxErrorReceiver {
       // When the Engine is successfully reused, it is unnecessary to update the viewport during the
       // LynxView initialization process.
       updateViewport(widthMeasureSpec, heightMeasureSpec);
+    } else if ((mEmbeddedMode & EmbeddedMode.LAYOUT_IN_ELEMENT) > 0) {
+      // Only init the viewport while the measure spec is pre defined. Or the viewport is
+      // meaningless.
+      if (mLynxViewConfigProvider.hasPresetMeasureSpec()) {
+        updateViewport(widthMeasureSpec, heightMeasureSpec);
+      }
     }
 
     mClient.addClient(LynxEnv.inst().getLynxViewClient());

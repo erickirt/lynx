@@ -1281,7 +1281,7 @@ class ElementManager : public ElementContextDelegate {
 
   bool enable_fiber_element_memory_reporter_{false};
   bool enable_layout_in_element_mode_{false};
-  bool has_viewport_ready_{true};
+  bool has_viewport_ready_{false};
 
   LynxEnvConfig lynx_env_config_;
   std::shared_ptr<PageConfig> config_;

@@ -40,6 +40,7 @@ public class LynxBaseConfigurator<T extends LynxBaseConfigurator<T>> {
   protected boolean enableAutoConcurrency = false;
   protected boolean enableVSyncAlignedMessageLoop = false;
   protected boolean enablePendingJsTask = false;
+  protected boolean hasPresetMeasureSpec = false;
 
   static Float defaultDensity = null;
 
@@ -436,6 +437,7 @@ public class LynxBaseConfigurator<T extends LynxBaseConfigurator<T>> {
   public T setPresetMeasuredSpec(int widthMeasureSpec, int heightMeasureSpec) {
     presetHeightMeasureSpec = heightMeasureSpec;
     presetWidthMeasureSpec = widthMeasureSpec;
+    hasPresetMeasureSpec = true;
     return (T) this;
   }
 
