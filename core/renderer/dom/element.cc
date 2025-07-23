@@ -185,6 +185,7 @@ void Element::AttachToElementManager(
         manager->GetEnableExtendedLayoutOnlyOpt();
     enable_component_layout_only_ = manager->GetEnableComponentLayoutOnly();
   }
+  enable_layout_in_element_mode_ = manager->IsLayoutInElementModeOn();
 }
 
 std::vector<float> Element::ScrollBy(float width, float height) {
