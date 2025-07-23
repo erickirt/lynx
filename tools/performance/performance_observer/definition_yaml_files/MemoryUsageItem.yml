@@ -1,5 +1,6 @@
 MemoryUsageItem:
   type: object
+  x-ignore-ts: true
   properties:
     category:
       type: string
