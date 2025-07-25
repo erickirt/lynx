@@ -11,7 +11,7 @@ from core.env.env import RTFEnv
 from core.env.trait_template import TraitTemplate
 from core.options.options import Options
 from core.utils.log import Log
-from core.base.result import Ok
+from core.base.result import Ok, Err
 from core.base.summary import Summary, SummaryConsumer
 from plugins.plugin import Plugin
 import json
@@ -100,6 +100,8 @@ class NativeUTPlugin(Plugin):
                 return self.__handle_run_command(template, args)
             elif args.command == "list":
                 return self.__handle_list_command(template_name, template)
+            else:
+                return Err(f"Unsupported command: {args.command}")
 
     def __handle_list_command(self, template_name, template):
         Log.info(f"Targets list for {template_name}")
