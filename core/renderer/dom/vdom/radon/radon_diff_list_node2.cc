@@ -120,6 +120,11 @@ bool RadonDiffListNode2::ShouldFlush(
   if (list_updated) {
     element()->PropsUpdateFinish();
   }
+
+  // move error_key_set_ from the old component to the new one.
+  if (old->error_key_set_) {
+    error_key_set_ = std::move(old->error_key_set_);
+  }
   return should_flush || list_updated;
 }
 
@@ -395,6 +400,9 @@ int32_t RadonDiffListNode2::ComponentAtIndex(uint32_t index,
   auto* component = reuse_pool_->GetComponentFromListKeyComponentMap(item_key);
 
   if (!component || !component->name().IsEqual(component_info.name_)) {
+    if (component) {
+      CheckComponentNameAndItemKey(component, component_info);
+    }
     // if component is null or component.name is not the same with
     // component_info, the component need to be created.
     component = CreateComponentWithType(index);
@@ -733,6 +741,33 @@ bool RadonDiffListNode2::DisablePlatformImplementation() {
     }
   }
   return *disable_platform_implementation_;
+}
+
+void RadonDiffListNode2::CheckComponentNameAndItemKey(
+    RadonComponent* radon_component, const ListComponentInfo& component_info) {
+  // If render component <CompB> by using component <CompA> from KeyComponentMap
+  // with item-key "list-item-X", we generate error key with "CompB-CompA", and
+  // we only report error once when the error occurs for the first time.
+  const auto& reuser_component_name = component_info.name_;
+  const auto& reused_component_name = radon_component->name().str();
+  const auto& error_key = reuser_component_name + "-" + reused_component_name;
+  if (!error_key_set_) {
+    error_key_set_ = std::make_unique<std::unordered_set<std::string>>();
+  }
+  if (error_key_set_->find(error_key) == error_key_set_->end()) {
+    error_key_set_->insert(error_key);
+    std::string error_msg = base::FormatString(
+        "Error for rendering the component <%s> by using the component <%s> "
+        "with the same item-key: %s. This error is new added in lynx sdk "
+        "version 3.4.",
+        reuser_component_name.c_str(), reused_component_name.c_str(),
+        component_info.diff_key_.String().c_str());
+    std::string suggestion = "Please check the legality of the item-key.";
+    auto error = lynx::base::LynxError(
+        error::E_COMPONENT_LIST_ILLEGAL_ITEM_KEY, std::move(error_msg),
+        std::move(suggestion), base::LynxErrorLevel::Error);
+    page_proxy_->element_manager()->OnErrorOccurred(std::move(error));
+  }
 }
 
 }  // namespace tasm

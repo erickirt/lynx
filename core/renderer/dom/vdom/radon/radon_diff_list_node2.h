@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <optional>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "core/renderer/dom/vdom/radon/radon_list_base.h"
@@ -53,11 +55,13 @@ class RadonDiffListNode2 : public RadonListBase {
       TemplateAssembler* tasm) override;
   void CheckItemKeys(
       std::vector<std::unique_ptr<ListComponentInfo>>& components);
-
+  void CheckComponentNameAndItemKey(RadonComponent* radon_component,
+                                    const ListComponentInfo& component_info);
   void SetupListInfo(bool list_updated);
 
   // New Arch
   std::unique_ptr<ListReusePool> reuse_pool_;
+  std::unique_ptr<std::unordered_set<std::string>> error_key_set_;
 
   // Option Handler
   // The databinding process of list sub-component is triggered by platform
