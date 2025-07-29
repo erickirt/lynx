@@ -504,8 +504,6 @@ bool LynxBinaryBaseTemplateReader::DecodeSpecificSection(
       break;
     }
     case BinarySection::CONFIG: {
-      TRACE_EVENT(LYNX_TRACE_CATEGORY,
-                  BINARY_BASE_TEMPLATE_READER_DECODE_PAGE_CONFIG);
       page_config_offset_ = stream_->offset();
       DECODE_STDSTR(config_str);
       EnsurePageConfig();

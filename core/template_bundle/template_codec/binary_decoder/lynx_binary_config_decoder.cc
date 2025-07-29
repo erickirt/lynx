@@ -14,6 +14,7 @@
 #include "core/runtime/piper/js/runtime_constant.h"
 #include "core/runtime/vm/lepus/json_parser.h"
 #include "core/services/event_report/event_tracker.h"
+#include "core/template_bundle/template_codec/binary_decoder/binary_decoder_trace_event_def.h"
 
 namespace lynx {
 namespace tasm {
@@ -303,6 +304,13 @@ static constexpr const char* const kEnableAsyncFlushSubtree =
 
 bool LynxBinaryConfigDecoder::DecodePageConfig(
     std::string config_str, std::shared_ptr<PageConfig>& page_config) {
+  TRACE_EVENT(LYNX_TRACE_CATEGORY,
+              BINARY_BASE_TEMPLATE_READER_DECODE_PAGE_CONFIG,
+              [&config_str](lynx::perfetto::EventContext ctx) {
+                auto* debug = ctx.event()->add_debug_annotations();
+                debug->set_name("pageConfig");
+                debug->set_legacy_json_value(config_str);
+              });
   rapidjson::Document doc;
   if (doc.Parse(config_str.c_str()).HasParseError()) {
     LOGE("DecodePageConfig Error!");
