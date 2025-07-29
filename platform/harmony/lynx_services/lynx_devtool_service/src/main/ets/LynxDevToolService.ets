@@ -8,6 +8,7 @@ import {
   ILynxDevToolService,
   LLog,
   LynxBaseInspectorOwner,
+  LynxModuleManager,
   OnErrorCallback
 } from '@lynx/lynx';
 import { NodeController } from '@kit.ArkUI';
@@ -108,6 +109,11 @@ export class LynxDevToolService implements ILynxDevToolService {
       LLog.i(LynxDevToolService.TAG, "createLogBoxComponent logbox is null");
       return null;
     }
+  }
+
+  public registerWebSocketModule(moduleManager: LynxModuleManager): void {
+    let LynxWebSocketModule: ESObject = LynxDevToolService.devtoolModule?.LynxWebSocketModule;
+    moduleManager.registerModule('LynxWebSocketModule', { moduleClass: LynxWebSocketModule });
   }
 }
 

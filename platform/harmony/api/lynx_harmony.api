@@ -985,6 +985,15 @@ export class DebugRouter {
   public static handleSchema(url: string): boolean;
 }
 
+export class LynxWebSocketModule extends LynxModule {
+  constructor(context: LynxContext, param: Object);
+  public connect(url: string, protocols: Object[], options: Object[], id: number): void;
+  public close(code: number, reason: string, id: number): void;
+  public send(message: string, id: number): void;
+  public ping(id: number): void;
+  public sendEvent(name: string, data: Object): void;
+}
+
 export class LogBox implements ILogBox {
   constructor(onError: OnErrorCallback, getJsSource: GetJSSourceCallback);
   public reportError(err: LynxError): void;
@@ -1010,6 +1019,7 @@ export class LynxDevToolService implements ILynxDevToolService {
   public createInspectorOwner(embedderProxy: number[]): LynxBaseInspectorOwner | null;
   public createLogBox(onError: OnErrorCallback, getJsSource: GetJSSourceCallback): ILogBox | null;
   public createLogBoxComponent(logBox: ILogBox, title: string): NodeController | null;
+  public registerWebSocketModule(moduleManager: LynxModuleManager): void;
   static instance: any; = new LynxDevToolService()
 }
 
@@ -1095,5 +1105,6 @@ export interface ILynxDevToolService {
   createInspectorOwner(embedderProxy: number[]): LynxBaseInspectorOwner | null;
   createLogBox(onError: OnErrorCallback, getJsSource: GetJSSourceCallback): ILogBox | null;
   createLogBoxComponent(logbox: ILogBox, title: string): NodeController | null;
+  registerWebSocketModule(moduleManager: LynxModuleManager): void;
 }
 

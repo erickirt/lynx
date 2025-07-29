@@ -6,6 +6,7 @@ import { IServiceProvider } from './IServiceProvider';
 import { LynxBaseInspectorOwner } from '../../devtool_wrapper/LynxBaseInspectorOwner';
 import { GetJSSourceCallback, ILogBox, OnErrorCallback } from '../../devtool_wrapper/ILogBox';
 import { NodeController } from '@kit.ArkUI';
+import { LynxModuleManager } from '../../jsbridge/LynxModuleManager';
 
 export interface ILynxDevToolService extends IServiceProvider {
   isDevToolModuleLoaded(): boolean
@@ -25,4 +26,6 @@ export interface ILynxDevToolService extends IServiceProvider {
   createLogBox(onError: OnErrorCallback, getJsSource: GetJSSourceCallback): ILogBox | null
 
   createLogBoxComponent(logbox: ILogBox, title: string): NodeController | null;
+
+  registerWebSocketModule(moduleManager: LynxModuleManager): void;
 }

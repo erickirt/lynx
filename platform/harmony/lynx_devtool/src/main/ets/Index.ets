@@ -12,4 +12,6 @@ export { LynxDevToolEnv } from './LynxDevToolEnv'
 
 export { DebugRouter } from './DebugRouter'
 
+export { LynxWebSocketModule } from './jsbridge/LynxWebSocketModule'
+
 export { LogBox, LogBoxNodeController } from './logbox/LogBox'

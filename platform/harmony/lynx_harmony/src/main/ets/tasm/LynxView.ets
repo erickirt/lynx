@@ -42,6 +42,7 @@ import { url } from '@kit.ArkTS';
 import { ILynxTrailService } from '../Index';
 import { ILogBox } from '../devtool_wrapper/ILogBox';
 import { LynxDevTool } from '../devtool_wrapper/LynxDevTool';
+import { ILynxDevToolService } from './service/ILynxDevToolService';
 
 export enum MeasureMode {
   INDEFINITE = 0,
@@ -181,6 +182,8 @@ export struct LynxView {
     this.sendableModules.forEach((v, k) => {
       this.sendableModuleManager.registerModule(k, v);
     });
+    const devtoolService = LynxServiceCenter.getService<ILynxDevToolService>(LynxServiceType.DevTool)
+    devtoolService?.registerWebSocketModule(this.moduleManager);
     this.moduleManager.registerModule('LynxFetchModule', { moduleClass: LynxFetchModule });
     this.moduleManager.registerModule('LynxSetModule', { moduleClass: LynxSetModule });
     let providers = [this.genericResourceFetcher, this.mediaResourceFetcher, this.templateResourceFetcher];
