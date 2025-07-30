@@ -28,10 +28,6 @@ class NativeModuleRecorder {
     static base::NoDestructor<NativeModuleRecorder> instance_;
     return *instance_.get();
   }
-
-  void RecordSharedData(const piper::Value* args, piper::Runtime* rt,
-                        int64_t record_id);
-
   void RecordFunctionCall(const char* module_name, const char* js_method_name,
                           uint32_t argc, const piper::Value* args,
                           const int64_t* callbacks, uint32_t count,

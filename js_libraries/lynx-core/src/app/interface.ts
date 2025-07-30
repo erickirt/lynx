@@ -128,8 +128,6 @@ export interface NativeApp {
     options?: { timeout: number }
   ) => BundleInitReturnObj;
 
-  recordSharedData(dataKey: string, dataVal: unknown): void;
-
   loadScriptAsync(
     sourceURL: string,
     callback: (message: string | null, exports: BundleInitReturnObj) => void
