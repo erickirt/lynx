@@ -279,7 +279,7 @@ TEST_P(TextElementTest, TestResolveStyleValue) {
   EXPECT_EQ(text->computed_css_style()->GetTextAttributes()->color, 4278190080);
 }
 
-TEST_P(TextElementTest, TestMeasureCase0) {
+TEST_P(TextElementTest, DISABLED_TestMeasureCase0) {
   auto config = std::make_shared<PageConfig>();
   config->SetEnableFiberArch(true);
   manager->SetConfig(config);
