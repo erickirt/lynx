@@ -67,9 +67,7 @@ void SetGroupedEnvWithGroupSet(JNIEnv* env, jobject jcaller, jstring group_key,
 jstring GetDebugEnvDescription(JNIEnv* env, jobject jcaller) {
   std::string envJsonString =
       lynx::tasm::LynxEnv::GetInstance().GetDebugDescription();
-  return lynx::base::android::JNIConvertHelper::ConvertToJNIStringUTF(
-             env, envJsonString)
-      .Get();
+  return env->NewStringUTF(envJsonString.c_str());  // NOLINT
 }
 
 void SetEnvMask(JNIEnv* env, jobject jcaller, jstring key, jboolean value) {
