@@ -382,8 +382,8 @@ PaintingContextAndroid::PaintingContextAndroid(JNIEnv* env, jobject impl,
 }
 
 void PaintingContextAndroid::SetUIOperationQueue(
-    const std::shared_ptr<shell::DynamicUIOperationQueue>& queue) {
-  queue_ = queue;
+    const std::shared_ptr<shell::UIOperationQueueInterface>& queue) {
+  queue_ = std::static_pointer_cast<shell::DynamicUIOperationQueue>(queue);
 }
 
 void PaintingContextAndroid::InvokeNativeRunnable(

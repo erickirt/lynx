@@ -74,7 +74,7 @@ class PaintingContextAndroid : public PaintingCtxPlatformImpl {
                          jint thread_strategy, bool enable_context_free);
   ~PaintingContextAndroid() override = default;
   virtual void SetUIOperationQueue(
-      const std::shared_ptr<shell::DynamicUIOperationQueue>& queue) override;
+      const std::shared_ptr<shell::UIOperationQueueInterface>& queue) override;
   void SetInstanceId(const int32_t instance_id) override {
     instance_id_ = instance_id;
   };

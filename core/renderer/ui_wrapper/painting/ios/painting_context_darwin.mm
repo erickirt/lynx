@@ -241,8 +241,8 @@ void PaintingContextDarwin::SetKeyframes(fml::RefPtr<PropBundle> keyframes_data)
 }
 
 void PaintingContextDarwin::SetUIOperationQueue(
-    const std::shared_ptr<shell::DynamicUIOperationQueue>& queue) {
-  queue_ = queue;
+    const std::shared_ptr<shell::UIOperationQueueInterface>& queue) {
+  queue_ = std::static_pointer_cast<shell::DynamicUIOperationQueue>(queue);
 }
 
 void PaintingContextDarwin::SetInstanceId(const int32_t instance_id) {

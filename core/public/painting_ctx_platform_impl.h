@@ -17,6 +17,7 @@
 #include "core/public/prop_bundle.h"
 #include "core/public/text_layout_impl.h"
 #include "core/public/timing_key.h"
+#include "core/public/ui_operation_queue_interface.h"
 
 namespace lynx {
 
@@ -83,7 +84,7 @@ class PaintingCtxPlatformImpl {
   }
 
   virtual void SetUIOperationQueue(
-      const std::shared_ptr<shell::DynamicUIOperationQueue>& queue){};
+      const std::shared_ptr<shell::UIOperationQueueInterface>& queue){};
   virtual void SetInstanceId(const int32_t instance_id){};
   virtual void CreatePaintingNode(int id, const std::string& tag,
                                   const fml::RefPtr<PropBundle>& painting_data,

@@ -49,7 +49,7 @@ class NativePaintingCtxAndroid : public PaintingCtxPlatformImpl {
   }
 
   void SetUIOperationQueue(
-      const std::shared_ptr<shell::DynamicUIOperationQueue> &queue) override;
+      const std::shared_ptr<shell::UIOperationQueueInterface> &queue) override;
 
   void CreatePaintingNode(int id, const std::string &tag,
                           const fml::RefPtr<PropBundle> &painting_data,

@@ -105,7 +105,7 @@ class PaintingContextHarmony : public PaintingCtxPlatformImpl {
                       fml::RefPtr<tasm::PropBundle> value,
                       int32_t callback_id) override;
   void SetUIOperationQueue(
-      const std::shared_ptr<shell::DynamicUIOperationQueue>& queue) override;
+      const std::shared_ptr<shell::UIOperationQueueInterface>& queue) override;
 
   bool DefaultOverflowAlwaysVisible() override { return true; }
 

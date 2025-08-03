@@ -70,7 +70,7 @@ class PaintingContextDarwin : public PaintingCtxPlatformImpl {
   PaintingContextDarwin(LynxUIOwner* owner, bool enable_create_ui_async);
   ~PaintingContextDarwin() override;
   virtual void SetUIOperationQueue(
-      const std::shared_ptr<shell::DynamicUIOperationQueue>& queue) override;
+      const std::shared_ptr<shell::UIOperationQueueInterface>& queue) override;
   void SetInstanceId(const int32_t instance_id) override;
   void CreatePaintingNode(int sign, const std::string& tag,
                           const fml::RefPtr<PropBundle>& painting_data,

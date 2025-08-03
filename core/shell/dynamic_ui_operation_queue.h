@@ -10,6 +10,7 @@
 
 #include "core/base/threading/task_runner_manufactor.h"
 #include "core/public/page_options.h"
+#include "core/public/ui_operation_queue_interface.h"
 #include "core/services/event_report/event_tracker.h"
 #include "core/shell/lynx_ui_operation_queue.h"
 
@@ -17,7 +18,7 @@ namespace lynx {
 
 namespace shell {
 
-class DynamicUIOperationQueue {
+class DynamicUIOperationQueue : public UIOperationQueueInterface {
  public:
   explicit DynamicUIOperationQueue(
       base::ThreadStrategyForRendering strategy,
@@ -32,12 +33,15 @@ class DynamicUIOperationQueue {
   void UpdateStatus(UIOperationStatus status);
   void MarkDirty();
   void ForceFlush();
-  void Flush();
+  void Flush() override;
   void SetEnableFlush(bool enable_flush);
   void SetErrorCallback(ErrorCallback callback);
   void SetPageOptions(const tasm::PageOptions& options);
   uint32_t GetNativeUpdateDataOrder();
   uint32_t UpdateNativeUpdateDataOrder();
+  // TODO(chenyouhui): Remove this interface after migrating all Enqueue logic
+  // to PaintingContext
+  void Enqueue(base::closure operation) override;
 
  protected:
   void CreateImpl();

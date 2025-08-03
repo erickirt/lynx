@@ -53,6 +53,10 @@ void DynamicUIOperationQueue::EnqueueUIOperation(UIOperation operation) {
   impl_->EnqueueUIOperation(std::move(operation));
 }
 
+void DynamicUIOperationQueue::Enqueue(base::closure operation) {
+  impl_->EnqueueUIOperation(std::move(operation));
+}
+
 void DynamicUIOperationQueue::EnqueueHighPriorityUIOperation(
     UIOperation operation) {
   impl_->EnqueueHighPriorityOperation(std::move(operation));

@@ -26,7 +26,7 @@ bool RegisterJNIForNativePaintingContext(JNIEnv *env) {
 
 namespace tasm {
 void NativePaintingCtxAndroid::SetUIOperationQueue(
-    const std::shared_ptr<shell::DynamicUIOperationQueue> &queue) {
+    const std::shared_ptr<shell::UIOperationQueueInterface> &queue) {
   PaintingCtxPlatformImpl::SetUIOperationQueue(queue);
 }
 
