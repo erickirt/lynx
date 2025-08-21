@@ -544,7 +544,6 @@ void ListContainerImpl::OnLayoutChildren(
       tasm::TimingCollector::Instance()->Mark(
           tasm::timing::kListRenderChildrenStart);
     }
-    list_layout_manager_->SetListLayoutInfoToAllItemHolders();
     if (need_recycle_all_item_holders_before_layout_) {
       list_adapter_->RecycleAllItemHolders();
       need_recycle_all_item_holders_before_layout_ = false;
