@@ -49,6 +49,16 @@ class KeyframeEffect : public AnimationEffect {
     return effect;
   }
 
+  static std::unique_ptr<KeyframeEffect> Create(
+      std::vector<std::unique_ptr<KeyframeToken>> keyframes,
+      const std::shared_ptr<AnimatorTarget>& target,
+      std::unique_ptr<OptionalAnimationEffectTiming> timing) {
+    auto effect = std::unique_ptr<KeyframeEffect>(
+        new KeyframeEffect(std::move(keyframes), target, std::move(timing)));
+    effect->MakeKeyframeModel();
+    return effect;
+  }
+
   std::unordered_map<std::string, std::unique_ptr<basic::KeyframeModel>>&
   keyframe_models() {
     return keyframe_models_;
@@ -57,8 +67,6 @@ class KeyframeEffect : public AnimationEffect {
   void MakeKeyframeModel();
 
   void TickKeyframeModel(const fml::TimePoint& monotonic_time) override;
-
-  void EnsureFromAndToKeyframe();
 
  private:
   KeyframeEffect(std::vector<std::unique_ptr<KeyframeToken>> keyframes,

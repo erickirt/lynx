@@ -15,7 +15,6 @@
 
 #include "base/include/fml/time/time_delta.h"
 #include "core/animation/basic_animation/animation_effect_timing.h"
-#include "core/animation/basic_animation/animator_target.h"
 #include "core/animation/basic_animation/keyframe.h"
 
 namespace lynx {
@@ -28,16 +27,12 @@ class AnimationCurve {
   ~AnimationCurve() = default;
 
   AnimationCurve(const std::string& property_value_id,
-                 basic::AnimationEffect* effect,
-                 std::weak_ptr<AnimatorTarget> target)
-      : property_value_id_(property_value_id),
-        effect_(effect),
-        target_(target) {}
+                 basic::AnimationEffect* effect)
+      : property_value_id_(property_value_id), effect_(effect) {}
 
  public:
   static std::unique_ptr<AnimationCurve> Create(
-      const std::string& property_value_id, basic::AnimationEffect* effect,
-      std::weak_ptr<AnimatorTarget> target);
+      const std::string& property_value_id, basic::AnimationEffect* effect);
 
   void EnsureFromAndToKeyframe();
 
@@ -62,10 +57,6 @@ class AnimationCurve {
   AnimationCurve(const AnimationCurve&) = delete;
   AnimationCurve& operator=(const AnimationCurve&) = delete;
 
-  void SetCurveType(const std::string& type) { curve_type_ = type; }
-
-  const std::string& GetCurveType() { return curve_type_; }
-
  protected:
   TimingFunction* timing_function_;
   std::vector<std::unique_ptr<basic::Keyframe>> keyframes_;
@@ -73,8 +64,6 @@ class AnimationCurve {
  private:
   std::string property_value_id_;
   basic::AnimationEffect* effect_;
-  std::string curve_type_;
-  std::weak_ptr<AnimatorTarget> target_;
 };
 }  // namespace basic
 }  // namespace animation
