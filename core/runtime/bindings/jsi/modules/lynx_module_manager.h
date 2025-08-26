@@ -47,9 +47,7 @@ class LynxModuleManager : public pub::LynxNativeModuleManager {
   explicit LynxModuleManager() = default;
   explicit LynxModuleManager(
       pub::LynxNativeModuleManager &&native_module_manager)
-      : pub::LynxNativeModuleManager(std::move(native_module_manager)) {
-    delegate_ = pub::LynxNativeModuleManager::GetModuleDelegate();
-  }
+      : pub::LynxNativeModuleManager(std::move(native_module_manager)) {}
   virtual ~LynxModuleManager();
 
   void initBindingPtr(std::weak_ptr<LynxModuleManager> weak_manager,
@@ -61,7 +59,6 @@ class LynxModuleManager : public pub::LynxNativeModuleManager {
     LynxNativeModuleManager::SetRecordID(record_id);
     record_id_ = record_id;
   }
-  ManagerType Type() override { return ManagerType::JSI; };
 #if ENABLE_TESTBENCH_REPLAY
   std::shared_ptr<GroupInterceptor> GetGroupInterceptor() {
     return group_interceptor_;
