@@ -341,8 +341,6 @@ class ComputedCSSStyle {
 
   float GetOffsetRotate() const { return offset_rotate_; }
 
-  PointerEventsType GetPointerEvents() { return pointer_events_; }
-
   static bool IsPlatformInheritableProperty(const tasm::CSSPropertyID id) {
     return GetPlatformInheritableProperty().contains(id);
   }
@@ -413,7 +411,6 @@ class ComputedCSSStyle {
   OverflowType overflow_x_{DefaultComputedStyle::DEFAULT_OVERFLOW};
   OverflowType overflow_y_{DefaultComputedStyle::DEFAULT_OVERFLOW};
   VisibilityType visibility_{DefaultComputedStyle::DEFAULT_VISIBILITY};
-  PointerEventsType pointer_events_ = PointerEventsType::kAuto;
 
   /************ css style property end ***************************/
 
@@ -550,8 +547,7 @@ class ComputedCSSStyle {
   V(XPlaceholderFontFamily)              \
   V(XPlaceholderFontSize)                \
   V(XPlaceholderFontWeight)              \
-  V(XPlaceholderFontStyle)               \
-  V(PointerEvents)
+  V(XPlaceholderFontStyle)
 
 #define GETTER_STYLE_STRING(name) lepus_value name##ToLepus();
   FOREACH_PLATFORM_PROPERTY(GETTER_STYLE_STRING)

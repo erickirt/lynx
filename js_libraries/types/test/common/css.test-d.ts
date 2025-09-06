@@ -38,18 +38,7 @@ describe('CSSProperty Type Test', () => {
       wordBreak: 'normal',
       verticalAlign: 'baseline',
       direction: 'normal',
-      pointerEvents: 'auto',
     });
-
-    assertType<CSSProperties>({
-      pointerEvents: 'none',
-    });
-
-    assertType<CSSProperties>({
-      // @ts-expect-error: pointerEvents only accept 'auto' or 'none'
-      pointerEvents: 'xxx',
-    });
-
     assertType<CSSPropertiesWithLonghands>({
       // layout
       marginInlineStart: '1px',
@@ -74,7 +63,6 @@ describe('CSSProperty Type Test', () => {
       wordBreak: 'normal',
       verticalAlign: 'baseline',
       direction: 'normal',
-      pointerEvents: 'auto',
     });
 
     assertType<CSSPropertiesWithShorthands>({

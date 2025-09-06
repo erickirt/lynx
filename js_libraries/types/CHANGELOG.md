@@ -1,7 +1,4 @@
 # CHANGELOG
-## 3.5.3
-- Add the `pointer-events` CSS property.
-
 ## 3.5.2
 - Add `harmony-scroll-edge-effect` property for scroll container.
 

@@ -1,6 +1,3 @@
-## 0.0.7
-- Add the `pointer-events` CSS property.
-
 ## 0.0.6
 - Add `font-variation-settings`,`font-feature-settings` and `font-optical-sizing` CSS properties.
 

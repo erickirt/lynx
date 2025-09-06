@@ -135,10 +135,6 @@
   return false;
 }
 
-- (enum LynxPointerEventsValue)pointerEvents {
-  return kLynxPointerEventsValueAuto;
-}
-
 - (BOOL)enableTouchPseudoPropagation {
   return YES;
 }
