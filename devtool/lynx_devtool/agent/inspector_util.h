@@ -11,15 +11,6 @@
 
 namespace lynx {
 namespace devtool {
-#define CHECK_NULL_RETURN(ptr) \
-  if ((ptr) == nullptr) {      \
-    return;                    \
-  }
-
-#define CHECK_NULL_RETURN_VALUE(ptr, res) \
-  if ((ptr) == nullptr) {                 \
-    return res;                           \
-  }
 
 #define CHECK_NULL_AND_LOG_RETURN(ptr, log_msg) \
   if ((ptr) == nullptr) {                       \
