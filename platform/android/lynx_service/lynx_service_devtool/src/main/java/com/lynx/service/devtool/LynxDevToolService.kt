@@ -30,6 +30,7 @@ import org.json.JSONObject
 private const val TAG = "LynxDevToolService"
 
 @Keep
+@AutoService(IServiceProvider::class)
 class LynxDevToolService : ILynxDevToolService {
     companion object {
         @JvmStatic
@@ -40,8 +41,6 @@ class LynxDevToolService : ILynxDevToolService {
         operator fun invoke(): ILynxDevToolService = INSTANCE
     }
 
-    private var lynxDebugPresetValue: Boolean = false
-    private var logBoxPresetValue: Boolean = false
 
     override fun createInspectorOwner(view: LynxView?, debuggable: Boolean): LynxBaseInspectorOwnerNG? {
         try {
@@ -268,21 +267,5 @@ class LynxDevToolService : ILynxDevToolService {
             return false
         }
         return false;
-    }
-
-    override fun getLynxDebugPresetValue(): Boolean {
-        return lynxDebugPresetValue
-    }
-
-    override fun setLynxDebugPresetValue(value: Boolean) {
-        lynxDebugPresetValue = value
-    }
-
-    override fun getLogBoxPresetValue(): Boolean {
-        return logBoxPresetValue
-    }
-
-    override fun setLogBoxPresetValue(value: Boolean) {
-        logBoxPresetValue = value
     }
 }

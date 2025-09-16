@@ -57,6 +57,7 @@
   std::unique_ptr<fml::SharedMutex> external_env_mutex_;
 }
 
+@synthesize lynxDebugEnabled = _lynxDebugEnabled;
 @synthesize highlightTouchEnabled = _highlightTouchEnabled;
 
 + (instancetype)sharedInstance {
@@ -81,6 +82,7 @@
     external_env_mutex_ = std::unique_ptr<fml::SharedMutex>(fml::SharedMutex::Create());
     _externalEnvCache = [NSMutableDictionary dictionary];
     _lifecycleDispatcher = [[LynxLifecycleDispatcher alloc] init];
+    _lynxDebugEnabled = NO;
     _devtoolComponentAttach = NO;
     _resoureProviders = [NSMutableDictionary dictionary];
     _locale = [[NSLocale preferredLanguages] objectAtIndex:0];
@@ -110,6 +112,8 @@
 - (void)initDevTool {
   BLOCK_FOR_INSPECTOR(^{
     [self initDevToolComponentAttachSwitch];
+    // Turn on the lynx_debug_enabled switch if the DevTool Component is attached to the host.
+    self->_lynxDebugEnabled = self->_devtoolComponentAttach;
     [self initDevToolEnv];
   });
 }
@@ -128,14 +132,14 @@
 }
 
 - (void)setLynxDebugEnabled:(BOOL)lynxDebugEnabled {
-  [LynxService(LynxServiceDevToolProtocol) setLynxDebugPresetValue:lynxDebugEnabled];
+  _lynxDebugEnabled = lynxDebugEnabled;
   [self initDevToolEnv];
 }
 
 - (BOOL)lynxDebugEnabled {
-  // Return true only if the DevTool Component is attached and `lynxDebugPresetValue` is true. It
-  // avoids unnecessary reflection calls.
-  return _devtoolComponentAttach && [LynxService(LynxServiceDevToolProtocol) lynxDebugPresetValue];
+  // Return true only if the DevTool Component is attached and _lynxDebugEnabled is true. It avoids
+  // unnecessary reflection calls.
+  return _devtoolComponentAttach && _lynxDebugEnabled;
 }
 
 - (void)initDevToolEnv {
@@ -213,14 +217,9 @@
   [self setDevtoolEnv:enableLogBox forKey:SP_KEY_ENABLE_LOGBOX];
 }
 
-// Returns true only if all the following conditions are met:
-// 1. The DevTool component is attached.
-// 2. The environment flag 'SP_KEY_ENABLE_LOGBOX' is true (defaults to true if not set).
-// 3. The `logBoxPresetValue` is true (this value can be changed via LynxDevToolService).
 - (BOOL)logBoxEnabled {
-  return [self devtoolComponentAttach] &&
-         [self getDevtoolEnv:SP_KEY_ENABLE_LOGBOX withDefaultValue:YES] &&
-         [LynxService(LynxServiceDevToolProtocol) logBoxPresetValue];
+  return [self devtoolComponentAttach] && [self getDevtoolEnv:SP_KEY_ENABLE_LOGBOX
+                                              withDefaultValue:YES];
 }
 
 // This interface is used by TestBench and is only used to debug.

@@ -10,15 +10,6 @@
 
 #pragma mark - LynxServiceDevToolProtocol
 
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _lynxDebugPresetValue = NO;
-    _logBoxPresetValue = NO;
-  }
-  return self;
-}
-
 - (id<LynxBaseInspectorOwner>)createInspectorOwnerWithLynxView:(LynxView *)lynxView
                                                     debuggable:(BOOL)debuggable {
   Class inspectorOwnerClass = NSClassFromString(@"LynxInspectorOwner");
