@@ -23,8 +23,6 @@
 namespace lynx {
 namespace fml {
 
-class ThreadHandle;
-
 class Thread {
  public:
   /// Valid values for priority of Thread.
@@ -83,10 +81,8 @@ class Thread {
 
   static void SetCurrentThreadName(const ThreadConfig& config);
 
-  static size_t GetDefaultStackSize();
-
  private:
-  std::unique_ptr<ThreadHandle> thread_;
+  std::unique_ptr<std::thread> thread_;
 
   fml::RefPtr<fml::TaskRunner> task_runner_;
 
