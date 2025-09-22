@@ -5,7 +5,6 @@
 #import <Foundation/Foundation.h>
 #import <Lynx/LynxEvent.h>
 #import <Lynx/LynxEventTargetBase.h>
-#import <UIKit/UIKit.h>
 @class LynxView;
 
 NS_ASSUME_NONNULL_BEGIN
