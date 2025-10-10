@@ -14,7 +14,19 @@
 @property(nonatomic, weak) LynxUIImage* imageUI;
 @end
 
-@LynxServiceRegister(LynxImageService, LynxServiceImageProtocol) @implementation LynxImageService
+@LynxServiceRegister(LynxImageService) @implementation LynxImageService
+
++ (NSString*)serviceBizID {
+  return DEFAULT_LYNX_SERVICE;
+}
+
++ (LynxServiceScope)serviceScope {
+  return LynxServiceScopeDefault;
+}
+
++ (NSUInteger)serviceType {
+  return kLynxServiceImage;
+}
 
 - (void)addAnimatedImageCallBack:(nonnull id)view UI:(nonnull LynxUIImage*)ui {
   if (![self checkImageType:view]) {

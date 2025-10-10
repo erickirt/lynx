@@ -19,7 +19,19 @@ namespace logging {
 }  // namespace base
 }  // namespace lynx
 
-@LynxServiceRegister(LynxLogService, LynxServiceLogProtocol) @implementation LynxLogService
+@LynxServiceRegister(LynxLogService) @implementation LynxLogService
+
++ (LynxServiceScope)serviceScope {
+  return LynxServiceScopeDefault;
+}
+
++ (NSUInteger)serviceType {
+  return kLynxServiceLog;
+}
+
++ (NSString *)serviceBizID {
+  return DEFAULT_LYNX_SERVICE;
+}
 
 + (NSUInteger)getServiceType {
   return kLynxBaseServiceLog;

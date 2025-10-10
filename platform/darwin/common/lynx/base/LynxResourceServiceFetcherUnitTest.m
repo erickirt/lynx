@@ -25,8 +25,9 @@
   // Register LynxServiceResource with the mock instance
   _mockLynxServiceResourceProtocol = OCMProtocolMock(@protocol(LynxServiceResourceProtocol));
   _mockLynxServices = OCMClassMock([LynxServices class]);
-  OCMStub(ClassMethod(
-              [_mockLynxServices getInstanceWithProtocol:@protocol(LynxServiceResourceProtocol)]))
+  OCMStub(
+      ClassMethod([_mockLynxServices getInstanceWithProtocol:@protocol(LynxServiceResourceProtocol)
+                                                       bizID:DEFAULT_LYNX_SERVICE]))
       .andReturn(_mockLynxServiceResourceProtocol);
 }
 

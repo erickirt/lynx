@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <Lynx/LynxService.h>
 #import <Lynx/LynxServiceDevToolProtocol.h>
-#import <LynxServiceAPI/ServiceAPI.h>
+#import <Lynx/LynxServiceProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

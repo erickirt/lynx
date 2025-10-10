@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <Lynx/LynxEventReporter.h>
 #import <Lynx/LynxPerformanceObserverProtocol.h>
-#import <LynxServiceAPI/ServiceAPI.h>
+#import <Lynx/LynxServiceProtocol.h>
 
 @class LynxView;
 

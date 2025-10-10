@@ -6,8 +6,7 @@
 #import <LynxService/LynxDevToolService.h>
 #import <objc/message.h>
 
-@LynxServiceRegister(LynxDevToolService, LynxServiceDevToolProtocol)
-    @implementation LynxDevToolService
+@LynxServiceRegister(LynxDevToolService) @implementation LynxDevToolService
 
 #pragma mark - LynxServiceDevToolProtocol
 
@@ -183,5 +182,17 @@
 }
 
 #pragma mark - LynxServiceProtocol
+
++ (LynxServiceScope)serviceScope {
+  return LynxServiceScopeDefault;
+}
+
++ (NSUInteger)serviceType {
+  return kLynxServiceDevTool;
+}
+
++ (NSString *)serviceBizID {
+  return DEFAULT_LYNX_SERVICE;
+}
 
 @end

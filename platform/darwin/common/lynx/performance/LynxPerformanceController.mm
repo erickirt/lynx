@@ -175,7 +175,9 @@ std::unique_ptr<std::unordered_map<std::string, std::string>> ConvertNSDictToUno
   [_observer onPerformanceEvent:entry];
 
   if (_reporter == nil) {
-    id<LynxServiceEventReporterProtocol> reporter = LynxService(LynxServiceEventReporterProtocol);
+    id<LynxServiceEventReporterProtocol> reporter =
+        [LynxServices getInstanceWithProtocol:@protocol(LynxServiceEventReporterProtocol)
+                                        bizID:DEFAULT_LYNX_SERVICE];
     if (reporter != nil && [reporter respondsToSelector:@selector(onPerformanceEvent:)]) {
       _reporter = reporter;
     }

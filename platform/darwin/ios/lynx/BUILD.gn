@@ -103,7 +103,6 @@ subspec_target("Framework") {
       "LynxBase/Framework",
     ]
   }
-  dependency += [ "LynxServiceAPI" ]
 }
 
 subspec_target("lynx") {

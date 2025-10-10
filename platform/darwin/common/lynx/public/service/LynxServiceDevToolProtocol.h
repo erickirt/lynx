@@ -6,7 +6,7 @@
 #define DARWIN_COMMON_LYNX_SERVICE_LYNXSERVICEIDEVTOOLPROTOCOL_H_
 
 #import <Foundation/Foundation.h>
-#import <LynxServiceAPI/ServiceAPI.h>
+#import <Lynx/LynxServiceProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

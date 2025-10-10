@@ -9,7 +9,7 @@
 #import <Lynx/LynxConfig.h>
 #import <Lynx/LynxContext.h>
 #import <Lynx/LynxGroup.h>
-#import <LynxServiceAPI/ServiceAPI.h>
+#import <Lynx/LynxServiceProtocol.h>
 
 @protocol LynxServiceExtensionProtocol <LynxServiceProtocol>
 
