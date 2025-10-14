@@ -108,7 +108,7 @@ InitRuntimeStandaloneResult InitRuntimeStandalone(
       });
 
   return {runtime_actor, performance_actor, native_runtime_facade,
-          white_board_delegate, instance_id};
+          white_board_delegate};
 }
 
 }  // namespace shell
