@@ -46,8 +46,10 @@ DEFTAG(LEPUSDebuggerInfo, "DebuggerInfo")
 DEFTAG(FinalizationRegistryData, "FinalizationRegistryData")
 DEFTAG(WeakRefData, "WeakRefData")
 
+#ifdef CONFIG_BIGNUM
 // big number
-DEFTAG(JSBigInt, "JSBigInt")
+DEFTAG(JSBigFloat, "JSBigFloat")
+#endif
 
 DEFTAG(JSOSRWHandler, "JSOSRWHandler")
 DEFTAG(JSOSSignalHandler, "JSOSSignalHandler")
