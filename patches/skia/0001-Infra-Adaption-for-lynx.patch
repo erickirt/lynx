@@ -118,7 +118,7 @@ index 4c9ea2c681..4b1b141659 100644
  # Use of this source code is governed by a BSD-style license that can be
  # found in the LICENSE file.
  
-+import("//clay/common/config.gni")
++import("//${lynx_dir}/clay/common/config.gni")
  import("gn/flutter_defines.gni")
  import("gn/fuchsia_defines.gni")
  import("gn/shared_sources.gni")
