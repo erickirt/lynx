@@ -323,8 +323,7 @@ void LynxRuntime::UpdateState(State state) {
 #if ENABLE_NAPI_BINDING
 void LynxRuntime::PrepareNapiEnvironment() {
   napi_environment_ = std::make_unique<piper::NapiEnvironment>(
-      std::make_unique<piper::NapiLoaderJS>(std::to_string(GetRuntimeId()),
-                                            *this));
+      std::make_unique<piper::NapiLoaderJS>(std::to_string(GetRuntimeId())));
   auto proxy = piper::NapiRuntimeProxy::Create(GetJSRuntime(), delegate_.get());
   LOGI("napi attaching with proxy: " << proxy.get()
                                      << ", id: " << GetRuntimeId());
@@ -371,16 +370,6 @@ void LynxRuntime::RegisterNapiModules() {
         delegate_->GetVSyncObserver());
   }
 }
-
-void LynxRuntime::NotifyRuntimeReady(Napi::Env env, Napi::Object& lynx) {
-  auto& factory = js_executor_->GetModuleManager()->GetExtensionModuleFactory();
-  if (factory) {
-    factory->OnRuntimeReady(
-        static_cast<napi_env>(napi_environment_->proxy()->Env()),
-        static_cast<napi_value>(lynx), template_url_);
-  }
-}
-
 #endif
 
 void LynxRuntime::call(base::closure func) { QueueOrExecTask(std::move(func)); }
@@ -655,7 +644,9 @@ void LynxRuntime::OnJSSourcePrepared(
     tasm::TimingCollector::Scope<TemplateDelegate> scope(delegate_.get(),
                                                          pipeline_options);
     LOGI("lynx runtime loadApp, napi id:" << GetRuntimeId());
+#if OS_IOS
     template_url_ = url;
+#endif
     // TODO(huzhanbo): This is needed by Lynx Network now, will be removed
     // after we fully switch to it.
     js_executor_->SetUrl(url);

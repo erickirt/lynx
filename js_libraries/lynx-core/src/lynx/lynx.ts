@@ -514,7 +514,7 @@ export class Lynx {
   };
 
   getModuleLoader = (): LynxModuleLoader => {
-    return nativeGlobal['napiLoaderOnRT' + this.getApp().nativeAppId];
+    return nativeGlobal['napiRestrictedLoader' + this.getApp().nativeAppId];
   };
 
   createAnimation = (
