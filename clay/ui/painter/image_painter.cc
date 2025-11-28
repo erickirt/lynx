@@ -13,6 +13,7 @@
 #include "base/trace/native/trace_event.h"
 #include "clay/fml/logging.h"
 #include "clay/gfx/image/image_resource.h"
+#include "clay/gfx/rendering_backend.h"
 #include "clay/ui/common/background_data.h"
 #include "clay/ui/painter/gradient_factory.h"
 #include "clay/ui/rendering/decode_utils.h"
@@ -300,6 +301,13 @@ void ImagePainter::PaintImage(GraphicsContext* context,
     // written in CSS will not affect image_data.image_opacity.
     paint.setOpacity(image_data.image_opacity);
   }
+
+  if (image_data.tint_color.has_value()) {
+    std::shared_ptr<ColorFilter> tint_filter = ColorFilter::MakeBlend(
+        image_data.tint_color.value(), BlendMode::kSrcIn);
+    paint.setColorFilter(tint_filter);
+  }
+
   if (repeat == ImageRepeat::kNoRepeat) {
     context->DrawImageRect(image, src_rect, dst_rect, GetSamplingOptions(),
                            &paint);

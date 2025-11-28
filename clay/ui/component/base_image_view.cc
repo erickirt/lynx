@@ -156,6 +156,14 @@ void BaseImageView::SetAttribute(const char* attr_c, const clay::Value& value) {
     case KeywordID::kAutoSize:
       SetAutoSize(attribute_utils::GetBool(value));
       break;
+    case KeywordID::kTintColor: {
+      std::string tint_color = attribute_utils::GetCString(value);
+      Color color;
+      if (Color::Parse(tint_color, &color)) {
+        GetRenderImage()->SetTintColor(color);
+      }
+      break;
+    }
     default:
       BaseView::SetAttribute(attr_c, value);
       break;

@@ -60,6 +60,7 @@ struct ImageData {
   std::array<Length, 4> cap_insets = {};
   float cap_insets_scale = 1.0f;
   float image_opacity = 1.0f;
+  std::optional<Color> tint_color = std::nullopt;
 };
 
 }  // namespace clay

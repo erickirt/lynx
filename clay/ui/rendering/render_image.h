@@ -72,6 +72,7 @@ class RenderImage : public RenderBox,
   void SetAutoPlay(bool auto_play);
   void SetLoopCount(int loop_count);
   void SetAutoSize(bool auto_size);
+  void SetTintColor(const Color& tint_color);
 
   void OnNodeReady();
 
@@ -161,6 +162,8 @@ class RenderImage : public RenderBox,
   // Decide whether decode image into the size of real rendering areas rather
   // than original size.
   bool down_sampling_ = false;
+
+  std::optional<Color> tint_color_ = std::nullopt;
 
 #ifndef ENABLE_SKITY
   std::unique_ptr<ImageResource> image_resource_;

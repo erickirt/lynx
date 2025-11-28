@@ -266,6 +266,15 @@ void RenderImage::SetAutoSize(bool auto_size) {
   AdjustSizeIfNeeded();
 }
 
+void RenderImage::SetTintColor(const Color& tint_color) {
+  if (tint_color_ == tint_color) {
+    return;
+  }
+
+  tint_color_ = tint_color;
+  MarkNeedsPaint();
+}
+
 void RenderImage::OnNodeReady() { AdjustSizeIfNeeded(); }
 
 void RenderImage::AdjustSizeIfNeeded() {
@@ -297,6 +306,7 @@ void RenderImage::CreateImageData(ImageData& image_data) {
   image_data.drop_shadow_color = drop_shadow_color_;
   image_data.drop_shadow_blur_radius = drop_shadow_blur_radius_;
   image_data.image_opacity = image_opacity_;
+  image_data.tint_color = tint_color_;
 }
 
 bool RenderImage::IsRepaintBoundary() const {

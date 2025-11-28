@@ -182,6 +182,7 @@ focus
 ignore-focus
 edit-on-focus
 caret-color
+tint-color
 richtype
 fullscreen-mode
 smart-scroll
