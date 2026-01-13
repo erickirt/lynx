@@ -282,7 +282,7 @@ void ElementManager::FiberAttachToInspectorRecursively(FiberElement *root) {
         [this, &prepare_and_add_node_f](FiberElement *element) {
           PrepareNodeForInspector(element);
           for (const auto &child : element->children()) {
-            prepare_and_add_node_f(child.get());
+            prepare_and_add_node_f(static_cast<FiberElement *>(child.get()));
           }
           CheckAndProcessSlotForInspector(element);
           OnElementNodeAddedForInspector(element);
@@ -1485,7 +1485,8 @@ namespace {
 void ClearExtremeParsedStylesRecursively(FiberElement *cur) {
   cur->ClearExtremeParsedStyles();
   for (auto &child : cur->children()) {
-    ClearExtremeParsedStylesRecursively(child.get());
+    ClearExtremeParsedStylesRecursively(
+        static_cast<FiberElement *>(child.get()));
   }
 }
 }  // namespace
