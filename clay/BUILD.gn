@@ -33,7 +33,6 @@ config("config") {
       "//third_party/skity",
       "//third_party/skity/third_party/glm",
       "//third_party/skity/include",
-      "//third_party/skity/skity/module/codec/include",
 
       # textlayout
       "//third_party/textlayout/textra/public",
@@ -42,14 +41,14 @@ config("config") {
     ]
 
     if (is_win || is_mac) {
-      include_dirs += [ "//third_party/skity/skity/include" ]
+      include_dirs += [
+        "//third_party/skity/skity/include",
+        "//third_party/skity/skity/module/codec/include",
+      ]
       defines += [ "TTTEXT_OS_WIN" ]
     }
 
-    defines += [
-      "ENABLE_SKITY",
-      "DISABLE_SKITY_EXPERIMENTAL_WARNINGS",
-    ]
+    defines += [ "ENABLE_SKITY" ]
   } else {
     include_dirs += [
       # textlayout

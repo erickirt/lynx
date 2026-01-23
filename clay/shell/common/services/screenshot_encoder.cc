@@ -244,13 +244,10 @@ ScreenshotEncodeResult ScreenshotEncoder::Encode(
   }
 
   // Encode image.
-  auto codec = skity::Codec::MakeJPEGCodec();
-  if (!codec) {
-    return {};
-  }
-  auto jpeg_data = codec->Encode(pixmap.get());
+  auto jpeg_codec = clay::JPEGCodecSkity();
+  auto jpeg_data = jpeg_codec.Encode(pixmap.get());
   if (!jpeg_data) {
-    FML_DLOG(ERROR) << "TakeSnapshot, Skity encode failed!";
+    FML_DLOG(ERROR) << "TakeSnapshot, Skity JpegCodec::Encode failed!";
     return {};
   }
   std::shared_ptr<skity::Data> image_data =
