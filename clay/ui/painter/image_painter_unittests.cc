@@ -112,6 +112,7 @@ TEST_F(ImagePainterTest, FillMode) {
 
   SkPaint paint;
   paint.setAntiAlias(false);
+  paint.setBlendMode(SkBlendMode::kSrc);
   const auto expected_draw_calls = std::vector{
       MockCanvas::DrawCall{0,
                            MockCanvas::DrawImageRectData{
@@ -166,6 +167,7 @@ TEST_F(ImagePainterTest, ImageRepeat) {
 
   SkPaint paint;
   paint.setAntiAlias(false);
+  paint.setBlendMode(SkBlendMode::kSrc);
   const auto expected_draw_calls = std::vector{
       MockCanvas::DrawCall{0,
                            MockCanvas::DrawImageRectData{

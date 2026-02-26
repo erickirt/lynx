@@ -180,15 +180,16 @@ static void PaintSolidBorder(GraphicsContext* context, const FloatRect& rect,
 
   Paint paint;
   paint.setColor(Color(color));
-  // Activate antialiasing here to ensure that Skia enters the fast path
-  paint.setAntiAlias(true);
-  paint.setDrawStyle(DrawStyle::kStroke);
-  paint.setStrokeWidth(border_width);
   if (!borders_data.HasBorderRadius()) {
+    paint.setDrawStyle(DrawStyle::kStroke);
+    paint.setStrokeWidth(border_width);
     FloatRect stroke_rect(rect);
     stroke_rect.Inflate(-border_width / 2.f);
     context->DrawRect(stroke_rect, paint);
   } else {
+    // Activate antialiasing here to ensure that Skia enters the fast path
+    paint.setAntiAlias(true);
+    paint.setDrawStyle(DrawStyle::kFill);
     auto get_rect = [&](float radii_offset) -> skity::RRect {
       FloatRect stroke_rect(rect);
       stroke_rect.Inflate(-radii_offset);
@@ -196,8 +197,9 @@ static void PaintSolidBorder(GraphicsContext* context, const FloatRect& rect,
       SetRRectRadii(rrect, stroke_rect, borders_data, radii_offset);
       return rrect;
     };
-    skity::RRect rrect = get_rect(border_width * 0.5f);
-    context->DrawRRect(rrect, paint);
+    skity::RRect inner_rect = get_rect(border_width);
+    skity::RRect outer_rect = get_rect(0.f);
+    context->DrawDRRect(outer_rect, inner_rect, paint);
   }
 }
 
@@ -473,12 +475,9 @@ void BoxPainter::PaintBackground(GraphicsContext* context,
     }
   }
 
-  FloatRoundedRect paint_rrect;
-  paint_rrect.SetRect(FloatRect(FloatPoint(0.f, 0.f), paint_rect.size()));
   if (has_radius && has_image) {
     auto rrect = GetBackgroundRoundedRect(paint_rect);
-    paint_rrect.SetRect(FloatRect(FloatPoint(0.f, 0.f), rrect.rect().size()));
-    paint_rrect.SetRadii(rrect.radii());
+    context->ClipRRect(rrect, GrClipOp::kIntersect, true);
   }
 
   // The background images are drawn on stacking context layers on top of each
@@ -522,9 +521,9 @@ void BoxPainter::PaintBackground(GraphicsContext* context,
 
     // |paint_rect| was translated with RenderObject's location.
     ImagePainter(render_object_)
-        .PaintBackgroundImage(
-            context, paint_rect, paint_rrect, background.images[index], origin,
-            clip, size_x, size_y, position_x, position_y, repeat_x, repeat_y);
+        .PaintBackgroundImage(context, paint_rect, background.images[index],
+                              origin, clip, size_x, size_y, position_x,
+                              position_y, repeat_x, repeat_y);
   }
 }
 

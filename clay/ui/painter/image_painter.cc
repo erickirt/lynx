@@ -296,7 +296,14 @@ void ImagePainter::PaintImage(GraphicsContext* context,
   // Always disable anti-alias when paint image. On particular low-end devices,
   // 'anti-alias' may result in the failure to display the image.
   paint.setAntiAlias(false);
-  paint.setOpacity(image_data.image_opacity);
+  if (image->isOpaque()) {
+    paint.setBlendMode(BlendMode::kSrc);
+  } else {
+    // NOTE: When image_data.image_opacity is not 1.0f, the only reason is that
+    // we set it for `fadeIn` animation for images. Normal opacity attribute
+    // written in CSS will not affect image_data.image_opacity.
+    paint.setOpacity(image_data.image_opacity);
+  }
 
   if (image_data.tint_color.has_value()) {
     std::shared_ptr<ColorFilter> tint_filter = ColorFilter::MakeBlend(
@@ -304,68 +311,28 @@ void ImagePainter::PaintImage(GraphicsContext* context,
     paint.setColorFilter(tint_filter);
   }
 
-  skity::RRect round_rect = image_data.round_rect;
-  if (round_rect.IsEmpty()) {
-    round_rect.SetRect(dst_rect);
-  }
   if (repeat == ImageRepeat::kNoRepeat) {
-    if (round_rect.IsRect()) {
-      context->DrawImageRect(image, src_rect, dst_rect, GetSamplingOptions(),
-                             &paint);
-    } else {
-      Paint work_paint = paint;
-      work_paint.setDrawStyle(DrawStyle::kFill);
-      skity::Matrix local_matrix =
-          skity::Matrix::Translate(dst_rect.Left(), dst_rect.Top()) *
-          skity::Matrix::Scale(dst_rect.Width() / src_rect.Width(),
-                               dst_rect.Height() / src_rect.Height()) *
-          skity::Matrix::Translate(-src_rect.Left(), -src_rect.Top());
-      auto shader = ColorSource::MakeImage(
-          PaintImage::Make(image), TileMode::kDecal, TileMode::kDecal,
-          render_box_->ImageFilterMode() == FilterMode::kLinear
-              ? ImageSampling::kLinear
-              : ImageSampling::kNearestNeighbor,
-          &local_matrix);
-      work_paint.setColorSource(shader);
-      context->DrawRRect(round_rect, work_paint);
-    }
+    context->DrawImageRect(image, src_rect, dst_rect, GetSamplingOptions(),
+                           &paint);
   } else {
     GraphicsContext::AutoRestore saver(context, true);
     context->ClipRect(output_rect, GrClipOp::kIntersect, false);
     std::vector<skity::Rect> tiles =
         GenerateImageTileRects(output_rect, dst_rect, repeat);
-    Paint work_paint = paint;
-    work_paint.setDrawStyle(DrawStyle::kFill);
     for (auto& tile : tiles) {
-      if (round_rect.IsRect()) {
-        context->DrawImageRect(image, src_rect, tile, GetSamplingOptions(),
-                               &work_paint);
-      } else {
-        skity::Matrix local_matrix =
-            skity::Matrix::Translate(tile.Left(), tile.Top()) *
-            skity::Matrix::Scale(tile.Width() / src_rect.Width(),
-                                 tile.Height() / src_rect.Height()) *
-            skity::Matrix::Translate(-src_rect.Left(), -src_rect.Top());
-        auto shader = ColorSource::MakeImage(
-            PaintImage::Make(image), TileMode::kDecal, TileMode::kDecal,
-            render_box_->ImageFilterMode() == FilterMode::kLinear
-                ? ImageSampling::kLinear
-                : ImageSampling::kNearestNeighbor,
-            &local_matrix);
-        work_paint.setColorSource(shader);
-        context->DrawRRect(round_rect, work_paint);
-      }
+      context->DrawImageRect(image, src_rect, tile, GetSamplingOptions(),
+                             &paint);
     }
   }
 }
 
 void ImagePainter::PaintBackgroundImage(
     GraphicsContext* context, const FloatRect& frame_rect,
-    const FloatRoundedRect& round_rect, const BackgroundImage& bg_image,
-    ClayBackgroundOriginType origin, ClayBackgroundClipType clip,
-    const BackgroundSize& size_x, const BackgroundSize& size_y,
-    const BackgroundPosition& position_x, const BackgroundPosition& position_y,
-    ClayBackgroundRepeatType repeat_x, ClayBackgroundRepeatType repeat_y) {
+    const BackgroundImage& bg_image, ClayBackgroundOriginType origin,
+    ClayBackgroundClipType clip, const BackgroundSize& size_x,
+    const BackgroundSize& size_y, const BackgroundPosition& position_x,
+    const BackgroundPosition& position_y, ClayBackgroundRepeatType repeat_x,
+    ClayBackgroundRepeatType repeat_y) {
   FML_DCHECK(context);
   if (frame_rect.IsEmpty() || !render_box_ || !render_box_->CanDisplay()) {
     return;
@@ -446,7 +413,7 @@ void ImagePainter::PaintBackgroundImage(
   if (image_repeat_x == ImageRepeat::kNoRepeat &&
       image_repeat_y == ImageRepeat::kNoRepeat) {
     context->Translate(output_x, output_y);
-    PaintBackgroundImage(context, bg_image, src_rect, dst_rect, round_rect);
+    PaintBackgroundImage(context, bg_image, src_rect, dst_rect);
     return;
   }
   // Draw the repeating images
@@ -466,7 +433,7 @@ void ImagePainter::PaintBackgroundImage(
     for (float y = start_y; y < end_y; y += height) {
       GraphicsContext::AutoRestore saver(context, true);
       context->Translate(x, y);
-      PaintBackgroundImage(context, bg_image, src_rect, dst_rect, round_rect);
+      PaintBackgroundImage(context, bg_image, src_rect, dst_rect);
       if (image_repeat_y == ImageRepeat::kNoRepeat) {
         break;
       }
@@ -480,8 +447,7 @@ void ImagePainter::PaintBackgroundImage(
 void ImagePainter::PaintBackgroundImage(GraphicsContext* context,
                                         const BackgroundImage& bg_image,
                                         const skity::Rect& src_rect,
-                                        const skity::Rect& dst_rect,
-                                        const skity::RRect& round_rect) {
+                                        const skity::Rect& dst_rect) {
   FML_DCHECK(context);
 
   if (bg_image.IsEmpty()) {
@@ -518,35 +484,21 @@ void ImagePainter::PaintBackgroundImage(GraphicsContext* context,
       return;
     }
     Paint paint;
-    if (round_rect.IsRect()) {
-      context->DrawImageRect(image, src_rect, dst_rect, GetSamplingOptions(),
-                             &paint);
-    } else {
-      skity::Matrix local_matrix =
-          skity::Matrix::Translate(dst_rect.Left(), dst_rect.Top()) *
-          skity::Matrix::Scale(dst_rect.Width() / src_rect.Width(),
-                               dst_rect.Height() / src_rect.Height()) *
-          skity::Matrix::Translate(-src_rect.Left(), -src_rect.Top());
-      auto shader = ColorSource::MakeImage(
-          PaintImage::Make(image), TileMode::kDecal, TileMode::kDecal,
-          render_box_->ImageFilterMode() == FilterMode::kLinear
-              ? ImageSampling::kLinear
-              : ImageSampling::kNearestNeighbor,
-          &local_matrix);
-      paint.setColorSource(shader);
-      context->DrawRRect(round_rect, paint);
+    if (image->isOpaque()) {
+      paint.setBlendMode(BlendMode::kSrc);
     }
+    context->DrawImageRect(image, src_rect, dst_rect, GetSamplingOptions(),
+                           &paint);
   } else {
     auto color_source = GradientFactory::CreateShader(bg_image.GetGradient(),
                                                       FloatRect(src_rect));
     Paint paint;
+    if (color_source->is_opaque()) {
+      paint.setBlendMode(BlendMode::kSrc);
+    }
     paint.setDither(true);
     paint.setColorSource(color_source);
-    if (round_rect.IsRect()) {
-      context->DrawRect(dst_rect, paint);
-    } else {
-      context->DrawRRect(round_rect, paint);
-    }
+    context->DrawRect(dst_rect, paint);
   }
 }
 
