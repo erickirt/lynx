@@ -6173,6 +6173,7 @@ public enum LynxEnvKey {
   LynxEnvGlobalMemoryReportThresholdMB
   LynxEnvFSPEnable
   LynxEnvFSPConfigJsonString
+  LynxEnvSetupCanvasSurfaceEarlier
   LynxEnvKeyEndMark
 }
 
