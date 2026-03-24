@@ -6,6 +6,7 @@
 #define CORE_RUNTIME_LEPUS_LEPUS_CONTEXT_CELL_H_
 
 #include "base/include/value/lynx_value_extended.h"
+#include "base/include/vector.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +50,15 @@ class ContextCell {
   lynx_api_env env_;
 };
 
+class CellManager {
+ public:
+  CellManager() : cells_(){};
+  ~CellManager();
+  ContextCell* AddCell(lepus::QuickContext* qctx);
+
+ private:
+  base::InlineVector<ContextCell*, 16> cells_;
+};
 }  // namespace lepus
 }  // namespace lynx
 

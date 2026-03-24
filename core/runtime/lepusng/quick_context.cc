@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/include/no_destructor.h"
 #include "base/include/string/string_number_convert.h"
 #include "base/include/value/array.h"
 #include "base/include/value/base_value.h"
@@ -513,9 +512,11 @@ LEPUSRuntimeData::LEPUSRuntimeData(bool disable_tracing_gc, int runtime_mode) {
 LEPUSRuntimeData::~LEPUSRuntimeData() {
   ContextCell* cell = QuickContext::GetContextCellFromCtx(lepus_context_);
   LEPUS_FreeContext(lepus_context_);
+  cell->ctx_ = nullptr;
+  cell->qctx_ = nullptr;
   LEPUS_FreeRuntime(runtime_);
+  cell->rt_ = nullptr;
   cell->DetachEnv();
-  delete cell;
 }
 
 QuickContext::QuickContext(
@@ -538,8 +539,7 @@ QuickContext::QuickContext(
   LEPUSLepusRefCallbacks callbacks = GetLepusRefCall();
   RegisterLepusRefCallbacks(runtime_, &callbacks);
   LEPUS_SetMaxStackSize(context(), static_cast<size_t>(ULLONG_MAX));
-  LEPUS_SetContextOpaque(lepus_context_,
-                         new ContextCell(this, lepus_context_, runtime_));
+  LEPUS_SetContextOpaque(lepus_context_, RegisterContextCell(this));
   Initialize();
   RegisterLepusType(runtime_, Value_Array, Value_Table);
   // data associated with debugger need to be initialized
@@ -1315,6 +1315,15 @@ LEPUSLepusRefCallbacks QuickContext::GetLepusRefCall() {
           &LepusRefSetPropertyCallBack, &LepusRefFreeStringCache,
           &LepusRefDeepEqualCallBack,   &LepusrefToString,
           &RefCountedObjVisitor};
+}
+
+CellManager& QuickContext::GetContextCells() {
+  thread_local CellManager cells_;
+  return cells_;
+}
+
+ContextCell* QuickContext::RegisterContextCell(lepus::QuickContext* qctx) {
+  return GetContextCells().AddCell(qctx);
 }
 
 #if ENABLE_TRACE_PERFETTO
