@@ -1,4 +1,6 @@
 # CHANGELOG
+# 0.0.37
+* delete aggregate template pass in lepus ir pass to optimize parse time.
 
 # 0.0.37
 * Support CSS !important in parsing, cascade, and inline styles
