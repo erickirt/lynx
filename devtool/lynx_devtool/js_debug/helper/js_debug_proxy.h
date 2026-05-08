@@ -45,7 +45,7 @@ class JSDebugProxy {
   }
 
   virtual void RegisterNapiRuntimeProxy() {}
-  virtual std::shared_ptr<runtime::js::Runtime> MakeRuntime() {
+  virtual std::unique_ptr<runtime::js::Runtime> MakeRuntime() {
     return nullptr;
   }
 #if ENABLE_TRACE_PERFETTO

@@ -50,7 +50,7 @@ class JSDebugHelper {
   }
 
   void RegisterNapiRuntimeProxy();
-  std::shared_ptr<runtime::js::Runtime> MakeRuntime(const std::string& vm_type);
+  std::unique_ptr<runtime::js::Runtime> MakeRuntime(const std::string& vm_type);
 #if ENABLE_TRACE_PERFETTO
   std::shared_ptr<runtime::profile::RuntimeProfiler> MakeRuntimeProfiler(
       std::shared_ptr<runtime::js::JSIContext> js_context,
