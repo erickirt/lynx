@@ -29,13 +29,11 @@ struct BackgroundData {
     base::InlineVector<BackgroundRepeatType, 1> repeat;
     base::InlineVector<BackgroundOriginType, 1> origin;
     base::InlineVector<BackgroundClipType, 1> clip;
-    base::InlineVector<MaskCompositeType, 1> composite;
 
     bool operator==(const BackgroundImageData& o) const {
       return image_count == o.image_count && clone_image == o.clone_image &&
              image == o.image && position == o.position && size == o.size &&
-             repeat == o.repeat && origin == o.origin && clip == o.clip &&
-             composite == o.composite;
+             repeat == o.repeat && origin == o.origin && clip == o.clip;
     }
     bool operator!=(const BackgroundImageData& o) const {
       return !(*this == o);

@@ -69,9 +69,8 @@ constexpr CSSPropertyID kTransitionLonghands[] = {
     kPropertyIDTransitionProperty, kPropertyIDTransitionDuration,
     kPropertyIDTransitionDelay, kPropertyIDTransitionTimingFunction};
 constexpr CSSPropertyID kMaskLonghands[] = {
-    kPropertyIDMaskImage,    kPropertyIDMaskPosition, kPropertyIDMaskSize,
-    kPropertyIDMaskRepeat,   kPropertyIDMaskOrigin,   kPropertyIDMaskClip,
-    kPropertyIDMaskComposite};
+    kPropertyIDMaskImage,  kPropertyIDMaskPosition, kPropertyIDMaskSize,
+    kPropertyIDMaskRepeat, kPropertyIDMaskOrigin,   kPropertyIDMaskClip};
 constexpr CSSPropertyID kAnimationLonghands[] = {
     kPropertyIDAnimationName,           kPropertyIDAnimationDuration,
     kPropertyIDAnimationDelay,          kPropertyIDAnimationTimingFunction,

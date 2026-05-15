@@ -77,7 +77,6 @@ void PropBundleStyleWriter::PushStyleToBundle(
   V(MaskImage)                           \
   V(MaskSize)                            \
   V(MaskPosition)                        \
-  V(MaskComposite)                       \
   V(Filter)                              \
   V(Transform)                           \
   V(TransformOrigin)                     \

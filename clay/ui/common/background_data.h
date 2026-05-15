@@ -154,7 +154,6 @@ struct MaskData {
   std::vector<ClayMaskClipType> clips;
   std::vector<MaskSize> sizes;
   std::vector<MaskPosition> positions;
-  std::vector<ClayMaskCompositeType> composites;
 };
 
 };  // namespace clay

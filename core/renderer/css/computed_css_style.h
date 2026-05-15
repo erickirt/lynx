@@ -69,8 +69,6 @@ class ComputedCSSStyleUtilsMethod {
       const base::flex_optional<BackgroundData>& data);
   static lepus::Value BackgroundOrMaskSizeToLepus(
       const base::flex_optional<BackgroundData>& data);
-  static lepus::Value BackgroundOrMaskCompositeToLepus(
-      const base::flex_optional<BackgroundData>& data);
 };
 
 class ComputedCSSStyle {
@@ -571,7 +569,6 @@ class ComputedCSSStyle {
   V(MaskClip)                            \
   V(MaskPosition)                        \
   V(MaskRepeat)                          \
-  V(MaskComposite)                       \
   V(Filter)                              \
   V(BorderLeftColor)                     \
   V(BorderRightColor)                    \
