@@ -11,12 +11,7 @@ def directory_really_is_buildtools(directory):
 
 def get_buildtools_path():
   """Search for buildtools """
-  # Check if there's an env.sh or env.ps1 exported LYNX_ROOT_DIR environment variable.
-  root_dir = os.environ.get("LYNX_ROOT_DIR", None)
-  if root_dir:
-    return os.path.join(root_dir, "buildtools")
-
-  # Then look if buildtools is already in PATH
+  # First look if buildtools is already in PATH
   for i in os.environ['PATH'].split(os.pathsep):
     if i.rstrip(os.sep).endswith('buildtools'):
       if directory_really_is_buildtools(i):
