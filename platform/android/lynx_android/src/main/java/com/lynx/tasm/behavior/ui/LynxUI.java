@@ -110,8 +110,6 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI implements IProc
   private float mHueRotateAmount = 0.0f;
 
   private static final float OFFSET_ROTATE_AUTO = -1024.0f;
-  private static final float OFFSET_ROTATE_AUTO_WITH_ANGLE_BASE = -1000000.0f;
-  private static final float OFFSET_ROTATE_AUTO_WITH_ANGLE_RANGE = 360.0f;
 
   private BackgroundManager mBackgroundManager;
   private boolean mSetVisibleByCSS = true;
@@ -170,7 +168,6 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI implements IProc
   protected BasicShape mOffsetPath;
   protected float mOffsetDistance;
   protected float mOffsetRotate = OFFSET_ROTATE_AUTO;
-  protected float mOffsetRotateAngle = 0.0f;
   protected boolean mIsAutoOffsetRotate = true;
   protected boolean mOffsetHasChanged = false;
 
@@ -989,7 +986,7 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI implements IProc
         float[] result = LynxOffsetCalculator.pointAtProgress(
             mOffsetPath.getPath(getWidth(), getHeight()), mOffsetDistance);
         if (mIsAutoOffsetRotate) {
-          applyOffsetAndRotate(result[0], result[1], result[2] + mOffsetRotateAngle);
+          applyOffsetAndRotate(result[0], result[1], result[2]);
         } else {
           applyOffsetAndRotate(result[0], result[1], mOffsetRotate);
         }
@@ -1515,26 +1512,12 @@ public abstract class LynxUI<T extends View> extends LynxBaseUI implements IProc
     if (mOffsetRotate != offsetRotate) {
       mOffsetRotate = offsetRotate;
       mOffsetHasChanged = true;
-      if (mOffsetRotate == OFFSET_ROTATE_AUTO) {
-        mIsAutoOffsetRotate = true;
-        mOffsetRotateAngle = 0.0f;
-      } else if (isEncodedAutoOffsetRotate(mOffsetRotate)) {
-        mIsAutoOffsetRotate = true;
-        mOffsetRotateAngle = decodeAutoOffsetRotateAngle(mOffsetRotate);
-      } else {
+      if (mOffsetRotate != OFFSET_ROTATE_AUTO) {
         mIsAutoOffsetRotate = false;
-        mOffsetRotateAngle = 0.0f;
+      } else {
+        mIsAutoOffsetRotate = true;
       }
     }
-  }
-
-  private static boolean isEncodedAutoOffsetRotate(float rotate) {
-    return rotate <= OFFSET_ROTATE_AUTO_WITH_ANGLE_BASE
-        && rotate > OFFSET_ROTATE_AUTO_WITH_ANGLE_BASE - OFFSET_ROTATE_AUTO_WITH_ANGLE_RANGE;
-  }
-
-  private static float decodeAutoOffsetRotateAngle(float rotate) {
-    return isEncodedAutoOffsetRotate(rotate) ? OFFSET_ROTATE_AUTO_WITH_ANGLE_BASE - rotate : 0.0f;
   }
 
   protected void initAccessibilityDelegate() {}
